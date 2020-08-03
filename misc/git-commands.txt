@@ -9,3 +9,16 @@ git commit -m “[ Type in the commit message]” - Commits changes to repo
 git diff - Shows file differences which are not yet staged.
 git diff -staged -
 git diff [first branch] [second branch] - Shows the differnce between first branch and second branch
+
+git branch - Lists all branches
+git branch [branch name] - Creates a new branch with branch name
+git branch -d [branch name] - Deletes a feature of branch
+
+git checkout [branch name] - Changes to a branch
+git checkout -b [branch name] - Creates a new branch and changes to it
+git merge [branch name] - merges branch history into current branch
+
+git remote add [variable name] [Remote Server Link]   - Adds remote
+git push [variable name] master  - Sends committed change to master branch.
+git push [variable name] [branch] - Sends committed change on branch to branch
+git push –all [variable name]  - pushes all branches to remote repo
