@@ -1,0 +1,11 @@
+git config –global user.name “[name]”   - Sets author name for commits
+git config –global user.email “[email address]” - Sets author email for commits
+git init [repository name] - Initialises a repository
+git clone [url] - Obtain repo from online url
+git add [file] - Adds current file to staging area
+git add * - Adds one or more to current staging area
+git commit -m “[ Type in the commit message]” - Commits changes to repo
+
+git diff - Shows file differences which are not yet staged.
+git diff -staged -
+git diff [first branch] [second branch] - Shows the differnce between first branch and second branch
