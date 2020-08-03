@@ -22,3 +22,5 @@ git remote add [variable name] [Remote Server Link]   - Adds remote
 git push [variable name] master  - Sends committed change to master branch.
 git push [variable name] [branch] - Sends committed change on branch to branch
 git push –all [variable name]  - pushes all branches to remote repo
+
+hello world
