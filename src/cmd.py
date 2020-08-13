@@ -3,6 +3,7 @@ import configparser
 import os
 
 
+os.chdir(os.path.join(os.path.dirname(__file__), '..'))  # changes cwd to always be at clustermol
 # print(os.getcwd())
 algorithm_list = ["alg1", "alg2", "alg3"]
 
@@ -31,22 +32,22 @@ def parse():
                         default=None,
                         help="Select whether to visualise cluster results",)
     args = parser.parse_args()
-    print(args)  # keep for debugging args
+    # print(args)  # keep for debugging args
 
     if args.configuration:
         # config_path = args.configuration
         if os.path.isfile(args.configuration):
-            if args.configuration.endswith(".ini"):  # refactor in future to decrease repetition
+            if args.configuration.endswith(".ini"):
                 config = configparser.ConfigParser(allow_no_value=True)
                 config.read(args.configuration)
                 for section in config.sections():
                     print(section)
-                    args.algorithm = config[section]["--algorithm"]  # sets source from config file
+                    args.algorithm = config[section]["--algorithm"]  # sets algorithm from config file
                     print(args.algorithm)
         elif os.path.isdir(os.path.abspath(args.configuration)):
             for filename in os.listdir(args.configuration):
                 print(filename)
-                if filename.endswith(".ini"):
+                if filename.endswith(".ini"):  # refactor in future to decrease repetition
                     config = configparser.ConfigParser(allow_no_value=True)
                     config.read(os.path.join(args.configuration, filename))
                     for section in config.sections():
