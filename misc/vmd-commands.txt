@@ -1,0 +1,4 @@
+mol new MenW_6RU_0_to_10ns.pdb
+animate speed 0.5
+scale to 0.05
+animate forward
