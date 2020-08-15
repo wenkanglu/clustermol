@@ -64,4 +64,4 @@ def runClustering(filename, destination, type, visualise):
     cluserting(type, rmsd_matrix_temp, visualise, destination)
 
 if __name__ == "__main__":
-    runClustering("MenY_reduced_100_frames.pdb", "graphics", "average")
+    runClustering("MenY_reduced_100_frames.pdb", "graphics", "average", True)

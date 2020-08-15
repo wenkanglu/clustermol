@@ -73,6 +73,7 @@ def handle_configuration(args):
 
 
 def parse_configuration(args, filename):
+    # print("hello world!")
     if filename.endswith(".ini"):
         config = configparser.ConfigParser(allow_no_value=True)
         config.read(filename)
@@ -83,6 +84,7 @@ def parse_configuration(args, filename):
             # print(args_copy.algorithm)
             args_copy.source = config[section]["--source"]
             args_copy.destination = config[section]["--destination"]
+            args_copy.visualise = config[section]["--visualise"]
             if args_copy.algorithm == "hierarchical":
                 args_copy.linkage = config[section]["--linkage"]
             print(args)
@@ -96,7 +98,6 @@ def call_algorithm(args):
     if args.algorithm == "hierarchical":
         # print(args.visualise)
         hierarchical.runClustering(args.source, args.destination, args.linkage, args.visualise)
-
     # call algorithm with these args
     elif args.algorithm == "imwkmeans":
         # TODO: call imwkmeans with other args
