@@ -2,12 +2,16 @@ import argparse
 import configparser
 import copy
 import os
+import sys
+#chdir probably needs to be here so below import works
+os.chdir(os.path.join(os.path.dirname(__file__), '..'))  # changes cwd to always be at clustermol
+# print(os.getcwd())
+sys.path.insert(1, 'src')
+import clusterer
 
 SUBPARSER_CONF = "conf"
 SUBPARSER_ARGS = "args"
 
-os.chdir(os.path.join(os.path.dirname(__file__), '..'))  # changes cwd to always be at clustermol
-# print(os.getcwd())
 algorithm_list = ["hierarchical", "imwkmeans"]
 hierarchical_list = ["single", "average", "ward"]
 
@@ -48,6 +52,7 @@ def parse():
                              "--visualise",
                              default=False,
                              choices=[True, False],
+                             type=bool,
                              help="Select whether to visualise cluster results", )
     # algorithm specific arguments
     parser_args.add_argument("-l",
@@ -81,6 +86,7 @@ def parse_configuration(args, filename):
             # print(args_copy.algorithm)
             args_copy.source = config[section]["--source"]
             args_copy.destination = config[section]["--destination"]
+            args_copy.visualise = config[section]["--visualise"]
             if args_copy.algorithm == "hierarchical":
                 args_copy.linkage = config[section]["--linkage"]
             call_algorithm(args_copy)
@@ -96,8 +102,7 @@ def call_algorithm(args):
     # call algorithm with these args
     elif args.algorithm == "imwkmeans":
         # TODO: call imwkmeans with other args
-        None
-
+        clusterer.cluster_imwkmeans(args)
 
 if __name__ == "__main__":
     parse()
