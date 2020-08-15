@@ -37,18 +37,18 @@ def cluserting(hierarchical_type):
     if hierarchical_type == clustering_type[0]:
         print('>>> Performing %s based Hierarchical clustering <<<' % clustering_type[0])
         linkage = scipy.cluster.hierarchy.linkage(reduced_distances, method=clustering_type[0])
-        export_dendrogram(hierarchical_type, linkage)
+        # export_dendrogram(hierarchical_type, linkage)
     elif hierarchical_type == clustering_type[1]:
         print('>>> Performing %s basd Hierarchical clustering <<<' % clustering_type[1])
         linkage = scipy.cluster.hierarchy.linkage(reduced_distances, method=clustering_type[1])
-        export_dendrogram(hierarchical_type, linkage)
+        # export_dendrogram(hierarchical_type, linkage)
     elif hierarchical_type == clustering_type[2]:
         print('>>> Performing %s based Hierarchical clustering <<<' % clustering_type[2])
         linkage = scipy.cluster.hierarchy.linkage(reduced_distances, method=clustering_type[2])
-        export_dendrogram(hierarchical_type, linkage)
+        # export_dendrogram(hierarchical_type, linkage)
     elif hierarchical_type == clustering_type[3]:
         print('>>> Performing %s based Hierarchical clustering <<<' % clustering_type[3])
         linkage = scipy.cluster.hierarchy.linkage(reduced_distances, method=clustering_type[3])
-        export_dendrogram(hierarchical_type, linkage)
+        # export_dendrogram(hierarchical_type, linkage)
 
 cluserting("ward")
