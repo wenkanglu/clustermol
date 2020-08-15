@@ -4,7 +4,7 @@ import matplotlib.pyplot as plot
 import scipy.cluster.hierarchy
 from scipy.spatial.distance import squareform
 
-filename = "MenW_6RU_0_to_100ns.pdb"
+filename = "MenW_6RU_0_to_10ns.pdb"
 save_location = "/"
 clustering_type = ["single", "complete", "average", "ward"]
 
