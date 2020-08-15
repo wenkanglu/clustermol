@@ -5,8 +5,6 @@ import matplotlib.pyplot as plot
 import scipy.cluster.hierarchy
 from scipy.spatial.distance import squareform
 
-filename = "MenW_6RU_0_to_10ns.pdb"
-save_location = "/"
 clustering_type = ["single", "complete", "average", "ward"]
 # print(os.getcwd())
 #
@@ -35,10 +33,12 @@ def preprocessing(filename):
     return reduced_distances
 
 def export_dendrogram(hierarchical_type, linkage):
-    os.chdir(os.path.join(os.path.dirname(__file__), '..')+"/data/data_dest/graphics")  # changes cwd to always be at clustermol
+    print(os.getcwd())
+    os.chdir(os.path.join(os.path.dirname(__file__), '..')+"/data_dest/graphics")  # changes cwd to always be at clustermol
+    print(os.getcwd())
     plot.title('RMSD %s linkage hierarchical clustering' %hierarchical_type)
     _ = scipy.cluster.hierarchy.dendrogram(linkage, no_labels=True)
-    plot.savefig("graphics/clustering-%s.png" % hierarchical_type)
+    plot.savefig("dendrogram-clustering-%s.png" % hierarchical_type)
 
 def show_dendrogram(hierarchical_type, linkage):
     plot.title('RMSD %s linkage hierarchical clustering' %hierarchical_type)
@@ -73,4 +73,4 @@ def runClustering(filename, destination, type):
     cluserting(type, rmsd_matrix_temp)
 
 if __name__ == "__main__":
-    runClustering("MenW_6RU_0_to_10ns.pdb", "Graphics", "ward")
+    runClustering("MenY_reduced_100_frames.pdb", "Graphics", "average")

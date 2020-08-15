@@ -2,6 +2,7 @@ import argparse
 import configparser
 import copy
 import os
+import hierarchical
 
 SUBPARSER_CONF = "conf"
 SUBPARSER_ARGS = "args"
@@ -91,8 +92,8 @@ def parse_configuration(args, filename):
 def call_algorithm(args):
     print(args)
     if args.algorithm == "hierarchical":
-        # TODO: call hierarchical with other args
-        None
+        hierarchical.runClustering("MenY_reduced_100_frames.pdb", "Graphics", "average")
+
     # call algorithm with these args
     elif args.algorithm == "imwkmeans":
         # TODO: call imwkmeans with other args
