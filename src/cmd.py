@@ -49,6 +49,7 @@ def parse():
                              "--visualise",
                              default=False,
                              choices=[True, False],
+                             type=bool,
                              help="Select whether to visualise cluster results", )
     # algorithm specific arguments
     parser_args.add_argument("-l",
@@ -84,6 +85,7 @@ def parse_configuration(args, filename):
             args_copy.destination = config[section]["--destination"]
             if args_copy.algorithm == "hierarchical":
                 args_copy.linkage = config[section]["--linkage"]
+            print(args)
             call_algorithm(args_copy)
     else:
         print(args.configuration + " is not .ini type")
@@ -92,6 +94,7 @@ def parse_configuration(args, filename):
 def call_algorithm(args):
     print(args)
     if args.algorithm == "hierarchical":
+        # print(args.visualise)
         hierarchical.runClustering(args.source, args.destination, args.linkage, args.visualise)
 
     # call algorithm with these args
