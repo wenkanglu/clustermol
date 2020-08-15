@@ -92,7 +92,7 @@ def parse_configuration(args, filename):
 def call_algorithm(args):
     print(args)
     if args.algorithm == "hierarchical":
-        hierarchical.runClustering("MenY_reduced_100_frames.pdb", "Graphics", "average")
+        hierarchical.runClustering(args.source, args.destination, args.linkage, args.visualise)
 
     # call algorithm with these args
     elif args.algorithm == "imwkmeans":
