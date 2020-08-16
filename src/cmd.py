@@ -51,9 +51,8 @@ def parse():
                              help="Select output destination", )
     parser_args.add_argument("-v",
                              "--visualise",
-                             default=False,
-                             choices=[True, False],
-                             type=bool,
+                             default="false",
+                             choices=["true", "false"],
                              help="Select whether to visualise cluster results", )
     # algorithm specific arguments
     parser_args.add_argument("-l",
@@ -99,6 +98,10 @@ def parse_configuration(args, filename):
 
 def call_algorithm(args):
     print(args)
+    if args.visualise == "true":
+        args.visualise = True
+    else:
+        args.visualise = False
     if args.algorithm == "hierarchical":
         # print(args.visualise)
         hierarchical.runClustering(args.source, args.destination, args.linkage, args.visualise)
