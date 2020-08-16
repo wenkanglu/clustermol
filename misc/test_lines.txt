@@ -1,0 +1,6 @@
+python QT_original.py -traj MenW_6RU_0_to_10ns.pdb -cutoff 2.5 -minsize 1 -odir src/data_dest
+
+
+QT_like.py -top MenY_0_to_1000ns_aligned.pdb -traj MenY_0_to_1000ns_aligned.pdb -cutoff 2.5 -o output/
+
+QT_like.py -top MenW_6RU_300_to_400ns.pdb -traj MenW_6RU_0_to_10ns.pdb -min 1 -cutoff 2.5 -o output/

@@ -8,6 +8,7 @@ os.chdir(os.path.join(os.path.dirname(__file__), '..'))  # changes cwd to always
 # print(os.getcwd())
 sys.path.insert(1, 'src')
 import clusterer
+import hierarchical
 
 SUBPARSER_CONF = "conf"
 SUBPARSER_ARGS = "args"
@@ -76,6 +77,7 @@ def handle_configuration(args):
 
 
 def parse_configuration(args, filename):
+    # print("hello world!")
     if filename.endswith(".ini"):
         config = configparser.ConfigParser(allow_no_value=True)
         config.read(filename)
@@ -89,6 +91,7 @@ def parse_configuration(args, filename):
             args_copy.visualise = config[section]["--visualise"]
             if args_copy.algorithm == "hierarchical":
                 args_copy.linkage = config[section]["--linkage"]
+            print(args)
             call_algorithm(args_copy)
     else:
         print(args.configuration + " is not .ini type")
@@ -97,8 +100,8 @@ def parse_configuration(args, filename):
 def call_algorithm(args):
     print(args)
     if args.algorithm == "hierarchical":
-        # TODO: call hierarchical with other args
-        None
+        # print(args.visualise)
+        hierarchical.runClustering(args.source, args.destination, args.linkage, args.visualise)
     # call algorithm with these args
     elif args.algorithm == "imwkmeans":
         # TODO: call imwkmeans with other args
