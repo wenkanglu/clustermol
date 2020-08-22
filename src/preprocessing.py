@@ -24,6 +24,7 @@ def preprocessing_file(filename):
     # Illustrate that all Frames are loaded
     print(">>> File Loaded")
     print(">>>", trajectory)
+    os.chdir(os.path.join(os.path.dirname(__file__), '..')) # change back to clustermol root directory.
     return trajectory
 
 def preprocessing_hierarchical(traj):
