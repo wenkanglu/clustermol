@@ -35,6 +35,10 @@ def save_dendrogram(hierarchical_type, linkage, destination):
     _ = scipy.cluster.hierarchy.dendrogram(linkage, no_labels=True)
     plot.savefig("dendrogram-clustering-%s.png" % hierarchical_type)
 
+def scatterplot(temp_matrix):
+    plot.scatter(temp_matrix[0:], temp_matrix[0:])
+    plot.show()
+
 
 # Method used to run specific type of hierarchical clustering, based on users choices.
 def cluserting(rmsd_matrix_temp, hierarchical_type):
@@ -66,6 +70,7 @@ def cluserting(rmsd_matrix_temp, hierarchical_type):
 def runHierarchicalClustering(filename, destination, type):
     traj = preprocessing.preprocessing_file(filename)
     rmsd_matrix_temp = preprocessing.preprocessing_hierarchical(traj)
+    scatterplot(rmsd_matrix_temp)
     linkage_temp = cluserting(rmsd_matrix_temp, type).astype("float64")
     show_dendrogram(type, linkage_temp)
     save_dendrogram(type, linkage_temp, destination)

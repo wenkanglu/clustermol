@@ -45,9 +45,9 @@ def preprocessing_hierarchical(traj):
         rmsd_matrix[i] = rmsd_
     # print('Max pairwise rmsd: %f nm' % np.max(rmsd_matrix))
     print('>>> RMSD matrix complete')
-    # file1 = open("matrixOutput.txt","w")
-    # np.set_printoptions(threshold=np.inf)
-    # file1.write(np.array2string(rmsd_matrix))
+    file1 = open("matrixOutput.txt","w")
+    np.set_printoptions(threshold=np.inf)
+    file1.write(np.array2string(rmsd_matrix))
 
     # We can check that the diagonals are all zero using the below statetemnt, however checks vis squareform fail
     # so it is set to false. squareform checks are too stringent
