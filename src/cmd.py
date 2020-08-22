@@ -14,7 +14,7 @@ SUBPARSER_CONF = "conf"
 SUBPARSER_ARGS = "args"
 
 algorithm_list = ["hierarchical", "imwkmeans"]
-hierarchical_list = ["single", "average", "ward"]
+hierarchical_list = ["single", "average", "ward", "complete"]
 
 
 def parse():

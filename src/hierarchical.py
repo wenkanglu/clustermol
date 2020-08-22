@@ -6,31 +6,6 @@ import scipy.cluster.hierarchy
 from scipy.spatial.distance import squareform
 
 clustering_type = ["single", "complete", "average", "ward"]
-# print(os.getcwd())
-#
-
-def preprocessing(filename):
-    # Change to directroy for input file source.
-    os.chdir(os.path.join(os.path.dirname(__file__), '..')+"/data/data_src")  # changes cwd to always be at clustermol
-
-    # Load Trajectory
-    trajectory = md.load(filename)
-    # Illustrate that all Frames are loaded
-    print(">>> File Loaded <<<")
-    print(trajectory)
-
-    # Calculate RMSD Pairwsie Matrix
-    rmsd_matrix = np.ndarray((trajectory.n_frames, trajectory.n_frames), dtype=np.float16)
-    for i in range(trajectory.n_frames):
-        rmsd_ = md.rmsd(trajectory, trajectory, i) #currently we assume they are pre-centered, bat can they not be?
-        rmsd_matrix[i] = rmsd_
-    print('Max pairwise rmsd: %f nm' % np.max(rmsd_matrix))
-    print('>>> RMSD matrix completed <<<')
-
-    # Clean up and Preprocessing of Matrix
-    assert np.all(rmsd_matrix - rmsd_matrix.T < 1e-6) # Need to figure out what this is for.
-    reduced_distances = squareform(rmsd_matrix, checks=False)
-    return reduced_distances
 
 def export_dendrogram(hierarchical_type, linkage, visualise_option, destination):
     os.chdir(os.path.join(os.path.dirname(__file__), '..')+"/data/data_dest/"+destination)  # changes cwd to always be at clustermol
