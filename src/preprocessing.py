@@ -59,9 +59,28 @@ def preprocessing_hierarchical(traj):
 
     return reduced_distances
 
+def preprocessing_qt(traj):
+    '''
+    DESCRIPTION
+    Preprocessing required for QT clustering. Calculates RMDS Matrix
+
+    Arguments:
+        traj (mdtraj.Trajectory): trajectory object from MDTraj libary.
+    Return:
+        rmsd_matrix (numpy.np): rmsd matrix for clustering.
+    '''
+    # Calculate RMSD Pairwsie Matrix
+    rmsd_matrix = np.ndarray((traj.n_frames, traj.n_frames), dtype=np.float64)
+    for i in range(traj.n_frames):
+        rmsd_ = md.rmsd(traj, traj, i) #currently we assume they are pre-centered, but can they not be?
+        rmsd_matrix[i] = rmsd_
+    # print('Max pairwise rmsd: %f nm' % np.max(rmsd_matrix))
+    print('>>> RMSD matrix complete')
+    return rmsd_matrix
+
 
 
 if __name__ == "__main__":
     print(">>> Preprocessing - Test run")
     traj = preprocessing_file("MenY_reduced_100_frames.pdb") # Load the file in and format using MDTraj.
-    preprocessing_hierarchical(traj) # Prepares file for MDTraj.
+    #preprocessing_hierarchical(traj) # Prepares file for MDTraj.
