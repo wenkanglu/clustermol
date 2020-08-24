@@ -34,6 +34,17 @@ def cluserting(rmsd_matrix_temp, hierarchical_type):
     return linkage
 
 def runHierarchicalClustering(filename, destination, type):
+    '''
+    DESCRIPTION
+    Method for running Hierarchical clustering algorithm bases on type. Type
+    refers to linkage factor. Filename and destintion are also used for input
+    files and destination of desired output.
+
+    Arguments:
+        filename (str): string of filename.
+        destination (str): string for output destination.
+        type (str): string for hierarchical type.
+    '''
     traj = preprocessing.preprocessing_file(filename)
     rmsd_matrix_temp = preprocessing.preprocessing_hierarchical(traj)
     linkage_temp = cluserting(rmsd_matrix_temp, type).astype("float64")
@@ -41,4 +52,4 @@ def runHierarchicalClustering(filename, destination, type):
     postprocessing.save_dendrogram(type, linkage_temp, destination)
 
 if __name__ == "__main__":
-    runHierarchicalClustering("MenY_reduced_100_frames.pdb", "graphics", "single")
+    runHierarchicalClustering("MenY_reduced_100_frames.pdb", "graphics", "ward")

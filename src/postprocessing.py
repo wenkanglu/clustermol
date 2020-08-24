@@ -33,12 +33,11 @@ def scatterplot_multiple(clusters_arr1, cluster_arr2, no_frames):
             clusters_arr1 (numpy.ndarray): cluster indexes per frame.
             clusters_arr2 (numpy.ndarray): cluster indexes per frame.
             no_frames (int): number of frames
-            qt_type1 (str): qt types of implementation.
-            qt_type2 (str): qt types of implementation.
         '''
         plot.figure()
-        plot.scatter(numpy.arange(no_frames), clusters_arr1, marker = '*', color='blue')
-        plot.scatter(numpy.arange(no_frames), cluster_arr2, marker = '.', color='red')
+        plot.scatter(numpy.arange(no_frames), clusters_arr1, marker = '^', color='blue',label='qt_like')
+        plot.scatter(numpy.arange(no_frames), cluster_arr2, marker = 'v', color='red', label='qt_orginal')
+        plot.legend(loc='upper left')
         plot.xlabel("Frame Number")
         plot.ylabel("Cluster Number")
         plot.title("Scatter Plot - qt_orginal and qt_like")
@@ -87,7 +86,28 @@ def save_dendrogram(hierarchical_type, linkage, destination):
     _ = scipy.cluster.hierarchy.dendrogram(linkage, no_labels=True)
     plot.savefig("dendrogram-clustering-%s.png" % hierarchical_type)
 
+def illustrateRMSD(rmsd_matrix):
+    '''
+    DESCRIPTION
+    Creates an RMDS heatmap
+
+    Arguments:
+        rmsd_matrix (numpy.ndarray): rmsd matrix.
+    '''
+    # mean = [0, 0]
+    # cov = [[1, 1], [1, 2]]
+    # x, y = numpy.random.multivariate_normal(mean, cov, 10000).T
+    # plot.hist2d(x, y, bins=30, cmap='Blues')
+    # cb = plot.colorbar()
+    # cb.set_label('counts in bin')
+    # plot.show()
+
+    plot.imshow(rmsd_matrix, cmap='viridis', interpolation='nearest')
+    plot.colorbar()
+    plot.show()
+
 
 
 if __name__ == "__main__":
     print("Output Class")
+    # illustrateRMSD()

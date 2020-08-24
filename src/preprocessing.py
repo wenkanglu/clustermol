@@ -1,5 +1,6 @@
 import mdtraj as md
 import numpy as np
+import postprocessing
 import os
 from scipy.spatial.distance import squareform
 
@@ -46,6 +47,7 @@ def preprocessing_hierarchical(traj):
         rmsd_matrix[i] = rmsd_
     # print('Max pairwise rmsd: %f nm' % np.max(rmsd_matrix))
     print('>>> RMSD matrix complete')
+    postprocessing.illustrateRMSD(rmsd_matrix)
     # file1 = open("matrixOutput.txt","w")
     # np.set_printoptions(threshold=np.inf)
     # file1.write(np.array2string(rmsd_matrix))
@@ -57,7 +59,6 @@ def preprocessing_hierarchical(traj):
     # Clean up and Preprocessing of Matrix
     # assert np.all(rmsd_matrix - rmsd_matrix.T < 1e-6) # Need to figure out what this is for.
     reduced_distances = squareform(rmsd_matrix, checks=False)
-
     return reduced_distances
 
 def preprocessing_qt(traj):
@@ -78,8 +79,6 @@ def preprocessing_qt(traj):
     # print('Max pairwise rmsd: %f nm' % np.max(rmsd_matrix))
     print('>>> RMSD matrix complete')
     return rmsd_matrix
-
-
 
 if __name__ == "__main__":
     print(">>> Preprocessing - Test run")
