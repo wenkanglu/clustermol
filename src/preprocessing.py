@@ -25,6 +25,7 @@ def preprocessing_file(filename):
     print(">>> File loaded")
     print(">>>", trajectory)
     os.chdir(os.path.join(os.path.dirname(__file__), '..')) # change back to clustermol root directory.
+    trajectory.center_coordinates()
     return trajectory
 
 def preprocessing_hierarchical(traj):

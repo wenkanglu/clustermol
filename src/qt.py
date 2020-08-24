@@ -1,36 +1,14 @@
-import os
 import numpy
 import numpy.ma as ma
 import preprocessing
+import postprocessing
 import matplotlib.pyplot as plot
-
-
-def scatterplot(clusters_arr, no_frames, qt_type):
-        #Figures
-        plot.figure()
-        plot.scatter(numpy.arange(no_frames), clusters_arr, marker = '+')
-        plot.xlabel("Frame Number")
-        plot.ylabel("Cluster Number")
-        plot.title("Scatter Plot - %s" %qt_type )
-        #print(os.getcwd())
-        os.chdir(os.path.join(os.path.dirname(__file__))+ "data/data_dest/")
-        #print(os.getcwd())
-        plot.savefig("Scatterplot_%s.png" %qt_type)
-        os.chdir(os.path.join(os.path.dirname(__file__), '..'))
-        os.chdir(os.path.join(os.path.dirname(__file__), '..'))
-        plot.close()
-
-def saveClusters(clusters_arr, qt_type):
-    os.chdir(os.path.join(os.path.dirname(__file__))+ "data/data_dest/")
-    numpy.savetxt("Clusters_%s.txt" %qt_type, clusters_arr, fmt='%i')
-    os.chdir(os.path.join(os.path.dirname(__file__), '..'))
-    os.chdir(os.path.join(os.path.dirname(__file__), '..'))
 
 
 def qt_orginal(rmsd_matrix, cutoff, minimum_membership):
     # ---- Delete unuseful values from matrix (diagonal &  x>threshold) -----------
-    n_frames =len(rmsd_matrix)
-    rmsd_matrix[rmsd_matrix > cutoff] = numpy.inf
+    n_frames =len(rmsd_matrix)  # Number of frames
+    rmsd_matrix[rmsd_matrix > cutoff] = numpy.inf # make
     rmsd_matrix[rmsd_matrix == 0] = numpy.inf
     degrees = (rmsd_matrix < numpy.inf).sum(axis=0)
 
@@ -38,8 +16,8 @@ def qt_orginal(rmsd_matrix, cutoff, minimum_membership):
     # QT algotithm
     # =============================================================================
 
-    clusters_arr = numpy.ndarray(n_frames, dtype=numpy.int64) # Frame size needs to change
-    clusters_arr.fill(-1)
+    cluster_labels = numpy.ndarray(n_frames, dtype=numpy.int64) # Frame size needs to change
+    cluster_labels.fill(-1)
 
     ncluster = 0
     while True:
@@ -76,7 +54,7 @@ def qt_orginal(rmsd_matrix, cutoff, minimum_membership):
             break
 
         # ---- Store cluster frames -----------------------------------------------
-        clusters_arr[max_precluster] = ncluster
+        cluster_labels[max_precluster] = ncluster
         ncluster += 1
         print('>>> Cluster # {} found with {} frames at center {} <<<'.format(
               ncluster, len_precluster, max_node))
@@ -88,33 +66,32 @@ def qt_orginal(rmsd_matrix, cutoff, minimum_membership):
         degrees = (rmsd_matrix < numpy.inf).sum(axis=0)
         if (degrees == 0).all():
             break
-    scatterplot(clusters_arr, n_frames, "QT_original")
-    saveClusters(clusters_arr, "QT_original")
+    postprocessing.scatterplot(cluster_labels, n_frames, "QT_original")
+    postprocessing.saveClusters(cluster_labels, "QT_original")
 
 def qt_like(rmsd_matrix, cutoff, minimum_membership):
-    n_frames = len(rmsd_matrix) # Number of frames from Trajectory
-    cutoff_mask = rmsd_matrix <= cutoff # Remove all those less than or equal to the cut-off
-    rmsd_matrix = None # Create empty matrix
-    centers = [] # Empty centers
-    cluster = 0 # Cluster count
-    labels = numpy.empty(n_frames) # Labels for clusters
-    labels.fill(numpy.NAN) # Fill labales with no values
+    n_frames = len(rmsd_matrix)  # Number of frames from Trajectory
+    rmsd_matrix = rmsd_matrix <= cutoff  # Remove all those less than or equal to the cut-off value
+    centers = []  # Empty centers, cenrtal frame of cluster.
+    cluster_index = 0  # Cluster index, used for cluster indexing to frame.
+    cluster_labels = numpy.empty(n_frames)  # Labels for clusters index. Each frame has index.
+    cluster_labels.fill(numpy.NAN)  # Fill labales with no values
 
-    # Looping while cutoff_mask is not empty. 
-    while cutoff_mask.any():
-        membership = cutoff_mask.sum(axis=1)
+    # Looping while cutoff_mask is not empty.
+    while rmsd_matrix.any():
+        membership = rmsd_matrix.sum(axis=1)
         center = numpy.argmax(membership)
-        members = numpy.where(cutoff_mask[center,:]==True)
+        members = numpy.where(rmsd_matrix[center,:]==True)
         if max(membership) <= minimum_membership:
-            labels[numpy.where(numpy.isnan(labels))] = -1
+            cluster_labels[numpy.where(numpy.isnan(cluster_labels))] = -1
             break
-        labels[members] = cluster
+        cluster_labels[members] = cluster_index
         centers.append(center)
-        cutoff_mask[members,:] = False
-        cutoff_mask[:,members] = False
-        cluster = cluster + 1
-    scatterplot(labels, n_frames, "QT_like")
-    saveClusters(labels, "QT_like")
+        rmsd_matrix[members,:] = False
+        rmsd_matrix[:,members] = False
+        cluster_index = cluster_index + 1
+    postprocessing.scatterplot(cluster_labels, n_frames, "QT_like")
+    postprocessing.saveClusters(cluster_labels, "QT_like")
 
 def runQT(filename, destination, type):
     traj = preprocessing.preprocessing_file(filename)
@@ -127,5 +104,5 @@ def runQT(filename, destination, type):
         pass
 
 if __name__ == "__main__":
-    # runQT("MenY_reduced_100_frames.pdb", "data_dest", "qt_original")
+    runQT("MenY_reduced_100_frames.pdb", "data_dest", "qt_original")
     runQT("MenY_reduced_100_frames.pdb", "data_dest", "qt_like")
