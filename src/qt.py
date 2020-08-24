@@ -66,8 +66,9 @@ def qt_orginal(rmsd_matrix, cutoff, minimum_membership):
         degrees = (rmsd_matrix < numpy.inf).sum(axis=0)
         if (degrees == 0).all():
             break
-    postprocessing.scatterplot(cluster_labels, n_frames, "QT_original")
+    postprocessing.scatterplot_single(cluster_labels, n_frames, "QT_original")
     postprocessing.saveClusters(cluster_labels, "QT_original")
+    return cluster_labels
 
 def qt_like(rmsd_matrix, cutoff, minimum_membership):
     n_frames = len(rmsd_matrix)  # Number of frames from Trajectory
@@ -81,28 +82,37 @@ def qt_like(rmsd_matrix, cutoff, minimum_membership):
     while rmsd_matrix.any():
         membership = rmsd_matrix.sum(axis=1)
         center = numpy.argmax(membership)
-        members = numpy.where(rmsd_matrix[center,:]==True)
+        members = numpy.where(rmsd_matrix[center, :]==True)
         if max(membership) <= minimum_membership:
             cluster_labels[numpy.where(numpy.isnan(cluster_labels))] = -1
             break
         cluster_labels[members] = cluster_index
         centers.append(center)
-        rmsd_matrix[members,:] = False
-        rmsd_matrix[:,members] = False
+        rmsd_matrix[members, :] = False
+        rmsd_matrix[:, members] = False
         cluster_index = cluster_index + 1
-    postprocessing.scatterplot(cluster_labels, n_frames, "QT_like")
+    postprocessing.scatterplot_single(cluster_labels, n_frames, "QT_like")
     postprocessing.saveClusters(cluster_labels, "QT_like")
+    return cluster_labels
 
 def runQT(filename, destination, type):
     traj = preprocessing.preprocessing_file(filename)
-    rmsd_matrix_temp = preprocessing.preprocessing_qt(traj) # Need to write general pre-process.
+    rmsd_matrix_temp = preprocessing.preprocessing_qt(traj)  # Need to write general pre-process.
     if type == "qt_original":
         qt_orginal(rmsd_matrix_temp, 0.25, 5)
     elif type == "qt_like":
         qt_like(rmsd_matrix_temp, 0.25, 5)
     else:
-        pass
+        print(rmsd_matrix_temp)
+        lb1 = qt_orginal(rmsd_matrix_temp, 0.25, 5)
+        print(rmsd_matrix_temp)
+        lb2 = qt_like(rmsd_matrix_temp, 0.25, 5)
+        print(rmsd_matrix_temp)
+        postprocessing.scatterplot_multiple(lb1, lb2, len(rmsd_matrix_temp))
 
 if __name__ == "__main__":
-    runQT("MenY_reduced_100_frames.pdb", "data_dest", "qt_original")
-    runQT("MenY_reduced_100_frames.pdb", "data_dest", "qt_like")
+
+
+    # runQT("MenY_reduced_100_frames.pdb", "data_dest",both "qt_original")
+    # runQT("MenY_reduced_100_frames.pdb", "data_dest", "qt_like")
+    runQT("MenY_reduced_100_frames.pdb", "data_dest", "")
