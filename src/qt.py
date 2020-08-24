@@ -92,14 +92,15 @@ def qt_orginal(rmsd_matrix, cutoff, minimum_membership):
     saveClusters(clusters_arr, "QT_original")
 
 def qt_like(rmsd_matrix, cutoff, minimum_membership):
-    n_frames = len(rmsd_matrix)
-    cutoff_mask = rmsd_matrix <= cutoff
-    rmsd_matrix = None
-    centers = []
-    cluster = 0
-    labels = numpy.empty(n_frames)
-    labels.fill(numpy.NAN)
+    n_frames = len(rmsd_matrix) # Number of frames from Trajectory
+    cutoff_mask = rmsd_matrix <= cutoff # Remove all those less than or equal to the cut-off
+    rmsd_matrix = None # Create empty matrix
+    centers = [] # Empty centers
+    cluster = 0 # Cluster count
+    labels = numpy.empty(n_frames) # Labels for clusters
+    labels.fill(numpy.NAN) # Fill labales with no values
 
+    # Looping while cutoff_mask is not empty. 
     while cutoff_mask.any():
         membership = cutoff_mask.sum(axis=1)
         center = numpy.argmax(membership)

@@ -1,2 +1,0 @@
-silhouette score is 0.5747622721186048 
- with p of 2
