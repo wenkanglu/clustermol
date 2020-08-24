@@ -56,8 +56,8 @@ def qt_orginal(rmsd_matrix, cutoff, minimum_membership):
         # ---- Store cluster frames -----------------------------------------------
         cluster_labels[max_precluster] = ncluster
         ncluster += 1
-        print('>>> Cluster # {} found with {} frames at center {} <<<'.format(
-              ncluster, len_precluster, max_node))
+        # print('>>> Cluster # {} found with {} frames at center {} <<<'.format(
+        #       ncluster, len_precluster, max_node))
 
         # ---- Update matrix & degrees (discard found clusters) -------------------
         rmsd_matrix[max_precluster, :] = numpy.inf
@@ -103,11 +103,8 @@ def runQT(filename, destination, type):
     elif type == "qt_like":
         qt_like(rmsd_matrix_temp, 0.25, 5)
     else:
-        print(rmsd_matrix_temp)
-        lb1 = qt_orginal(rmsd_matrix_temp, 0.25, 5)
-        print(rmsd_matrix_temp)
-        lb2 = qt_like(rmsd_matrix_temp, 0.25, 5)
-        print(rmsd_matrix_temp)
+        lb1 = qt_like(rmsd_matrix_temp, 0.25, 5)
+        lb2 = qt_orginal(rmsd_matrix_temp, 0.25, 5)
         postprocessing.scatterplot_multiple(lb1, lb2, len(rmsd_matrix_temp))
 
 if __name__ == "__main__":

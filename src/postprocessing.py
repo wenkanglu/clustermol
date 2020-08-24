@@ -37,9 +37,8 @@ def scatterplot_multiple(clusters_arr1, cluster_arr2, no_frames):
             qt_type2 (str): qt types of implementation.
         '''
         plot.figure()
-        print(cluster_arr2)
-        plot.scatter(numpy.arange(no_frames), clusters_arr1, marker = '+', color='blue')
-        plot.scatter(numpy.arange(no_frames), cluster_arr2, marker = '+', color='red')
+        plot.scatter(numpy.arange(no_frames), clusters_arr1, marker = '*', color='blue')
+        plot.scatter(numpy.arange(no_frames), cluster_arr2, marker = '.', color='red')
         plot.xlabel("Frame Number")
         plot.ylabel("Cluster Number")
         plot.title("Scatter Plot - qt_orginal and qt_like")
