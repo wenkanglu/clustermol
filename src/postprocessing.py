@@ -105,6 +105,7 @@ def illustrateRMSD(rmsd_matrix):
     plot.imshow(rmsd_matrix, cmap='viridis', interpolation='nearest')
     plot.colorbar()
     plot.show()
+    plot.close()
 
 
 

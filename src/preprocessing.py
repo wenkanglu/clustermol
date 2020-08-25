@@ -47,7 +47,7 @@ def preprocessing_hierarchical(traj):
         rmsd_matrix[i] = rmsd_
     # print('Max pairwise rmsd: %f nm' % np.max(rmsd_matrix))
     print('>>> RMSD matrix complete')
-    postprocessing.illustrateRMSD(rmsd_matrix)
+    # postprocessing.illustrateRMSD(rmsd_matrix)
     # file1 = open("matrixOutput.txt","w")
     # np.set_printoptions(threshold=np.inf)
     # file1.write(np.array2string(rmsd_matrix))
@@ -74,10 +74,11 @@ def preprocessing_qt(traj):
     # Calculate RMSD Pairwsie Matrix
     rmsd_matrix = np.ndarray((traj.n_frames, traj.n_frames), dtype=np.float64)
     for i in range(traj.n_frames):
-        rmsd_ = md.rmsd(traj, traj, i) #currently we assume they are pre-centered, but can they not be?
+        rmsd_ = md.rmsd(traj, traj, i) # currently we assume they are pre-centered, but can they not be?
         rmsd_matrix[i] = rmsd_
     # print('Max pairwise rmsd: %f nm' % np.max(rmsd_matrix))
     print('>>> RMSD matrix complete')
+    postprocessing.illustrateRMSD(rmsd_matrix)
     return rmsd_matrix
 
 if __name__ == "__main__":

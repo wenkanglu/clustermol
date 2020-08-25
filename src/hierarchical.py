@@ -53,3 +53,4 @@ def runHierarchicalClustering(filename, destination, type):
 
 if __name__ == "__main__":
     runHierarchicalClustering("MenY_reduced_100_frames.pdb", "graphics", "ward")
+    # runHierarchicalClustering("MenW_aligned_downsamp10.pdb", "graphics", "ward")

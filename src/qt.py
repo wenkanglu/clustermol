@@ -11,6 +11,7 @@ def qt_orginal(rmsd_matrix, cutoff, minimum_membership):
     rmsd_matrix[rmsd_matrix > cutoff] = numpy.inf # make
     rmsd_matrix[rmsd_matrix == 0] = numpy.inf
     degrees = (rmsd_matrix < numpy.inf).sum(axis=0)
+    # print(degrees)
 
     # =============================================================================
     # QT algotithm
@@ -19,7 +20,7 @@ def qt_orginal(rmsd_matrix, cutoff, minimum_membership):
     cluster_labels = numpy.ndarray(n_frames, dtype=numpy.int64) # Frame size needs to change
     cluster_labels.fill(-1)
 
-    ncluster = 0
+    cluster_index = 0
     while True:
         # This while executes for every cluster in trajectory ---------------------
         len_precluster = 0
@@ -54,8 +55,8 @@ def qt_orginal(rmsd_matrix, cutoff, minimum_membership):
             break
 
         # ---- Store cluster frames -----------------------------------------------
-        cluster_labels[max_precluster] = ncluster
-        ncluster += 1
+        cluster_labels[max_precluster] = cluster_index
+        cluster_index += 1
         # print('>>> Cluster # {} found with {} frames at center {} <<<'.format(
         #       ncluster, len_precluster, max_node))
 
@@ -72,11 +73,13 @@ def qt_orginal(rmsd_matrix, cutoff, minimum_membership):
 
 def qt_like(rmsd_matrix, cutoff, minimum_membership):
     n_frames = len(rmsd_matrix)  # Number of frames from Trajectory
+    # print(rmsd_matrix)
     rmsd_matrix = rmsd_matrix <= cutoff  # Remove all those less than or equal to the cut-off value
+    # print(rmsd_matrix)
     centers = []  # Empty centers, cenrtal frame of cluster.
     cluster_index = 0  # Cluster index, used for cluster indexing to frame.
-    cluster_labels = numpy.empty(n_frames)  # Labels for clusters index. Each frame has index.
-    cluster_labels.fill(numpy.NAN)  # Fill labales with no values
+    cluster_labels = numpy.ndarray(n_frames, dtype=numpy.int64) # Frame size needs to change
+    cluster_labels.fill(-1)
 
     # Looping while cutoff_mask is not empty.
     while rmsd_matrix.any():
@@ -91,6 +94,7 @@ def qt_like(rmsd_matrix, cutoff, minimum_membership):
         rmsd_matrix[members, :] = False
         rmsd_matrix[:, members] = False
         cluster_index = cluster_index + 1
+        # print(membership)
     postprocessing.scatterplot_single(cluster_labels, n_frames, "QT_like")
     postprocessing.saveClusters(cluster_labels, "QT_like")
     return cluster_labels
@@ -99,7 +103,7 @@ def runQT(filename, destination, type):
     traj = preprocessing.preprocessing_file(filename)
     rmsd_matrix_temp = preprocessing.preprocessing_qt(traj)  # Need to write general pre-process.
     if type == "qt_original":
-        qt_orginal(rmsd_matrix_temp, 0.25, 5)
+        qt_orginal(rmsd_matrix_temp, 0.25, 100)
     elif type == "qt_like":
         qt_like(rmsd_matrix_temp, 0.25, 5)
     else:
@@ -112,4 +116,7 @@ if __name__ == "__main__":
 
     # runQT("MenY_reduced_100_frames.pdb", "data_dest",both "qt_original")
     # runQT("MenY_reduced_100_frames.pdb", "data_dest", "qt_like")
-    runQT("MenY_reduced_100_frames.pdb", "data_dest", "")
+    # runQT("MenW_6RU_0_to_10ns.pdb", "data_dest", "")
+    # runQT("MenY_reduced_100_frames.pdb", "data_dest", "")
+    # runQT("MenY_aligned_downsamp10.pdb", "data_dest", "qt_orginal")
+    runQT("MenW_aligned_downsamp10.pdb", "data_dest", "qt_orginal")
