@@ -11,6 +11,7 @@ def qt_orginal(rmsd_matrix, cutoff, minimum_membership):
     rmsd_matrix[rmsd_matrix > cutoff] = numpy.inf # make
     rmsd_matrix[rmsd_matrix == 0] = numpy.inf
     degrees = (rmsd_matrix < numpy.inf).sum(axis=0)
+    numpy.set_printoptions(threshold=numpy.inf)
     # print(degrees)
 
     # =============================================================================
@@ -78,13 +79,14 @@ def qt_like(rmsd_matrix, cutoff, minimum_membership):
     # print(rmsd_matrix)
     centers = []  # Empty centers, cenrtal frame of cluster.
     cluster_index = 0  # Cluster index, used for cluster indexing to frame.
-    cluster_labels = numpy.ndarray(n_frames, dtype=numpy.int64) # Frame size needs to change
-    cluster_labels.fill(-1)
+    cluster_labels = numpy.empty(n_frames) # Frame size needs to change
+    cluster_labels.fill(numpy.NAN)
 
     # Looping while cutoff_mask is not empty.
     while rmsd_matrix.any():
         membership = rmsd_matrix.sum(axis=1)
         center = numpy.argmax(membership)
+        print(center)
         members = numpy.where(rmsd_matrix[center, :]==True)
         if max(membership) <= minimum_membership:
             cluster_labels[numpy.where(numpy.isnan(cluster_labels))] = -1
@@ -103,9 +105,9 @@ def runQT(filename, destination, type):
     traj = preprocessing.preprocessing_file(filename)
     rmsd_matrix_temp = preprocessing.preprocessing_qt(traj)  # Need to write general pre-process.
     if type == "qt_original":
-        qt_orginal(rmsd_matrix_temp, 0.25, 100)
+        qt_orginal(rmsd_matrix_temp, 0.75, 50)
     elif type == "qt_like":
-        qt_like(rmsd_matrix_temp, 0.25, 5)
+        qt_like(rmsd_matrix_temp, 0.75, 100)
     else:
         lb1 = qt_like(rmsd_matrix_temp, 0.25, 5)
         lb2 = qt_orginal(rmsd_matrix_temp, 0.25, 5)
@@ -114,9 +116,9 @@ def runQT(filename, destination, type):
 if __name__ == "__main__":
 
 
-    # runQT("MenY_reduced_100_frames.pdb", "data_dest",both "qt_original")
+    # runQT("MenY_reduced_100_frames.pdb", "data_dest", "qt_original")
     # runQT("MenY_reduced_100_frames.pdb", "data_dest", "qt_like")
     # runQT("MenW_6RU_0_to_10ns.pdb", "data_dest", "")
     # runQT("MenY_reduced_100_frames.pdb", "data_dest", "")
     # runQT("MenY_aligned_downsamp10.pdb", "data_dest", "qt_orginal")
-    runQT("MenW_aligned_downsamp10.pdb", "data_dest", "qt_orginal")
+    runQT("MenW_aligned_downsamp10.pdb", "data_dest", "qt_original")

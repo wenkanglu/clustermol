@@ -4,6 +4,19 @@ import postprocessing
 import os
 from scipy.spatial.distance import squareform
 
+
+def cleanTraj(traj):
+    '''
+    DESCRIPTION
+    Takes a trajectory object, removes ions. Aligns trajectory.
+
+    Arguments:
+        traj (mdtraj.Trajectory): trajectory object to be cleaned.
+    Return:
+        trajectory (mdtraj.Trajectory): cleaned trajectory object.
+    '''
+    return traj.remove_solvent()
+
 def preprocessing_file(filename):
     '''
     DESCRIPTION
@@ -18,15 +31,16 @@ def preprocessing_file(filename):
     # Note data should always be placed in the data_src file before running.
     os.chdir(os.path.join(os.path.dirname(__file__), '..')+"/data/data_src")  # changes cwd to always be at clustermol
 
-
     # Load Trajectory
     print(">>> Loading file \"%s\"" %filename)
     trajectory = md.load(filename)
     # Illustrate that all Frames are loaded
     print(">>> File loaded")
+    trajectory = cleanTraj(trajectory) # Cleans trajectory method
     print(">>>", trajectory)
+    # print(">>> All atoms: %s" % [atom for atom in trajectory.topology.atoms])
     os.chdir(os.path.join(os.path.dirname(__file__), '..')) # change back to clustermol root directory.
-    trajectory.center_coordinates()
+    # trajectory.center_coordinates()
     return trajectory
 
 def preprocessing_hierarchical(traj):
@@ -78,10 +92,10 @@ def preprocessing_qt(traj):
         rmsd_matrix[i] = rmsd_
     # print('Max pairwise rmsd: %f nm' % np.max(rmsd_matrix))
     print('>>> RMSD matrix complete')
-    postprocessing.illustrateRMSD(rmsd_matrix)
+    # postprocessing.illustrateRMSD(rmsd_matrix)
     return rmsd_matrix
 
 if __name__ == "__main__":
     print(">>> Preprocessing - Test run")
-    traj = preprocessing_file("MenY_reduced_100_frames.pdb") # Load the file in and format using MDTraj.
+    traj = preprocessing_file("MenW_aligned_downsamp10.pdb") # Load the file in and format using MDTraj.
     #preprocessing_hierarchical(traj) # Prepares file for MDTraj.
