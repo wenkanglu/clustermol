@@ -1,4 +1,0 @@
-numpy>=1.6
-scipy
-astunparse
-pyparsing

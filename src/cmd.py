@@ -2,18 +2,17 @@ import argparse
 import configparser
 import copy
 import os
-import sys
-#chdir probably needs to be here so below import works
+
 os.chdir(os.path.join(os.path.dirname(__file__), '..'))  # changes cwd to always be at clustermol
-# print(os.getcwd())
-sys.path.insert(1, 'src')
-import clusterer
-import hierarchical
+directory = os.getcwd()
+from params import Params
+Params.cmd = directory
+import select_algorithm
 
 SUBPARSER_CONF = "conf"
 SUBPARSER_ARGS = "args"
 
-algorithm_list = ["hierarchical", "imwkmeans"]
+algorithm_list = ["hierarchical", "imwkmeans", "tsne"]
 hierarchical_list = ["single", "average", "ward"]
 
 
@@ -71,7 +70,6 @@ def handle_configuration(args):
         parse_configuration(args, args.configuration)
     elif os.path.isdir(os.path.abspath(args.configuration)):
         for filename in os.listdir(args.configuration):
-            # print(filename)
             parse_configuration(args, os.path.join(args.configuration, filename))
 
 
@@ -90,25 +88,27 @@ def parse_configuration(args, filename):
             args_copy.visualise = config[section]["--visualise"]
             if args_copy.algorithm == "hierarchical":
                 args_copy.linkage = config[section]["--linkage"]
-            print(args)
+            # print(args)
             call_algorithm(args_copy)
     else:
         print(args.configuration + " is not .ini type")
 
 
 def call_algorithm(args):
-    print(args)
+    # print(args)
     if args.visualise == "true":
         args.visualise = True
     else:
         args.visualise = False
     if args.algorithm == "hierarchical":
         # print(args.visualise)
-        hierarchical.runClustering(args.source, args.destination, args.linkage, args.visualise)
+        select_algorithm.call_hierarchical(args)
     # call algorithm with these args
     elif args.algorithm == "imwkmeans":
-        # TODO: call imwkmeans with other args
-        clusterer.cluster_imwkmeans(args)
+        select_algorithm.call_imwkmeans(args)
+    elif args.algorithm == "tsne":
+        select_algorithm.call_tsne(args)
+
 
 if __name__ == "__main__":
     parse()
