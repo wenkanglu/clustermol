@@ -86,7 +86,7 @@ def qt_like(rmsd_matrix, cutoff, minimum_membership):
     while rmsd_matrix.any():
         membership = rmsd_matrix.sum(axis=1)
         center = numpy.argmax(membership)
-        print(center)
+        # print(center)
         members = numpy.where(rmsd_matrix[center, :]==True)
         if max(membership) <= minimum_membership:
             cluster_labels[numpy.where(numpy.isnan(cluster_labels))] = -1
@@ -107,7 +107,7 @@ def runQT(filename, destination, type):
     if type == "qt_original":
         qt_orginal(rmsd_matrix_temp, 0.75, 50)
     elif type == "qt_like":
-        qt_like(rmsd_matrix_temp, 0.75, 100)
+        qt_like(rmsd_matrix_temp, 0.75, 5)
     else:
         lb1 = qt_like(rmsd_matrix_temp, 0.25, 5)
         lb2 = qt_orginal(rmsd_matrix_temp, 0.25, 5)
@@ -121,4 +121,4 @@ if __name__ == "__main__":
     # runQT("MenW_6RU_0_to_10ns.pdb", "data_dest", "")
     # runQT("MenY_reduced_100_frames.pdb", "data_dest", "")
     # runQT("MenY_aligned_downsamp10.pdb", "data_dest", "qt_orginal")
-    runQT("MenW_aligned_downsamp10_reduced(Nic).pdb", "data_dest", "qt_original")
+    runQT("MenW_aligned_downsamp10_reduced(Nic).pdb", "data_dest", "qt_like")

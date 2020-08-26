@@ -39,7 +39,7 @@ def preprocessing_file(filename):
     trajectory = md.load(filename)
     # Illustrate that all Frames are loaded
     print(">>> File loaded")
-    print(trajectory[::4])
+    # print(trajectory[::4])
     # trajectory = trajectory[::4]
     # trajectory.save("MenY_aligned_downsamp10_reduced(Nic).pdb")
     # trajectory = clean_trajectory(trajectory) # Cleans trajectory method
@@ -98,6 +98,7 @@ def preprocessing_qt(traj):
         rmsd_matrix[i] = rmsd_
     # print('Max pairwise rmsd: %f nm' % np.max(rmsd_matrix))
     print('>>> RMSD matrix complete')
+    postprocessing.illustrateRMSD(rmsd_matrix)
     # postprocessing.illustrateRMSD(rmsd_matrix)
     return rmsd_matrix
 

@@ -101,8 +101,10 @@ def illustrateRMSD(rmsd_matrix):
     # cb = plot.colorbar()
     # cb.set_label('counts in bin')
     # plot.show()
-
     plot.imshow(rmsd_matrix, cmap='viridis', interpolation='nearest')
+    print(">>> Max pairwise rmsd: %f nm" % numpy.max(rmsd_matrix))
+    print(">>> Average pairwise rmsd: %f nm" % numpy.mean(rmsd_matrix))
+    print(">>> Median pairwise rmsd: %f nm" % numpy.median(rmsd_matrix))
     plot.colorbar()
     plot.show()
     plot.close()

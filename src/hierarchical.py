@@ -52,5 +52,5 @@ def runHierarchicalClustering(filename, destination, type):
     postprocessing.save_dendrogram(type, linkage_temp, destination)
 
 if __name__ == "__main__":
-    runHierarchicalClustering("MenY_reduced_100_frames.pdb", "graphics", "ward")
+    runHierarchicalClustering("MenW_aligned_downsamp10_reduced(Nic).pdb", "graphics", "single")
     # runHierarchicalClustering("MenW_aligned_downsamp10.pdb", "graphics", "ward")
