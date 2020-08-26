@@ -5,16 +5,19 @@ import os
 from scipy.spatial.distance import squareform
 
 
-def cleanTraj(traj):
+def clean_trajectory(traj):
     '''
     DESCRIPTION
-    Takes a trajectory object, removes ions. Aligns trajectory.
+    Takes a trajectory object, removes ions. Other changes to the trajectory can
+    be done in this method.
 
     Arguments:
         traj (mdtraj.Trajectory): trajectory object to be cleaned.
     Return:
         trajectory (mdtraj.Trajectory): cleaned trajectory object.
     '''
+    # sel = traj.topology.select("resname != SOD")
+    # traj = traj.atom_slice(sel)
     return traj.remove_solvent()
 
 def preprocessing_file(filename):
@@ -36,7 +39,10 @@ def preprocessing_file(filename):
     trajectory = md.load(filename)
     # Illustrate that all Frames are loaded
     print(">>> File loaded")
-    trajectory = cleanTraj(trajectory) # Cleans trajectory method
+    print(trajectory[::4])
+    # trajectory = trajectory[::4]
+    # trajectory.save("MenY_aligned_downsamp10_reduced(Nic).pdb")
+    # trajectory = clean_trajectory(trajectory) # Cleans trajectory method
     print(">>>", trajectory)
     # print(">>> All atoms: %s" % [atom for atom in trajectory.topology.atoms])
     os.chdir(os.path.join(os.path.dirname(__file__), '..')) # change back to clustermol root directory.
@@ -97,5 +103,5 @@ def preprocessing_qt(traj):
 
 if __name__ == "__main__":
     print(">>> Preprocessing - Test run")
-    traj = preprocessing_file("MenW_aligned_downsamp10.pdb") # Load the file in and format using MDTraj.
+    traj = preprocessing_file("MenY_aligned_downsamp10.pdb") # Load the file in and format using MDTraj.
     #preprocessing_hierarchical(traj) # Prepares file for MDTraj.

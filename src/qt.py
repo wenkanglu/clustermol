@@ -121,4 +121,4 @@ if __name__ == "__main__":
     # runQT("MenW_6RU_0_to_10ns.pdb", "data_dest", "")
     # runQT("MenY_reduced_100_frames.pdb", "data_dest", "")
     # runQT("MenY_aligned_downsamp10.pdb", "data_dest", "qt_orginal")
-    runQT("MenW_aligned_downsamp10.pdb", "data_dest", "qt_original")
+    runQT("MenW_aligned_downsamp10_reduced(Nic).pdb", "data_dest", "qt_original")
