@@ -4,7 +4,7 @@ import matplotlib.pyplot as plot
 import scipy.cluster.hierarchy
 
 
-def scatterplot_single(clusters_arr, no_frames, qt_type):
+def scatterplot_time(clusters_arr, no_frames, qt_type):
         '''
         DESCRIPTION
         Produce cluster scatter plot of frames
@@ -15,9 +15,10 @@ def scatterplot_single(clusters_arr, no_frames, qt_type):
             qt_type (str): qt types of implementation.
         '''
         plot.figure()
-        plot.scatter(numpy.arange(no_frames), clusters_arr, marker = '+')
+        plot.scatter(numpy.arange(no_frames), clusters_arr, marker = '.',cmap='prism')
         plot.xlabel("Frame Number")
         plot.ylabel("Cluster Number")
+        plot.locator_params(axis="both", integer=True, tight=True)
         plot.title("Scatter Plot - %s" %qt_type )
         os.chdir(os.path.join(os.path.dirname(__file__), '..')+ "/data/data_dest/")
         #print(os.getcwd())
@@ -67,8 +68,22 @@ def show_dendrogram(hierarchical_type, linkage):
         hierarchical_type (str): string for hierarchical type.
         linkage (numpy.ndarray): linkage matrix from clustering.
     '''
-    plot.title('RMSD %s linkage hierarchical clustering' %hierarchical_type)
-    _ = scipy.cluster.hierarchy.dendrogram(linkage.astype("float64"), no_labels=True)
+    plot.title('Dendrogram for %s linkage hierarchical clustering' %hierarchical_type)
+    _ = scipy.cluster.hierarchy.dendrogram(
+    linkage.astype("float64"),
+    truncate_mode='lastp',  # show only the last p merged clusters
+    p=20,  # show only the last p merged clusters
+    show_contracted=True,
+    show_leaf_counts=True # to get a distribution impression in truncated branches
+    )
+    axes = plot.gca()
+    ymin, ymax = axes.get_ylim()
+    plot.axhline(y=ymax*2/3, c='k')
+    plot.xlabel('Frame Count')
+    plot.ylabel('Distance')
+    # plt.text(0.50, 0.02, "Text relative to the AXES centered at : (0.50, 0.02)", transform=plt.gca().transAxes, fontsize=14, ha='center', color='blue')
+    plot.text(0.8, 0.8, 'ToDO', style='italic',ha='left',transform=plot.gca().transAxes,
+        bbox={'facecolor': 'blue', 'alpha': 0.1, 'pad': 4})
     plot.show()
 
 def save_dendrogram(hierarchical_type, linkage, destination):
@@ -82,8 +97,22 @@ def save_dendrogram(hierarchical_type, linkage, destination):
         destination (str): string for file location within data_dest folder
     '''
     os.chdir(os.path.join(os.path.dirname(__file__), "..")+ "/data/data_dest/")  # changes cwd to always be at clustermol
-    plot.title('RMSD %s linkage hierarchical clustering' %hierarchical_type)
-    _ = scipy.cluster.hierarchy.dendrogram(linkage, no_labels=True)
+    plot.title('Dendrogram for %s linkage hierarchical clustering' %hierarchical_type)
+    _ = scipy.cluster.hierarchy.dendrogram(
+    linkage.astype("float64"),
+    truncate_mode='lastp',  # show only the last p merged clusters
+    p=20,  # show only the last p merged clusters
+    show_contracted=True,
+    show_leaf_counts=True # to get a distribution impression in truncated branches
+    )
+    axes = plot.gca()
+    ymin, ymax = axes.get_ylim()
+    plot.axhline(y=ymax*2/3, c='k')
+    plot.xlabel('Frame Count')
+    plot.ylabel('Distance')
+    # plt.text(0.50, 0.02, "Text relative to the AXES centered at : (0.50, 0.02)", transform=plt.gca().transAxes, fontsize=14, ha='center', color='blue')
+    plot.text(0.8, 0.8, 'ToDO', style='italic',ha='left',transform=plot.gca().transAxes,
+        bbox={'facecolor': 'blue', 'alpha': 0.1, 'pad': 4})
     plot.savefig("dendrogram-clustering-%s.png" % hierarchical_type)
 
 def illustrateRMSD(rmsd_matrix):

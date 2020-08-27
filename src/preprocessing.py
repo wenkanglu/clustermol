@@ -68,6 +68,7 @@ def preprocessing_hierarchical(traj):
     # print('Max pairwise rmsd: %f nm' % np.max(rmsd_matrix))
     print('>>> RMSD matrix complete')
     # postprocessing.illustrateRMSD(rmsd_matrix)
+    # postprocessing.illustrateRMSD(rmsd_matrix)
     # file1 = open("matrixOutput.txt","w")
     # np.set_printoptions(threshold=np.inf)
     # file1.write(np.array2string(rmsd_matrix))
@@ -80,6 +81,7 @@ def preprocessing_hierarchical(traj):
     # assert np.all(rmsd_matrix - rmsd_matrix.T < 1e-6) # Need to figure out what this is for.
     reduced_distances = squareform(rmsd_matrix, checks=False)
     return reduced_distances
+    # return rmsd_matrix
 
 def preprocessing_qt(traj):
     '''
@@ -98,9 +100,20 @@ def preprocessing_qt(traj):
         rmsd_matrix[i] = rmsd_
     # print('Max pairwise rmsd: %f nm' % np.max(rmsd_matrix))
     print('>>> RMSD matrix complete')
-    postprocessing.illustrateRMSD(rmsd_matrix)
+    # postprocessing.illustrateRMSD(rmsd_matrix)
     # postprocessing.illustrateRMSD(rmsd_matrix)
     return rmsd_matrix
+def numberOfFrames(traj):
+    '''
+    DESCRIPTION
+    Returns Number of frames withing the Trajectory.
+
+    Arguments:
+        traj (mdtraj.Trajectory): trajectory object from MDTraj libary.
+    Return:
+        no_frames (int): number of frames from simulation.
+    '''
+    return traj.n_frames
 
 if __name__ == "__main__":
     print(">>> Preprocessing - Test run")
