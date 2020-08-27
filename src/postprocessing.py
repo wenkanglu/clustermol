@@ -23,6 +23,7 @@ def scatterplot_time(clusters_arr, no_frames, qt_type):
         os.chdir(os.path.join(os.path.dirname(__file__), '..')+ "/data/data_dest/")
         #print(os.getcwd())
         plot.savefig("Scatterplot_%s.png" %qt_type)
+        plot.show()
         plot.close()
 
 def scatterplot_multiple(clusters_arr1, cluster_arr2, no_frames):
@@ -47,7 +48,7 @@ def scatterplot_multiple(clusters_arr1, cluster_arr2, no_frames):
         plot.savefig("Scatterplot_comparison.png")
         plot.close()
 
-def saveClusters(clusters_arr, qt_type):
+def saveClusters(clusters_arr, type):
     '''
     DESCRIPTION
     Save cluster indexes to text file
@@ -57,7 +58,7 @@ def saveClusters(clusters_arr, qt_type):
         qt_type (str): qt types of implementation.
     '''
     os.chdir(os.path.join(os.path.dirname(__file__), '..')+ "/data/data_dest/")
-    numpy.savetxt("Clusters_%s.txt" %qt_type, clusters_arr, fmt='%i')
+    numpy.savetxt("Clusters_%s.txt" %type, clusters_arr, fmt='%i')
 
 def show_dendrogram(hierarchical_type, linkage):
     '''

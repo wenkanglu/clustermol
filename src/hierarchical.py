@@ -15,7 +15,7 @@ clustering_type = ["single", "complete", "average", "ward"]
 
 def tester(linkage, rmsd_matrix_temp):
     c, coph_dists = cophenet(linkage, pdist(rmsd_matrix_temp))
-    print(c)
+    print(">>> Cophenetic Distance: %s" % c)
 
 def produceClusters(linkage, no_frames, linkage_type):
     user_input = input("Please enter a cutoff distance value (-d) or number of clusters (-c):\n") or "inconsistent, 3.2"
@@ -23,9 +23,11 @@ def produceClusters(linkage, no_frames, linkage_type):
     if type == "-d":
         clusters = fcluster(linkage, value, criterion='distance')
         postprocessing.scatterplot_time(clusters, no_frames, linkage_type)
+        postprocessing.saveClusters(clusters, linkage_type)
     elif type == "-c":
         clusters = fcluster(linkage, value, criterion='maxclust')
         postprocessing.scatterplot_time(clusters, no_frames, linkage_type)
+        postprocessing.saveClusters(clusters, linkage_type)
     else:
         print("Default do nothing ATM")
     # print(clusters)
@@ -122,28 +124,41 @@ def randomDataValidation():
 
 def validation():
     # The iris dataset is available from the sci-kit learn package
+    n_samples =2000
+    blobs = datasets.make_blobs(n_samples=n_samples, random_state=8)
+    X,y = blobs
+    d = pdist(X, metric="euclidean")
+
     iris = datasets.load_iris()
     type = "ward"
     destination = "graphics"
     # Plot results
-    print(iris.data[:, 0])
-    plot.scatter(iris.data[:, 3], iris.data[:, 0])
-    plot.xlabel('Petal width (cm)')
-    plot.ylabel('Sepal length (cm)')
+    # print(iris.data[:, 0])
+
+    # plot.scatter(iris.data[:, 3], iris.data[:, 0])
+    # plot.xlabel('Petal width (cm)')
+    # plot.ylabel('Sepal length (cm)')
+    # plot.show()
+
     # plot.show()
     # Compute distance matrix
-    d = pdist(X=iris.data[:, [0, 3]], metric="euclidean")
+    # d = pdist(X=iris.data[:, [0, 3]], metric="euclidean")
     # print(numpy.ndim(d))
     reduced_distances = squareform(d, checks=True)
     # print(numpy.ndim(reduced_distances))
-    postprocessing.illustrateRMSD(reduced_distances)
+    # postprocessing.illustrateRMSD(reduced_distances)
     # Perform agglomerative hierarchical clustering
     # Use 'average' link function
     linkage_temp = cluserting(reduced_distances, type)
-    no_frames = 150
+    no_frames = 2000
     postprocessing.show_dendrogram(type, linkage_temp)
     postprocessing.save_dendrogram(type, linkage_temp, destination)
+    tester(linkage_temp, reduced_distances)
     produceClusters(linkage_temp, no_frames, type)
+    # plot.figure(figsize=(10, 8))
+    # # clusters = fcluster(linkage_temp, 5, criterion='maxclust')
+    # plot.scatter(X[:,0], X[:,1], c=clusters, cmap='prism')  # plot points with cluster dependent colors
+    # plot.show()
     # Print the first 6 rows
     # Sepal Length, Sepal Width, Petal Length, Petal Width
     # print(iris.data)
