@@ -22,8 +22,8 @@ def scatterplot_time(clusters_arr, no_frames, qt_type):
         plot.title("Scatter Plot - %s" %qt_type )
         os.chdir(os.path.join(os.path.dirname(__file__), '..')+ "/data/data_dest/")
         #print(os.getcwd())
-        plot.savefig("Scatterplot_%s.png" %qt_type)
         plot.show()
+        plot.savefig("Scatterplot_%s.png" %qt_type)
         plot.close()
 
 def scatterplot_multiple(clusters_arr1, cluster_arr2, no_frames):
@@ -86,6 +86,7 @@ def show_dendrogram(hierarchical_type, linkage):
     plot.text(0.8, 0.8, 'ToDO', style='italic',ha='left',transform=plot.gca().transAxes,
         bbox={'facecolor': 'blue', 'alpha': 0.1, 'pad': 4})
     plot.show()
+    plot.close()
 
 def save_dendrogram(hierarchical_type, linkage, destination):
     '''

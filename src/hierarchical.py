@@ -13,8 +13,19 @@ from itertools import cycle, islice
 
 clustering_type = ["single", "complete", "average", "ward"]
 
-def tester(linkage, rmsd_matrix_temp):
-    c, coph_dists = cophenet(linkage, pdist(rmsd_matrix_temp))
+def cophenetic(linkage, pairwise_matrix):
+    '''
+    DESCRIPTION
+    Computes Cophenetic distance given linkage and rmsd_matrix.
+
+    Arguments:
+        linkage (numpy.ndarray): cluster linkage.
+        rmsd_matrix_temp (numpy.ndarray): pairwise distance matrix.
+
+    Return:
+        c (int): cophenetic distance.
+    '''
+    c, coph_dists = cophenet(linkage, pdist(pairwise_matrix))
     print(">>> Cophenetic Distance: %s" % c)
 
 def produceClusters(linkage, no_frames, linkage_type):
@@ -22,11 +33,11 @@ def produceClusters(linkage, no_frames, linkage_type):
     type, value = user_input.split()
     if type == "-d":
         clusters = fcluster(linkage, value, criterion='distance')
-        postprocessing.scatterplot_time(clusters, no_frames, linkage_type)
+        # postprocessing.scatterplot_time(clusters, no_frames, linkage_type)
         postprocessing.saveClusters(clusters, linkage_type)
     elif type == "-c":
         clusters = fcluster(linkage, value, criterion='maxclust')
-        postprocessing.scatterplot_time(clusters, no_frames, linkage_type)
+        # postprocessing.scatterplot_time(clusters, no_frames, linkage_type)
         postprocessing.saveClusters(clusters, linkage_type)
     else:
         print("Default do nothing ATM")
@@ -153,7 +164,7 @@ def validation():
     no_frames = 2000
     postprocessing.show_dendrogram(type, linkage_temp)
     postprocessing.save_dendrogram(type, linkage_temp, destination)
-    tester(linkage_temp, reduced_distances)
+    cophenetic(linkage_temp, reduced_distances)
     produceClusters(linkage_temp, no_frames, type)
     # plot.figure(figsize=(10, 8))
     # # clusters = fcluster(linkage_temp, 5, criterion='maxclust')
