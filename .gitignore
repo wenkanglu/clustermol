@@ -1,0 +1,5 @@
+/data/data_dest/
+/data/data_src/
+/misc/
+*.pyc
+.DS_Store
