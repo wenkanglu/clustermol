@@ -46,7 +46,7 @@ def preprocessing_file(filename):
     print(">>>", trajectory)
     # print(">>> All atoms: %s" % [atom for atom in trajectory.topology.atoms])
     os.chdir(os.path.join(os.path.dirname(__file__), '..')) # change back to clustermol root directory.
-    # trajectory.center_coordinates()
+    trajectory.center_coordinates()
     return trajectory
 
 def preprocessing_hierarchical(traj):

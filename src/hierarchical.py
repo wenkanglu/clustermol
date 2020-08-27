@@ -25,7 +25,8 @@ def cophenetic(linkage, pairwise_matrix):
     Return:
         c (int): cophenetic distance.
     '''
-    c, coph_dists = cophenet(linkage, pdist(pairwise_matrix))
+    reduced_distances = squareform(pairwise_matrix, checks=True)
+    c, coph_dists = cophenet(linkage, pdist(reduced_distances))
     print(">>> Cophenetic Distance: %s" % c)
 
 def produceClusters(linkage, no_frames, linkage_type):
@@ -33,11 +34,11 @@ def produceClusters(linkage, no_frames, linkage_type):
     type, value = user_input.split()
     if type == "-d":
         clusters = fcluster(linkage, value, criterion='distance')
-        # postprocessing.scatterplot_time(clusters, no_frames, linkage_type)
+        postprocessing.scatterplot_time(clusters, no_frames, linkage_type)
         postprocessing.saveClusters(clusters, linkage_type)
     elif type == "-c":
         clusters = fcluster(linkage, value, criterion='maxclust')
-        # postprocessing.scatterplot_time(clusters, no_frames, linkage_type)
+        postprocessing.scatterplot_time(clusters, no_frames, linkage_type)
         postprocessing.saveClusters(clusters, linkage_type)
     else:
         print("Default do nothing ATM")
@@ -64,23 +65,23 @@ def cluserting(rmsd_matrix_temp, hierarchical_type):
     if hierarchical_type == clustering_type[0]:
         print(">>> Performing %s based Hierarchical clustering " % clustering_type[0])
         linkage = scipy.cluster.hierarchy.linkage(rmsd_matrix_temp, method=clustering_type[0])
-        # tester(linkage, rmsd_matrix_temp)
+        cophenetic(linkage, rmsd_matrix_temp)
     elif hierarchical_type == clustering_type[1]:
         print(">>> Performing %s based Hierarchical clustering " % clustering_type[1])
         linkage = scipy.cluster.hierarchy.linkage(rmsd_matrix_temp, method=clustering_type[1])
-        # tester(linkage, rmsd_matrix_temp)
+        cophenetic(linkage, rmsd_matrix_temp)
     elif hierarchical_type == clustering_type[2]:
         print(">>> Performing %s based Hierarchical clustering " % clustering_type[2])
         linkage = scipy.cluster.hierarchy.linkage(rmsd_matrix_temp, method=clustering_type[2])
-        # tester(linkage, rmsd_matrix_temp)
+        cophenetic(linkage, rmsd_matrix_temp)
     elif hierarchical_type == clustering_type[3]:
         print(">>> Performing %s based Hierarchical clustering " % clustering_type[3])
         linkage = scipy.cluster.hierarchy.linkage(rmsd_matrix_temp, method=clustering_type[3])
-        # tester(linkage, rmsd_matrix_temp)
+        cophenetic(linkage, rmsd_matrix_temp)
     print(">>> Hierarchical clustering (%s) complete " %hierarchical_type )
     return linkage
 
-def runHierarchicalClustering(filename, destination, type):
+def runHierarchicalClustering(filename, type):
     '''
     DESCRIPTION
     Method for running Hierarchical clustering algorithm bases on type. Type
@@ -89,15 +90,13 @@ def runHierarchicalClustering(filename, destination, type):
 
     Arguments:
         filename (str): string of filename.
-        destination (str): string for output destination.
         type (str): string for hierarchical type.
     '''
     traj = preprocessing.preprocessing_file(filename)
     rmsd_matrix_temp = preprocessing.preprocessing_hierarchical(traj)
     linkage_temp = cluserting(rmsd_matrix_temp, type)
     no_frames = preprocessing.numberOfFrames(traj)
-    postprocessing.show_dendrogram(type, linkage_temp)
-    postprocessing.save_dendrogram(type, linkage_temp, destination)
+    postprocessing.save_dendrogram(type, linkage_temp, True)
     produceClusters(linkage_temp, no_frames, type)
 
 
@@ -142,7 +141,6 @@ def validation():
 
     iris = datasets.load_iris()
     type = "ward"
-    destination = "graphics"
     # Plot results
     # print(iris.data[:, 0])
 
@@ -162,12 +160,11 @@ def validation():
     # Use 'average' link function
     linkage_temp = cluserting(reduced_distances, type)
     no_frames = 2000
-    postprocessing.show_dendrogram(type, linkage_temp)
-    postprocessing.save_dendrogram(type, linkage_temp, destination)
+    postprocessing.save_dendrogram(type, linkage_temp, False)
     cophenetic(linkage_temp, reduced_distances)
     produceClusters(linkage_temp, no_frames, type)
     # plot.figure(figsize=(10, 8))
-    # # clusters = fcluster(linkage_temp, 5, criterion='maxclust')
+    #clusters = fcluster(linkage_temp, 3, criterion='maxclust')
     # plot.scatter(X[:,0], X[:,1], c=clusters, cmap='prism')  # plot points with cluster dependent colors
     # plot.show()
     # Print the first 6 rows
@@ -179,5 +176,5 @@ if __name__ == "__main__":
     # runHierarchicalClustering("MenY_aligned_downsamp10_reduced(Nic).pdb", "graphics", "ward")
     # validation()
     # randomDataValidation()
-    # runHierarchicalClustering("MenY_aligned_downsamp10_reduced(Nic).pdb", "graphics", "ward")
-    validation()
+    runHierarchicalClustering("MenW_aligned_downsamp10_reduced(Nic).pdb", "ward")
+    # validation()

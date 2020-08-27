@@ -22,8 +22,8 @@ def scatterplot_time(clusters_arr, no_frames, qt_type):
         plot.title("Scatter Plot - %s" %qt_type )
         os.chdir(os.path.join(os.path.dirname(__file__), '..')+ "/data/data_dest/")
         #print(os.getcwd())
+        plot.savefig("scatterplot-%s.png" %qt_type)
         plot.show()
-        plot.savefig("Scatterplot_%s.png" %qt_type)
         plot.close()
 
 def scatterplot_multiple(clusters_arr1, cluster_arr2, no_frames):
@@ -45,8 +45,7 @@ def scatterplot_multiple(clusters_arr1, cluster_arr2, no_frames):
         plot.title("Scatter Plot - qt_orginal and qt_like")
         os.chdir(os.path.join(os.path.dirname(__file__), '..')+ "/data/data_dest/")
         #print(os.getcwd())
-        plot.savefig("Scatterplot_comparison.png")
-        plot.close()
+        plot.savefig("scatterplot-comparison.png")
 
 def saveClusters(clusters_arr, type):
     '''
@@ -58,9 +57,9 @@ def saveClusters(clusters_arr, type):
         qt_type (str): qt types of implementation.
     '''
     os.chdir(os.path.join(os.path.dirname(__file__), '..')+ "/data/data_dest/")
-    numpy.savetxt("Clusters_%s.txt" %type, clusters_arr, fmt='%i')
+    numpy.savetxt("clusters-%s.txt" %type, clusters_arr, fmt='%i')
 
-def show_dendrogram(hierarchical_type, linkage):
+def save_dendrogram(hierarchical_type, linkage, flag_display):
     '''
     DESCRIPTION
     Popup Dendrogram produced by hierarchical clustering.
@@ -69,36 +68,7 @@ def show_dendrogram(hierarchical_type, linkage):
         hierarchical_type (str): string for hierarchical type.
         linkage (numpy.ndarray): linkage matrix from clustering.
     '''
-    plot.title('Dendrogram for %s linkage hierarchical clustering' %hierarchical_type)
-    _ = scipy.cluster.hierarchy.dendrogram(
-    linkage.astype("float64"),
-    truncate_mode='lastp',  # show only the last p merged clusters
-    p=20,  # show only the last p merged clusters
-    show_contracted=True,
-    show_leaf_counts=True # to get a distribution impression in truncated branches
-    )
-    axes = plot.gca()
-    ymin, ymax = axes.get_ylim()
-    plot.axhline(y=ymax*2/3, c='k')
-    plot.xlabel('Frame Count')
-    plot.ylabel('Distance')
-    # plt.text(0.50, 0.02, "Text relative to the AXES centered at : (0.50, 0.02)", transform=plt.gca().transAxes, fontsize=14, ha='center', color='blue')
-    plot.text(0.8, 0.8, 'ToDO', style='italic',ha='left',transform=plot.gca().transAxes,
-        bbox={'facecolor': 'blue', 'alpha': 0.1, 'pad': 4})
-    plot.show()
-    plot.close()
-
-def save_dendrogram(hierarchical_type, linkage, destination):
-    '''
-    DESCRIPTION
-    Save Dendrogram produced by hierarchical clustering.
-
-    Arguments:
-        rmsd_matrix_temp (numpy.ndarray): rmsd matrix used for clustering.
-        hierarchical_type (str): string for hierarchical type.
-        destination (str): string for file location within data_dest folder
-    '''
-    os.chdir(os.path.join(os.path.dirname(__file__), "..")+ "/data/data_dest/")  # changes cwd to always be at clustermol
+    os.chdir(os.path.join(os.path.dirname(__file__), "..")+ "/data/data_dest/")
     plot.title('Dendrogram for %s linkage hierarchical clustering' %hierarchical_type)
     _ = scipy.cluster.hierarchy.dendrogram(
     linkage.astype("float64"),
@@ -116,6 +86,9 @@ def save_dendrogram(hierarchical_type, linkage, destination):
     plot.text(0.8, 0.8, 'ToDO', style='italic',ha='left',transform=plot.gca().transAxes,
         bbox={'facecolor': 'blue', 'alpha': 0.1, 'pad': 4})
     plot.savefig("dendrogram-clustering-%s.png" % hierarchical_type)
+    if flag_display:
+        plot.show()
+    plot.close()
 
 def illustrateRMSD(rmsd_matrix):
     '''
@@ -132,6 +105,7 @@ def illustrateRMSD(rmsd_matrix):
     # cb = plot.colorbar()
     # cb.set_label('counts in bin')
     # plot.show()
+    plot.figure()
     plot.imshow(rmsd_matrix, cmap='viridis', interpolation='nearest')
     print(">>> Max pairwise rmsd: %f nm" % numpy.max(rmsd_matrix))
     print(">>> Average pairwise rmsd: %f nm" % numpy.mean(rmsd_matrix))
