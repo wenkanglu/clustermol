@@ -26,6 +26,7 @@ def scatterplot_time(clusters_arr, no_frames, qt_type):
         plot.show()
         plot.close()
 
+
 def scatterplot_multiple(clusters_arr1, cluster_arr2, no_frames):
         '''
         DESCRIPTION
@@ -39,7 +40,7 @@ def scatterplot_multiple(clusters_arr1, cluster_arr2, no_frames):
         plot.figure()
         plot.scatter(numpy.arange(no_frames), clusters_arr1, marker = '^', color='blue',label='qt_like')
         plot.scatter(numpy.arange(no_frames), cluster_arr2, marker = 'v', color='red', label='qt_orginal')
-        plot.legend(loc='upper left')
+        plot.legend(loc='uploter left')
         plot.xlabel("Frame Number")
         plot.ylabel("Cluster Number")
         plot.title("Scatter Plot - qt_orginal and qt_like")
@@ -114,7 +115,43 @@ def illustrateRMSD(rmsd_matrix):
     plot.show()
     plot.close()
 
+def rmsd_vs_frame(rmsd_array, no_frames):
+    '''
+    DESCRIPTION
+    Produce cluster scatter plot of frames
 
+    Arguments:
+        clusters_arr (numpy.ndarray): cluster indexes per frame.
+        no_frames (int): number of frames
+        qt_type (str): qt types of implementation.
+    '''
+    plot.figure()
+    plot.scatter(numpy.arange(no_frames), rmsd_array, marker = '.',cmap='prism')
+    plot.xlabel("Frame Number")
+    plot.ylabel("RMSD Value")
+    plot.locator_params(axis="both", tight=True)
+    plot.title("RMSD of Frame Scatter Plot")
+    os.chdir(os.path.join(os.path.dirname(__file__), '..')+ "/data/data_dest/")
+    #print(os.getcwd())
+    plot.savefig("rmsd-scatter-plot.png")
+    plot.show()
+    plot.close()
+
+def rmsd_vs_seconds(time, rmsds):
+    '''
+    DESCRIPTION
+    Produce cluster scatter plot of frames. Skips first frame that computed against.
+
+    Arguments:
+        clusters_arr (mdtraj.traj): trajectory.
+    '''
+    plot.figure()
+    plot.plot(time[1:,], rmsds[1:,], 'r', label='all atom')
+    plot.legend()
+    plot.title('RMSDs over time agaist first frame')
+    plot.xlabel('simulation time (ps)')
+    plot.ylabel('RMSD (nm)')
+    plot.show()
 
 if __name__ == "__main__":
     print("Output Class")

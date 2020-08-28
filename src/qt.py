@@ -3,25 +3,28 @@ import numpy.ma as ma
 import preprocessing
 import postprocessing
 import matplotlib.pyplot as plot
+from sklearn import cluster, datasets, mixture
+from scipy.spatial.distance import pdist, squareform
 
 
-def qt_orginal(rmsd_matrix, cutoff, minimum_membership):
+def qt_orginal(rmsd_matrix, no_frames, cutoff, minimum_membership):
     # ---- Delete unuseful values from matrix (diagonal &  x>threshold) -----------
-    n_frames =len(rmsd_matrix)  # Number of frames
+    # Removes values greater than the cut-off value.
+    # Removes all 0's in the matrix (mainly diagonals)
     rmsd_matrix[rmsd_matrix > cutoff] = numpy.inf # make
     rmsd_matrix[rmsd_matrix == 0] = numpy.inf
     degrees = (rmsd_matrix < numpy.inf).sum(axis=0)
-    numpy.set_printoptions(threshold=numpy.inf)
+    # numpy.set_printoptions(threshold=numpy.inf)
     # print(degrees)
 
     # =============================================================================
     # QT algotithm
     # =============================================================================
-
-    cluster_labels = numpy.ndarray(n_frames, dtype=numpy.int64) # Frame size needs to change
+    # Cluster lables for each frame. Initally set to -1 (not apart of a cluster).
+    cluster_labels = numpy.ndarray(no_frames, dtype=numpy.int64)
     cluster_labels.fill(-1)
 
-    cluster_index = 0
+    cluster_index = 0 # Starting index for clusters.
     while True:
         # This while executes for every cluster in trajectory ---------------------
         len_precluster = 0
@@ -68,18 +71,17 @@ def qt_orginal(rmsd_matrix, cutoff, minimum_membership):
         degrees = (rmsd_matrix < numpy.inf).sum(axis=0)
         if (degrees == 0).all():
             break
-    postprocessing.scatterplot_single(cluster_labels, n_frames, "QT_original")
-    postprocessing.saveClusters(cluster_labels, "QT_original")
+    postprocessing.scatterplot_time(cluster_labels, no_frames, "qt_original")
+    postprocessing.saveClusters(cluster_labels, "qt_original")
     return cluster_labels
 
-def qt_like(rmsd_matrix, cutoff, minimum_membership):
-    n_frames = len(rmsd_matrix)  # Number of frames from Trajectory
+def qt_like(rmsd_matrix, no_frames, cutoff, minimum_membership):
     # print(rmsd_matrix)
     rmsd_matrix = rmsd_matrix <= cutoff  # Remove all those less than or equal to the cut-off value
     # print(rmsd_matrix)
     centers = []  # Empty centers, cenrtal frame of cluster.
     cluster_index = 0  # Cluster index, used for cluster indexing to frame.
-    cluster_labels = numpy.empty(n_frames) # Frame size needs to change
+    cluster_labels = numpy.empty(no_frames) # Frame size needs to change
     cluster_labels.fill(numpy.NAN)
 
     # Looping while cutoff_mask is not empty.
@@ -97,32 +99,55 @@ def qt_like(rmsd_matrix, cutoff, minimum_membership):
         rmsd_matrix[:, members] = False
         cluster_index = cluster_index + 1
         # print(membership)
-    postprocessing.scatterplot_single(cluster_labels, n_frames, "QT_like")
+    postprocessing.scatterplot_time(cluster_labels, no_frames, "QT_like")
     postprocessing.saveClusters(cluster_labels, "QT_like")
     return cluster_labels
 
-def runQT(filename, destination, type):
+def runQT(filename, type):
     traj = preprocessing.preprocessing_file(filename)
     rmsd_matrix_temp = preprocessing.preprocessing_qt(traj)  # Need to write general pre-process.
+    no_frames = preprocessing.numberOfFrames(traj)
+    time = preprocessing.getTime(traj)
+    postprocessing.rmsd_vs_seconds(time, preprocessing.getRMSD_first_frame(traj))
     if type == "qt_original":
-        qt_orginal(rmsd_matrix_temp, 0.75, 50)
+        qt_orginal(rmsd_matrix_temp, no_frames, 0.9, 100)
     elif type == "qt_like":
-        qt_like(rmsd_matrix_temp, 0.75, 5)
+        qt_like(rmsd_matrix_temp, no_frames, 0.75, 50)
     else:
-        lb1 = qt_like(rmsd_matrix_temp, 0.25, 5)
-        lb2 = qt_orginal(rmsd_matrix_temp, 0.25, 5)
-        postprocessing.scatterplot_multiple(lb1, lb2, len(rmsd_matrix_temp))
+        display = preprocessing.getRMSD_first_frame(traj)
+        no_frames = preprocessing.numberOfFrames(traj)
+
+def validation():
+    # The iris dataset is available from the sci-kit learn package
+    n_samples =2000
+    blobs = datasets.make_blobs(n_samples=n_samples, random_state=8)
+    X,y = blobs
+    d = pdist(X, metric="euclidean")
+    iris = datasets.load_iris()
+    d = pdist(X=iris.data[:, [0, 3]], metric="euclidean")
+    reduced_distances = squareform(d, checks=True)
+    # print(numpy.ndim(reduced_distances))
+    postprocessing.illustrateRMSD(reduced_distances)
+    # Perform agglomerative hierarchical clustering
+    # Use 'average' link function
+    # linkage_temp = cluserting(reduced_distances, type)
+    no_frames = 2000
+    lb = qt_like(reduced_distances, 150, 1.3, 20)
+    # plot.figure(figsize=(10, 8))
+    #clusters = fcluster(linkage_temp, 3, criterion='maxclust')
+    plot.scatter(iris.data[:,0],iris.data[:,3], c=lb, cmap='viridis')  # plot points with cluster dependent colors
+    plot.show()
+    # Print the first 6 rows
+    # Sepal Length, Sepal Width, Petal Length, Petal Width
+    # print(iris.data)
+    #
 
 if __name__ == "__main__":
-
-
     # runQT("MenY_reduced_100_frames.pdb", "data_dest", "qt_original")
     # runQT("MenY_reduced_100_frames.pdb", "data_dest", "qt_like")
     # runQT("MenW_6RU_0_to_10ns.pdb", "data_dest", "")
     # runQT("MenY_reduced_100_frames.pdb", "data_dest", "")
-    # runQT("MenY_aligned_downsamp10.pdb", "data_dest", "qt_orginal")
-<<<<<<< HEAD
-    runQT("MenW_aligned_downsamp10_reduced(Nic).pdb", "data_dest", "qt_like")
-=======
-    runQT("MenW_aligned_downsamp10_reduced(Nic).pdb", "data_dest", "qt_original")
->>>>>>> 1a4f264... Add desciptions and new reduced data files.
+    # validation()
+    # runQT("MenW_aligned_downsamp10_reduced(Nic).pdb", "data_dest", "qt_like")
+    runQT("MenY_aligned_downsamp10_reduced(Nic).pdb", "qt_like")
+    # runQT("MenW_aligned_downsamp10_reduced(Nic).pdb", "data_dest", "qt_original")

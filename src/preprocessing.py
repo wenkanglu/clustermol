@@ -18,7 +18,6 @@ def clean_trajectory(traj):
     '''
     # sel = traj.topology.select("resname != SOD")
     # traj = traj.atom_slice(sel)
-    # traj.center_coordinates()
     return traj.remove_solvent()
 
 def preprocessing_file(filename):
@@ -49,6 +48,7 @@ def preprocessing_file(filename):
     os.chdir(os.path.join(os.path.dirname(__file__), '..')) # change back to clustermol root directory.
     return trajectory
 
+
 def preprocessing_hierarchical(traj):
     '''
     DESCRIPTION
@@ -61,9 +61,11 @@ def preprocessing_hierarchical(traj):
         rmsd_matrix (numpy.np): rmsd matrix for clustering.
     '''
     # Calculate RMSD Pairwsie Matrix
+    ## superpose atomset 1 to reference
+
     rmsd_matrix = numpy.ndarray((traj.n_frames, traj.n_frames), dtype=numpy.float64)
     for i in range(traj.n_frames):
-        rmsd_ = mdtraj.rmsd(traj, traj, i) #currently we assume they are pre-centered, but can they not be?
+        rmsd_ = mdtraj.rmsd(traj, traj, i, parallel=True) #currently we assume they are pre-centered, but can they not be?
         rmsd_matrix[i] = rmsd_
     # print('Max pairwise rmsd: %f nm' % np.max(rmsd_matrix))
     print('>>> RMSD matrix complete')
@@ -96,13 +98,32 @@ def preprocessing_qt(traj):
     # Calculate RMSD Pairwsie Matrix
     rmsd_matrix = numpy.ndarray((traj.n_frames, traj.n_frames), dtype=numpy.float64)
     for i in range(traj.n_frames):
-        rmsd_ = mdtraj.rmsd(traj, traj, i) # currently we assume they are pre-centered, but can they not be?
+        rmsd_ = mdtraj.rmsd(traj, traj, i, parallel=True, precentered=True) # currently we assume they are pre-centered, but can they not be?
         rmsd_matrix[i] = rmsd_
     # print('Max pairwise rmsd: %f nm' % np.max(rmsd_matrix))
     print('>>> RMSD matrix complete')
+    postprocessing.illustrateRMSD(rmsd_matrix)
+    # postprocessing.illustrateRMSD(rmsd_matrix)
+    return rmsd_matrix
+
+def getRMSD_first_frame(traj):
+    '''
+    DESCRIPTION
+    Illustrate change of RMSD over frames.
+
+    Arguments:
+        traj (mdtraj.Trajectory): trajectory object from MDTraj libary.
+    Return:
+        rmsd_matrix (numpy.np): rmsd matrix for visualization.
+    '''
+    # Calculate RMSD Pairwsie Matrix
+    rmsd_matrix = numpy.ndarray((traj.n_frames, traj.n_frames), dtype=numpy.float64)
+    rmsd_matrix = mdtraj.rmsd(traj, traj, 0)
+    # print('>>> Single RMSD matrix complete')
     # postprocessing.illustrateRMSD(rmsd_matrix)
     # postprocessing.illustrateRMSD(rmsd_matrix)
     return rmsd_matrix
+
 def numberOfFrames(traj):
     '''
     DESCRIPTION
@@ -115,7 +136,19 @@ def numberOfFrames(traj):
     '''
     return traj.n_frames
 
+def getTime(traj):
+    '''
+    DESCRIPTION
+    Returns time period of Trajectory.
+
+    Arguments:
+        traj (mdtraj.Trajectory): trajectory object from MDTraj libary.
+    Return:
+        time (int): time period of trajectory.
+    '''
+    return traj.time
+
 if __name__ == "__main__":
     print(">>> Preprocessing - Test run")
-    traj = preprocessing_file("MenY_aligned_downsamp10.pdb") # Load the file in and format using MDTraj.
+    traj = preprocessing_file("MenW_aligned_downsamp10_reduced(Nic).pdb") # Load the file in and format using MDTraj.
     #preprocessing_hierarchical(traj) # Prepares file for MDTraj.
