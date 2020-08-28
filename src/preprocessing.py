@@ -1,5 +1,5 @@
-import mdtraj as md
-import numpy as np
+import mdtraj
+import numpy
 import postprocessing
 import os
 from scipy.spatial.distance import squareform
@@ -18,6 +18,7 @@ def clean_trajectory(traj):
     '''
     # sel = traj.topology.select("resname != SOD")
     # traj = traj.atom_slice(sel)
+    # traj.center_coordinates()
     return traj.remove_solvent()
 
 def preprocessing_file(filename):
@@ -36,7 +37,7 @@ def preprocessing_file(filename):
 
     # Load Trajectory
     print(">>> Loading file \"%s\"" %filename)
-    trajectory = md.load(filename)
+    trajectory = mdtraj.load(filename)
     # Illustrate that all Frames are loaded
     print(">>> File loaded")
     # print(trajectory[::4])
@@ -46,7 +47,6 @@ def preprocessing_file(filename):
     print(">>>", trajectory)
     # print(">>> All atoms: %s" % [atom for atom in trajectory.topology.atoms])
     os.chdir(os.path.join(os.path.dirname(__file__), '..')) # change back to clustermol root directory.
-    trajectory.center_coordinates()
     return trajectory
 
 def preprocessing_hierarchical(traj):
@@ -61,9 +61,9 @@ def preprocessing_hierarchical(traj):
         rmsd_matrix (numpy.np): rmsd matrix for clustering.
     '''
     # Calculate RMSD Pairwsie Matrix
-    rmsd_matrix = np.ndarray((traj.n_frames, traj.n_frames), dtype=np.float64)
+    rmsd_matrix = numpy.ndarray((traj.n_frames, traj.n_frames), dtype=numpy.float64)
     for i in range(traj.n_frames):
-        rmsd_ = md.rmsd(traj, traj, i) #currently we assume they are pre-centered, but can they not be?
+        rmsd_ = mdtraj.rmsd(traj, traj, i) #currently we assume they are pre-centered, but can they not be?
         rmsd_matrix[i] = rmsd_
     # print('Max pairwise rmsd: %f nm' % np.max(rmsd_matrix))
     print('>>> RMSD matrix complete')
@@ -78,7 +78,7 @@ def preprocessing_hierarchical(traj):
     # print(np.diag(rmsd_matrix))
 
     # Clean up and Preprocessing of Matrix
-    # assert np.all(rmsd_matrix - rmsd_matrix.T < 1e-6) # Need to figure out what this is for.
+    # assert numpy.all(rmsd_matrix - rmsd_matrix.T < 1e-6) # Need to figure out what this is for.
     reduced_distances = squareform(rmsd_matrix, checks=False)
     return reduced_distances
     # return rmsd_matrix
@@ -94,9 +94,9 @@ def preprocessing_qt(traj):
         rmsd_matrix (numpy.np): rmsd matrix for clustering.
     '''
     # Calculate RMSD Pairwsie Matrix
-    rmsd_matrix = np.ndarray((traj.n_frames, traj.n_frames), dtype=np.float64)
+    rmsd_matrix = numpy.ndarray((traj.n_frames, traj.n_frames), dtype=numpy.float64)
     for i in range(traj.n_frames):
-        rmsd_ = md.rmsd(traj, traj, i) # currently we assume they are pre-centered, but can they not be?
+        rmsd_ = mdtraj.rmsd(traj, traj, i) # currently we assume they are pre-centered, but can they not be?
         rmsd_matrix[i] = rmsd_
     # print('Max pairwise rmsd: %f nm' % np.max(rmsd_matrix))
     print('>>> RMSD matrix complete')
