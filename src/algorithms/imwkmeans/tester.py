@@ -1,4 +1,4 @@
-from algorithms.deAmorim.clustering import Clustering
+from algorithms.imwkmeans.clustering import Clustering
 import numpy as np
 import time
 

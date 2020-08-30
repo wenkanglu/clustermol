@@ -15,7 +15,7 @@ SUBPARSER_ARGS = "args"
 SUBPARSER_CONF = "conf"
 SUBPARSER_PREP = "prep"
 
-algorithm_list = ["hierarchical", "imwkmeans", "tsne"]
+algorithm_list = ["hierarchical", "imwkmeans", "tsne", "hdbscan"]
 hierarchical_list = ["average", "complete", "single", "ward"]
 
 
@@ -162,6 +162,8 @@ def call_algorithm(args):
     # call algorithm with these args
     elif args.algorithm == "imwkmeans":
         select_algorithm.call_imwkmeans(args)
+    elif args.algorithm == "hdbscan":
+        select_algorithm.call_hdbscan(args)
     elif args.algorithm == "tsne":
         select_algorithm.call_tsne(args)
 

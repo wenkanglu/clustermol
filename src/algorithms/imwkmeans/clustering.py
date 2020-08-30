@@ -1,12 +1,12 @@
 import numpy as np
 import random as rd
-from algorithms.deAmorim.mymath import MyMath
-from algorithms.deAmorim.kmeans import KMeans
-from algorithms.deAmorim.wkmeans import WKMeans
-from algorithms.deAmorim.mwkmeans import MWKMeans
-from algorithms.deAmorim.pam import PartitionAroundMedoids
-from algorithms.deAmorim.ward import Ward
-from algorithms.deAmorim.mwpam import MWPAM
+from algorithms.imwkmeans.mymath import MyMath
+from algorithms.imwkmeans.kmeans import KMeans
+from algorithms.imwkmeans.wkmeans import WKMeans
+from algorithms.imwkmeans.mwkmeans import MWKMeans
+from algorithms.imwkmeans.pam import PartitionAroundMedoids
+from algorithms.imwkmeans.ward import Ward
+from algorithms.imwkmeans.mwpam import MWPAM
 
 
 class Clustering(object):

@@ -1,5 +1,5 @@
 from algorithms.hierarchical import hierarchical
-from algorithms.deAmorim import clusterer
+from algorithms.imwkmeans import cluster_imwkmeans
 from algorithms.tsne import tsne
 
 
@@ -8,7 +8,11 @@ def call_hierarchical(args):
 
 
 def call_imwkmeans(args):
-    clusterer.cluster_imwkmeans(args)
+    cluster_imwkmeans.cluster(args)
+
+
+def call_hdbscan(args):
+    cluster_imwkmeans.cluster_hdbscan(args)
 
 
 def call_tsne(args):

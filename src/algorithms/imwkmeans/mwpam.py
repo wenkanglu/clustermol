@@ -24,8 +24,8 @@
 
 import numpy as np
 import random as rd
-from algorithms.deAmorim.wkmeans import WKMeans
-from algorithms.deAmorim.pam import PartitionAroundMedoids
+from algorithms.imwkmeans.wkmeans import WKMeans
+from algorithms.imwkmeans.pam import PartitionAroundMedoids
 
 
 class MWPAM(object):
