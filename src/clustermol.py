@@ -15,7 +15,7 @@ SUBPARSER_ARGS = "args"
 SUBPARSER_CONF = "conf"
 SUBPARSER_PREP = "prep"
 
-algorithm_list = ["hierarchical", "imwkmeans", "tsne", "hdbscan"]
+algorithm_list = ["hdbscan", "hierarchical", "imwkmeans", "tsne", "umap"]
 hierarchical_list = ["average", "complete", "single", "ward"]
 
 
@@ -76,7 +76,7 @@ def parse():
                              help="Select linkage type if using hierarchical clustering", )
 
     # subparser for handling preprocessing jobs
-    parser_prep = subparsers.add_parser(SUBPARSER_ARGS, help="Perform a preprocessing job")
+    parser_prep = subparsers.add_parser(SUBPARSER_PREP, help="Perform a preprocessing job")
     parser_prep.set_defaults(function=call_preprocessing)
     parser_prep.add_argument("-s",
                              "--source",
@@ -122,7 +122,7 @@ def parse_configuration(args, filename):
         config.read(filename)
         for section in config.sections():
             if section[0] == "c":
-                print(section)
+                # print(section)
                 args_copy = copy.copy(args)
                 # print(section)
                 args_copy.algorithm = config[section]["--algorithm"]  # sets algorithm from config file
@@ -166,6 +166,8 @@ def call_algorithm(args):
         select_algorithm.call_hdbscan(args)
     elif args.algorithm == "tsne":
         select_algorithm.call_tsne(args)
+    elif args.algorithm == "umap":
+        select_algorithm.call_umap(args)
 
 
 def call_preprocessing(args):

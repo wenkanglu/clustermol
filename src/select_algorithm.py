@@ -1,6 +1,7 @@
 from algorithms.hierarchical import hierarchical
 from algorithms.imwkmeans import cluster_imwkmeans
 from algorithms.tsne import tsne
+from algorithms.umap import umap
 
 
 def call_hierarchical(args):
@@ -17,3 +18,7 @@ def call_hdbscan(args):
 
 def call_tsne(args):
     tsne.cluster(args)
+
+
+def call_umap(args):
+    umap.umap_main(args)
