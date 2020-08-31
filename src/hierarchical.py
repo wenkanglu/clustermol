@@ -30,6 +30,16 @@ def cophenetic(linkage, pairwise_matrix):
     print(">>> Cophenetic Distance: %s" % c)
 
 def produceClusters(linkage, no_frames, linkage_type):
+    '''
+    DESCRIPTION
+    Produces scatterplot of clusters as well as saving cluster indexes/labels
+    further analysis.
+
+    Arguments:
+        linkage (numpy.ndarray): cluster linkage.
+        no_frames (int): pairwise distance matrix.
+        linkage_type (string): linkage type. 
+    '''
     user_input = input("Please enter a cutoff distance value (-d) or number of clusters (-c):\n") or "inconsistent, 3.2"
     type, value = user_input.split()
     if type == "-d":

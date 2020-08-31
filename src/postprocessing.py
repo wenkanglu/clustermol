@@ -146,10 +146,10 @@ def rmsd_vs_seconds(time, rmsds):
         clusters_arr (mdtraj.traj): trajectory.
     '''
     plot.figure()
-    plot.plot(time[1:,], rmsds[1:,], 'r', label='all atom')
+    plot.plot(time[1:, ], rmsds[1:, ], 'r', label='all atom')
     plot.legend()
     plot.title('RMSDs over time agaist first frame')
-    plot.xlabel('simulation time (ps)')
+    plot.xlabel('Simulation frames (ps)')
     plot.ylabel('RMSD (nm)')
     plot.show()
 

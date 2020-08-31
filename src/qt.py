@@ -5,9 +5,24 @@ import postprocessing
 import matplotlib.pyplot as plot
 from sklearn import cluster, datasets, mixture
 from scipy.spatial.distance import pdist, squareform
+import sys
 
 
 def qt_orginal(rmsd_matrix, no_frames, cutoff, minimum_membership):
+    '''
+    DESCRIPTION
+    Quality Threshold Algorithm implemnted by Roy Gonzalez Aleman. Original
+    proposed by Heyer et. al. Produces clusters from an RMSD matrix where a minimu,
+    membership is imposed and a cutoff value in the clusters is used as a threshold.
+
+    Arguments:
+        rmsd_matrix (numpy.ndarray): rmsd matrix of all frames.
+        no_frames (int): number of frames.
+        cutoff (int): threshold values when producing clusters.
+        minimum_membership (int): minimum membership in a cluster.
+    Return:
+        cluster_labels (numpy.ndarray): cleaned trajectory object.
+    '''
     # ---- Delete unuseful values from matrix (diagonal &  x>threshold) -----------
     # Removes values greater than the cut-off value.
     # Removes all 0's in the matrix (mainly diagonals)
@@ -15,6 +30,7 @@ def qt_orginal(rmsd_matrix, no_frames, cutoff, minimum_membership):
     rmsd_matrix[rmsd_matrix == 0] = numpy.inf
     degrees = (rmsd_matrix < numpy.inf).sum(axis=0)
     # numpy.set_printoptions(threshold=numpy.inf)
+    # print(rmsd_matrix)
     # print(degrees)
 
     # =============================================================================
@@ -73,9 +89,24 @@ def qt_orginal(rmsd_matrix, no_frames, cutoff, minimum_membership):
             break
     postprocessing.scatterplot_time(cluster_labels, no_frames, "qt_original")
     postprocessing.saveClusters(cluster_labels, "qt_original")
-    return cluster_labels
+    # return cluster_labels
 
 def qt_like(rmsd_matrix, no_frames, cutoff, minimum_membership):
+    '''
+    DESCRIPTION
+    Quality Threshold Algorithm implemnted by Melvin et al. Original
+    proposed by Daura et al. Produces clusters from an RMSD matrix where a minimum,
+    membership is imposed and a cutoff value in the clusters is used as a threshold.
+    - Not a true Quaility Threshold algotithm, seen as a vectorised version.
+
+    Arguments:
+        rmsd_matrix (numpy.ndarray): rmsd matrix of all frames.
+        no_frames (int): number of frames.
+        cutoff (int): threshold values when producing clusters.
+        minimum_membership (int): minimum membership in a cluster.
+    Return:
+        cluster_labels (numpy.ndarray): cleaned trajectory object.
+    '''
     # print(rmsd_matrix)
     rmsd_matrix = rmsd_matrix <= cutoff  # Remove all those less than or equal to the cut-off value
     # print(rmsd_matrix)
@@ -86,7 +117,7 @@ def qt_like(rmsd_matrix, no_frames, cutoff, minimum_membership):
 
     # Looping while cutoff_mask is not empty.
     while rmsd_matrix.any():
-        membership = rmsd_matrix.sum(axis=1)
+        membership = rmsd_matrix.sum(axis=0)
         center = numpy.argmax(membership)
         # print(center)
         members = numpy.where(rmsd_matrix[center, :]==True)
@@ -101,21 +132,67 @@ def qt_like(rmsd_matrix, no_frames, cutoff, minimum_membership):
         # print(membership)
     postprocessing.scatterplot_time(cluster_labels, no_frames, "QT_like")
     postprocessing.saveClusters(cluster_labels, "QT_like")
-    return cluster_labels
+    # return cluster_labels
+
+def getArguments():
+    '''
+    DESCRIPTION
+    Gets the cutoff/threshold value needed for Quality Threshold Algorithm.
+    In addtion requires a minimum_membership value.
+
+    Returns:
+        cutoff (float): threshold value for QT algotithm.
+        minimum_membership (int): int value for minimum cluster size.
+    '''
+    user_input = input("Please enter a cutoff value and minimum membership value\n") or "0.5 10"
+    cutoff, min = user_input.split()
+    return float(cutoff), int(min)
 
 def runQT(filename, type):
+    '''
+    DESCRIPTION
+    Overall implementation of two diffrent implementations of the Quaility
+    Threshold algotithm.
+
+    Arguments:
+        filename (string): filename of .pdb file.
+        type (string): type of Quaility Threshold algotithm to implemnt.
+    '''
     traj = preprocessing.preprocessing_file(filename)
     rmsd_matrix_temp = preprocessing.preprocessing_qt(traj)  # Need to write general pre-process.
     no_frames = preprocessing.numberOfFrames(traj)
     time = preprocessing.getTime(traj)
     postprocessing.rmsd_vs_seconds(time, preprocessing.getRMSD_first_frame(traj))
+    cutoff, min = getArguments()
     if type == "qt_original":
-        qt_orginal(rmsd_matrix_temp, no_frames, 0.9, 100)
+        qt_orginal(rmsd_matrix_temp, no_frames, cutoff, min)
     elif type == "qt_like":
-        qt_like(rmsd_matrix_temp, no_frames, 0.75, 50)
+        qt_like(rmsd_matrix_temp, no_frames, cutoff, min)
     else:
         display = preprocessing.getRMSD_first_frame(traj)
         no_frames = preprocessing.numberOfFrames(traj)
+
+def runPreprocessed(filename, no_frames, type):
+    '''
+    DESCRIPTION
+    Overall implementation of two diffrent implementations of the Quaility
+    Threshold algotithim using pre-processed rmsd matrix.
+
+    Arguments:
+        filename (string): filename of .dat VMD matrix file.
+        type (string): type of Quaility Threshold algotithm to implemnt.
+        no_frames (int): number of frames in .dat file.
+    '''
+    rmsd_matrix_temp = preprocessing.VMD_RMSD_matrix(filename, no_frames)  # Need to write general pre-process.
+    no_frames = len(rmsd_matrix_temp[1])
+    postprocessing.illustrateRMSD(rmsd_matrix_temp)
+    cutoff, min = getArguments()
+    if type == "qt_original":
+        qt_orginal(rmsd_matrix_temp, no_frames, cutoff, min)
+    elif type == "qt_like":
+        qt_like(rmsd_matrix_temp, no_frames, cutoff, min)
+    else:
+        pass
 
 def validation():
     # The iris dataset is available from the sci-kit learn package
@@ -143,11 +220,5 @@ def validation():
     #
 
 if __name__ == "__main__":
-    # runQT("MenY_reduced_100_frames.pdb", "data_dest", "qt_original")
-    # runQT("MenY_reduced_100_frames.pdb", "data_dest", "qt_like")
-    # runQT("MenW_6RU_0_to_10ns.pdb", "data_dest", "")
-    # runQT("MenY_reduced_100_frames.pdb", "data_dest", "")
-    # validation()
-    # runQT("MenW_aligned_downsamp10_reduced(Nic).pdb", "data_dest", "qt_like")
-    runQT("MenY_aligned_downsamp10_reduced(Nic).pdb", "qt_like")
-    # runQT("MenW_aligned_downsamp10_reduced(Nic).pdb", "data_dest", "qt_original")
+    # runQT("MenW_0_to_1000ns_aligned(100skip).pdb", "qt_like")
+    runPreprocessed("trajrmsd_menW_nic_test.dat", 401, "qt_original")

@@ -42,7 +42,7 @@ def preprocessing_file(filename):
     # print(trajectory[::4])
     # trajectory = trajectory[::4]
     # trajectory.save("MenY_aligned_downsamp10_reduced(Nic).pdb")
-    # trajectory = clean_trajectory(trajectory) # Cleans trajectory method
+    trajectory = clean_trajectory(trajectory) # Cleans trajectory method
     print(">>>", trajectory)
     # print(">>> All atoms: %s" % [atom for atom in trajectory.topology.atoms])
     os.chdir(os.path.join(os.path.dirname(__file__), '..')) # change back to clustermol root directory.
@@ -98,11 +98,11 @@ def preprocessing_qt(traj):
     # Calculate RMSD Pairwsie Matrix
     rmsd_matrix = numpy.ndarray((traj.n_frames, traj.n_frames), dtype=numpy.float64)
     for i in range(traj.n_frames):
-        rmsd_ = mdtraj.rmsd(traj, traj, i, parallel=True, precentered=True) # currently we assume they are pre-centered, but can they not be?
+        rmsd_ = mdtraj.rmsd(traj, traj, i, parallel=True) # currently we assume they are pre-centered, but can they not be?
         rmsd_matrix[i] = rmsd_
     # print('Max pairwise rmsd: %f nm' % np.max(rmsd_matrix))
     print('>>> RMSD matrix complete')
-    postprocessing.illustrateRMSD(rmsd_matrix)
+    # postprocessing.illustrateRMSD(rmsd_matrix)
     # postprocessing.illustrateRMSD(rmsd_matrix)
     return rmsd_matrix
 
@@ -148,7 +148,33 @@ def getTime(traj):
     '''
     return traj.time
 
+def VMD_RMSD_matrix(filename, no_frames):
+    os.chdir(os.path.join(os.path.dirname(__file__), '..')+"/data/data_src")
+    rmsd_matrix = numpy.ndarray((no_frames, no_frames), dtype=numpy.float64)
+    rmsd_matrix.fill(0)
+    file = open(filename, 'r')
+    line = file.readline()
+    # print(line)
+    count = 0
+    while True:
+        count += 1
+        # Get next line from file
+        line = file.readline()
+        if not line:
+            break
+        # print(count)
+        # print(line)
+        if line == '\n':
+            break
+        a, b, c, d, e = line.split()
+        rmsd_matrix[int(b), int(d)] = float(e)
+    file.close()
+    os.chdir(os.path.join(os.path.dirname(__file__), '..')) # change back to clustermol root directory.
+    return rmsd_matrix
+
 if __name__ == "__main__":
     print(">>> Preprocessing - Test run")
-    traj = preprocessing_file("MenW_aligned_downsamp10_reduced(Nic).pdb") # Load the file in and format using MDTraj.
+    # traj = preprocessing_file("MenW_aligned_downsamp10_reduced(Nic).pdb") # Load the file in and format using MDTraj.
     #preprocessing_hierarchical(traj) # Prepares file for MDTraj.
+    r = VMD_RMSD_matrix("trajrmsd_menW_nic_test.dat", 401)
+    postprocessing.illustrateRMSD(r)
