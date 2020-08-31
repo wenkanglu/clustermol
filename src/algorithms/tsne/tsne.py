@@ -10,6 +10,7 @@ import seaborn as sns
 from sklearn.cluster import KMeans
 from sklearn.decomposition import PCA
 from sklearn.manifold import TSNE
+from sklearn import datasets
 from sklearn.metrics import silhouette_score
 from warnings import filterwarnings
 
@@ -17,17 +18,17 @@ from warnings import filterwarnings
 def cluster(args):
     filterwarnings('ignore')
 
-    start_time = time.time()
-    traj = mdtraj.load(os.path.join("data", "data_src", "MenW_ds_10_pf.pdb"))
-    traj.remove_solvent(inplace=True)
-    print(traj.n_atoms)
+    # start_time = time.time()
+    # traj = mdtraj.load(os.path.join("data", "data_src", "MenW_ds_10_pf.pdb"))
+    # traj.remove_solvent(inplace=True)
+    # print(traj.n_atoms)
 
-    traj_time = time.time()
-    print("--- %s seconds to load trajectory---" % (traj_time - start_time))
-    coords = np.reshape(traj.xyz, (traj.n_frames, 3*traj.n_atoms))
+    # traj_time = time.time()
+    # print("--- %s seconds to load trajectory---" % (traj_time - start_time))
+    # coords = np.reshape(traj.xyz, (traj.n_frames, 3*traj.n_atoms))
     # print(coords[0])
 
-    # iris = datasets.load_iris()
+    iris = datasets.load_iris()
 
     # n_components=7 because we have 7 features in the dataset
     # pca = PCA(n_components=3*traj.n_atoms)
@@ -43,11 +44,11 @@ def cluster(args):
     # plt.plot(var)
     # plt.show()
 
-    pca = PCA(n_components=80)
-    pca_scale = pca.fit_transform(coords)
+    pca = PCA(n_components=4)
+    pca_scale = pca.fit_transform(iris.data)
     pca_df_scale = pd.DataFrame(pca_scale)
     pca_time = time.time()
-    print("--- %s seconds to perform pca---" % (pca_time - traj_time))
+    # print("--- %s seconds to perform pca---" % (pca_time - traj_time))
 
     tsne = TSNE(n_components=2, verbose=1, perplexity=80, n_iter=5000, learning_rate=200)
     tsne_scale_results = tsne.fit_transform(pca_df_scale)
@@ -75,7 +76,7 @@ def cluster(args):
     plt.ylabel('Inertia')
     plt.show()
 
-    kmeans_tsne_scale = KMeans(n_clusters=4, n_init=100, max_iter=400, init='k-means++', random_state=42).fit(tsne_df_scale)
+    kmeans_tsne_scale = KMeans(n_clusters=3, n_init=100, max_iter=400, init='k-means++', random_state=42).fit(tsne_df_scale)
     labels_tsne_scale = kmeans_tsne_scale.labels_
     clusters_tsne_scale = pd.concat([tsne_df_scale, pd.DataFrame({'tsne_clusters': labels_tsne_scale})], axis=1)
     plt.figure(figsize=(15, 15))
