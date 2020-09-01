@@ -180,5 +180,5 @@ if __name__ == "__main__":
     # runHierarchicalClustering("MenY_aligned_downsamp10_reduced(Nic).pdb", "graphics", "ward")
     # validation()
     # randomDataValidation()
-    runHierarchicalClustering("MenW_aligned_downsamp10_reduced(Nic).pdb", "ward")
+    runHierarchicalClustering("MenY_0_to_1000ns_aligned(100first).pdb", "ward")
     # validation()
