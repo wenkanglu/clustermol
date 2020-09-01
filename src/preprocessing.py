@@ -100,16 +100,13 @@ def preprocessing_qt(traj):
     for i in range(traj.n_frames):
         rmsd_ = mdtraj.rmsd(traj, traj, i, parallel=True) # currently we assume they are pre-centered, but can they not be?
         rmsd_matrix[i] = rmsd_
-    # print('Max pairwise rmsd: %f nm' % np.max(rmsd_matrix))
     print('>>> RMSD matrix complete')
-    # postprocessing.illustrateRMSD(rmsd_matrix)
-    # postprocessing.illustrateRMSD(rmsd_matrix)
     return rmsd_matrix
 
 def getRMSD_first_frame(traj):
     '''
     DESCRIPTION
-    Illustrate change of RMSD over frames.
+    Illustrate change of RMSD over frames with reference to the inital/first frame.
 
     Arguments:
         traj (mdtraj.Trajectory): trajectory object from MDTraj libary.
@@ -119,15 +116,12 @@ def getRMSD_first_frame(traj):
     # Calculate RMSD Pairwsie Matrix
     rmsd_matrix = numpy.ndarray((traj.n_frames, traj.n_frames), dtype=numpy.float64)
     rmsd_matrix = mdtraj.rmsd(traj, traj, 0)
-    # print('>>> Single RMSD matrix complete')
-    # postprocessing.illustrateRMSD(rmsd_matrix)
-    # postprocessing.illustrateRMSD(rmsd_matrix)
     return rmsd_matrix
 
-def numberOfFrames(traj):
+def getNumberOfFrames(traj):
     '''
     DESCRIPTION
-    Returns Number of frames withing the Trajectory.
+    Returns Number of frames within the Trajectory.
 
     Arguments:
         traj (mdtraj.Trajectory): trajectory object from MDTraj libary.

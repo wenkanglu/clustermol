@@ -13,79 +13,77 @@ from itertools import cycle, islice
 
 clustering_type = ["single", "complete", "average", "ward"]
 
-def cophenetic(linkage, pairwise_matrix):
+def cophenetic(linkage_matrix, rmsd_matrix):
     '''
     DESCRIPTION
     Computes Cophenetic distance given linkage and rmsd_matrix.
 
     Arguments:
-        linkage (numpy.ndarray): cluster linkage.
-        rmsd_matrix_temp (numpy.ndarray): pairwise distance matrix.
+        linkage_matrix (numpy.ndarray): cluster linkage.
+        rmsd_matrix (numpy.ndarray): pairwise distance matrix.
 
     Return:
         c (int): cophenetic distance.
     '''
-    reduced_distances = squareform(pairwise_matrix, checks=True)
-    c, coph_dists = cophenet(linkage, pdist(reduced_distances))
+    reduced_distances = squareform(rmsd_matrix, checks=True)
+    c, coph_dists = cophenet(linkage_matrix, pdist(reduced_distances))
     print(">>> Cophenetic Distance: %s" % c)
 
-def produceClusters(linkage, no_frames, linkage_type):
+def produceClusters(linkage_matrix, no_frames, linkage_type):
     '''
     DESCRIPTION
     Produces scatterplot of clusters as well as saving cluster indexes/labels
     further analysis.
 
     Arguments:
-        linkage (numpy.ndarray): cluster linkage.
-        no_frames (int): pairwise distance matrix.
+        linkage_matrix (numpy.ndarray): cluster linkage matrix.
+        no_frames (int): number of frames of trajectory.
         linkage_type (string): linkage type.
     '''
     user_input = input("Please enter a cutoff distance value (-d) or number of clusters (-c):\n") or "inconsistent, 3.2"
     type, value = user_input.split()
     if type == "-d":
-        clusters = fcluster(linkage, value, criterion='distance')
+        clusters = fcluster(linkage_matrix, value, criterion='distance')
         postprocessing.scatterplot_time(clusters, no_frames, linkage_type)
         postprocessing.saveClusters(clusters, linkage_type)
     elif type == "-c":
-        clusters = fcluster(linkage, value, criterion='maxclust')
+        clusters = fcluster(linkage_matrix, value, criterion='maxclust')
         postprocessing.scatterplot_time(clusters, no_frames, linkage_type)
         postprocessing.saveClusters(clusters, linkage_type)
     else:
         print("Invalid Selection")
-    # print(clusters)
 
-# Method used to run specific type of hierarchical clustering, based on users choices.
-def cluserting(rmsd_matrix_temp, hierarchical_type):
+def cluserting(rmsd_matrix, linkage_type):
     '''
     DESCRIPTION
     Runs Hierarchical clustering methods.
 
     Arguments:
-        rmsd_matrix_temp (numpy.ndarray): rmsd matrix used for clustering.
-        hierarchical_type (str): string for hierarchical type.
+        rmsd_matrix (numpy.ndarray): rmsd matrix used for clustering.
+        linkage_type (str): string for hierarchical type.
     Return:
-        linkage (numpy.ndarray): cluster linkage.
+        linkage_matrix (numpy.ndarray): cluster linkage matrix.
     '''
-    if hierarchical_type == clustering_type[0]:
+    if linkage_type == clustering_type[0]:
         print(">>> Performing %s based Hierarchical clustering " % clustering_type[0])
-        linkage = scipy.cluster.hierarchy.linkage(rmsd_matrix_temp, method=clustering_type[0])
-        cophenetic(linkage, rmsd_matrix_temp)
-    elif hierarchical_type == clustering_type[1]:
+        linkage_matrix = scipy.cluster.hierarchy.linkage(rmsd_matrix, method=clustering_type[0])
+        cophenetic(linkage_matrix, rmsd_matrix)
+    elif linkage_type == clustering_type[1]:
         print(">>> Performing %s based Hierarchical clustering " % clustering_type[1])
-        linkage = scipy.cluster.hierarchy.linkage(rmsd_matrix_temp, method=clustering_type[1])
-        cophenetic(linkage, rmsd_matrix_temp)
-    elif hierarchical_type == clustering_type[2]:
+        linkage_matrix = scipy.cluster.hierarchy.linkage(rmsd_matrix, method=clustering_type[1])
+        cophenetic(linkage_matrix, rmsd_matrix)
+    elif linkage_type == clustering_type[2]:
         print(">>> Performing %s based Hierarchical clustering " % clustering_type[2])
-        linkage = scipy.cluster.hierarchy.linkage(rmsd_matrix_temp, method=clustering_type[2])
-        cophenetic(linkage, rmsd_matrix_temp)
-    elif hierarchical_type == clustering_type[3]:
+        linkage_matrix = scipy.cluster.hierarchy.linkage(rmsd_matrix, method=clustering_type[2])
+        cophenetic(linkage_matrix, rmsd_matrix)
+    elif linkage_type == clustering_type[3]:
         print(">>> Performing %s based Hierarchical clustering " % clustering_type[3])
-        linkage = scipy.cluster.hierarchy.linkage(rmsd_matrix_temp, method=clustering_type[3])
-        cophenetic(linkage, rmsd_matrix_temp)
-    print(">>> Hierarchical clustering (%s) complete " %hierarchical_type )
-    return linkage
+        linkage_matrix = scipy.cluster.hierarchy.linkage(rmsd_matrix, method=clustering_type[3])
+        cophenetic(linkage_matrix, rmsd_matrix)
+    print(">>> Hierarchical clustering (%s) complete " %linkage_type)
+    return linkage_matrix
 
-def runHierarchicalClustering(filename, type):
+def runHierarchicalClustering(filename, linkage_type):
     '''
     DESCRIPTION
     Method for running Hierarchical clustering algorithm bases on type. Type
@@ -94,15 +92,14 @@ def runHierarchicalClustering(filename, type):
 
     Arguments:
         filename (str): string of filename.
-        type (str): string for hierarchical type.
+        linkage_type (str): string for hierarchical type.
     '''
     traj = preprocessing.preprocessing_file(filename)
     rmsd_matrix_temp = preprocessing.preprocessing_hierarchical(traj)
-    linkage_temp = cluserting(rmsd_matrix_temp, type)
-    no_frames = preprocessing.numberOfFrames(traj)
-    postprocessing.save_dendrogram(type, linkage_temp, True) # False not to show dendrogram
-    produceClusters(linkage_temp, no_frames, type)
-
+    linkage_temp = cluserting(rmsd_matrix_temp, linkage_type)
+    no_frames = preprocessing.getNumberOfFrames(traj)
+    postprocessing.save_dendrogram(linkage_type, linkage_temp, True) # False not to show dendrogram
+    produceClusters(linkage_temp, no_frames, linkage_type)
 
 def randomDataValidation():
     '''
