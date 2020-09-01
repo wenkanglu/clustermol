@@ -3,20 +3,16 @@ import configparser
 import copy
 import os
 
-# from params import Params
-import select_algorithm
-import select_preprocessing
+from constants import SUBPARSER_CONF, SUBPARSER_CLUS, SUBPARSER_PREP, UMAP, TSNE, IMWKMEANS, HIERARCHICAL, HDBSCAN, \
+    ALGORITHM, SOURCE, DESTINATION, VISUALISE, DOWNSAMPLE, SELECTION, SAVECLUSTERS, LINKAGE, CONFIGURATION, AVERAGE, \
+    COMPLETE, SINGLE, WARD
+from job import start_job
 
 os.chdir(os.path.join(os.path.dirname(__file__), '..'))  # changes cwd to always be at clustermol
 directory = os.getcwd()
-# Params.cmd = directory
 
-SUBPARSER_ARGS = "args"
-SUBPARSER_CONF = "conf"
-SUBPARSER_PREP = "prep"
-
-algorithm_list = ["hdbscan", "hierarchical", "imwkmeans", "tsne", "umap"]
-hierarchical_list = ["average", "complete", "single", "ward"]
+algorithm_list = [HDBSCAN, HIERARCHICAL, IMWKMEANS, TSNE, UMAP]
+hierarchical_list = [AVERAGE, COMPLETE, SINGLE, WARD]
 
 
 def parse():
@@ -27,87 +23,86 @@ def parse():
     parser_conf = subparsers.add_parser(SUBPARSER_CONF, help="Cluster using .ini configuration file/s")
     parser_conf.set_defaults(function=handle_configuration)
     parser_conf.add_argument("-c",
-                             "--configuration",
+                             CONFIGURATION,
                              default=None,
                              required=True,
                              help="Select configuration file/s", )
 
     # subparser for handling standard args
-    parser_args = subparsers.add_parser(SUBPARSER_ARGS, help="Cluster using arguments")
-    parser_args.set_defaults(function=call_algorithm)
-    parser_args.add_argument("-a",
-                             "--algorithm",
+    parser_clus = subparsers.add_parser(SUBPARSER_CLUS, help="Cluster using arguments")
+    parser_clus.set_defaults(function=start_job)
+    parser_clus.add_argument("-a",
+                             ALGORITHM,
                              default=None,
                              required=True,
                              choices=algorithm_list,
                              help="Select a clustering algorithm", )
-    parser_args.add_argument("-s",
-                             "--source",
+    parser_clus.add_argument("-s",
+                             SOURCE,
                              default=None,
                              required=True,
                              help="Select the input source", )
-    parser_args.add_argument("-d",
-                             "--destination",
+    parser_clus.add_argument("-d",
+                             DESTINATION,
                              default=None,
                              required=True,
                              help="Select output destination", )
-    parser_args.add_argument("-v",
-                             "--visualise",
+    parser_clus.add_argument("-v",
+                             VISUALISE,
                              default="false",
                              choices=["true", "false"],
                              help="Select whether to visualise cluster results", )
-    parser_args.add_argument("-ds",
-                             "--downsample",
+    parser_clus.add_argument("-ds",
+                             DOWNSAMPLE,
                              default=None,
                              help="Select every nth frame to be kept", )
-    parser_args.add_argument("-sel",
-                             "--selection",
+    parser_clus.add_argument("-sel",
+                             SELECTION,
                              default=None,
                              help="Input a selection operation to be performed", )
-    parser_args.add_argument("-sc",
-                             "--saveclusters",
+    parser_clus.add_argument("-sc",
+                             SAVECLUSTERS,
                              default=None,
                              help="Save the largest n number of clusters to destination", )
+
     # algorithm specific arguments
-    parser_args.add_argument("-l",
-                             "--linkage",
+    parser_clus.add_argument("-l",
+                             LINKAGE,
                              default=None,
                              choices=hierarchical_list,
                              help="Select linkage type if using hierarchical clustering", )
 
     # subparser for handling preprocessing jobs
     parser_prep = subparsers.add_parser(SUBPARSER_PREP, help="Perform a preprocessing job")
-    parser_prep.set_defaults(function=call_preprocessing)
+    parser_prep.set_defaults(function=start_job)
     parser_prep.add_argument("-s",
-                             "--source",
-                             dest="prep_source",
+                             SOURCE,
                              default=None,
                              required=True,
                              help="Select the file to be processed", )
     parser_prep.add_argument("-d",
-                             "--destination",
-                             dest="prep_destination",
+                             DESTINATION,
                              default=None,
                              required=True,
                              help="Select destination of processed file", )
     parser_prep.add_argument("-ds",
-                             "--downsample",
-                             dest="prep_downsample",
+                             DOWNSAMPLE,
                              default=None,
                              help="Select every nth frame to be kept", )
     parser_prep.add_argument("-sel",
-                             "--selection",
-                             dest="prep_selection",
+                             SELECTION,
                              default=None,
                              help="Input a selection operation to be performed", )
 
     args = parser.parse_args()
     # print(args)  # keep for debugging args
-    args.function(args)
+    if args.subparser_used == SUBPARSER_CONF:
+        args.function(args)
+    else:
+        args.function(args, args.subparser_used)
 
 
 def handle_configuration(args):
-    # config_path = args.configuration
     if os.path.isfile(args.configuration):
         parse_configuration(args, args.configuration)
     elif os.path.isdir(os.path.abspath(args.configuration)):
@@ -116,7 +111,6 @@ def handle_configuration(args):
 
 
 def parse_configuration(args, filename):
-    # print("hello world!")
     if filename.endswith(".ini"):
         config = configparser.ConfigParser(allow_no_value=True)
         config.read(filename)
@@ -124,55 +118,43 @@ def parse_configuration(args, filename):
             if section[0] == "c":
                 # print(section)
                 args_copy = copy.copy(args)
-                # print(section)
-                args_copy.algorithm = config[section]["--algorithm"]  # sets algorithm from config file
-                # print(args_copy.algorithm)
-                args_copy.source = config[section]["--source"]
-                args_copy.destination = config[section]["--destination"]
-                args_copy.visualise = config[section]["--visualise"]
-                if config.has_option(section, "--downsample"):
-                    args_copy.downsample = config[section]["--downsample"]
-                if config.has_option(section, "--selection"):
-                    args_copy.selection = config[section]["--selection"]
-                if config.has_option(section, "--saveclusters"):
-                    args_copy.saveclusters = config[section]["--saveclusters"]
-                if args_copy.algorithm == "hierarchical":
-                    args_copy.linkage = config[section]["--linkage"]
-                call_algorithm(args_copy)
+                args_copy.algorithm = config[section][ALGORITHM]  # sets algorithm from config file
+                args_copy.source = config[section][SOURCE]
+                args_copy.destination = config[section][DESTINATION]
+                args_copy.visualise = config[section][VISUALISE]
+                if config.has_option(section, DOWNSAMPLE):
+                    args_copy.downsample = config[section][DOWNSAMPLE]
+                else:
+                    args_copy.downsample = None
+                if config.has_option(section, SELECTION):
+                    args_copy.selection = config[section][SELECTION]
+                else:
+                    args_copy.selection = None
+                if config.has_option(section, SAVECLUSTERS):
+                    args_copy.saveclusters = config[section][SAVECLUSTERS]
+                else:
+                    args_copy.saveclusters = None
+                if args_copy.algorithm == HIERARCHICAL:
+                    args_copy.linkage = config[section][LINKAGE]
+                else:
+                    args_copy.linkage = None
+                start_job(args_copy, SUBPARSER_CLUS)
             elif section[0] == "p":
-                args_copy.prep_source = config[section]["--source"]
-                args_copy.prep_destination = config[section]["--destination"]
-                if config.has_option(section, "--downsample"):
-                    args_copy.prep_downsample = config[section]["--downsample"]
-                if config.has_option(section, "--selection"):
-                    args_copy.prep_selection = config[section]["--selection"]
+                args_copy.source = config[section][SOURCE]
+                args_copy.destination = config[section][DESTINATION]
+                if config.has_option(section, DOWNSAMPLE):
+                    args_copy.downsample = config[section][DOWNSAMPLE]
+                else:
+                    args_copy.downsample = None
+                if config.has_option(section, SELECTION):
+                    args_copy.selection = config[section][SELECTION]
+                else:
+                    args_copy.selection = None
+                start_job(args_copy, SUBPARSER_PREP)
+            else:
+                print("Config sections must start with 'p' or 'c' for processing and clustering jobs respectively")
     else:
         print(args.configuration + " is not .ini type")
-
-
-def call_algorithm(args):
-    # print(args)
-    if args.visualise == "true":
-        args.visualise = True
-    else:
-        args.visualise = False
-    if args.algorithm == "hierarchical":
-        # print(args.visualise)
-        select_algorithm.call_hierarchical(args)
-    # call algorithm with these args
-    elif args.algorithm == "imwkmeans":
-        select_algorithm.call_imwkmeans(args)
-    elif args.algorithm == "hdbscan":
-        select_algorithm.call_hdbscan(args)
-    elif args.algorithm == "tsne":
-        select_algorithm.call_tsne(args)
-    elif args.algorithm == "umap":
-        select_algorithm.call_umap(args)
-
-
-def call_preprocessing(args):
-    # TODO: call preprocessing under processing/pre when a caller method in select_preprocessing has been made
-    None
 
 
 if __name__ == "__main__":

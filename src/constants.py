@@ -1,0 +1,25 @@
+SUBPARSER_CLUS = "clus"
+SUBPARSER_CONF = "conf"
+SUBPARSER_PREP = "prep"
+
+HDBSCAN = "hdbscan"
+HIERARCHICAL = "hierarchical"
+IMWKMEANS = "imwkmeans"
+TSNE = "tsne"
+UMAP = "umap"
+
+
+CONFIGURATION = "--configuration"
+ALGORITHM = "--algorithm"
+SOURCE = "--source"
+DESTINATION = "--destination"
+VISUALISE = "--visualise"
+DOWNSAMPLE = "--downsample"
+SELECTION = "--selection"
+SAVECLUSTERS = "--saveclusters"
+LINKAGE = "--linkage"
+
+AVERAGE = "average"
+COMPLETE = "complete"
+SINGLE = "single"
+WARD = "ward"

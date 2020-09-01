@@ -12,10 +12,10 @@ import sklearn.cluster as cluster
 from sklearn.metrics import adjusted_rand_score, adjusted_mutual_info_score
 
 
-def umap_main(args):
-    traj = mdtraj.load(os.path.join("data", "data_src", "MenW_ds_10_pf.pdb"))
+def umap_main(traj, args):
     # traj.remove_solvent(inplace=True)
     traj = traj.atom_slice(traj.topology.select("resname != SOD and type != H"))
+    # traj = traj.atom_slice(traj.topology.select("resname != SOD and type == H"))
     print(traj.n_atoms)
     coords = np.reshape(traj.xyz, (traj.n_frames, 3 * traj.n_atoms))
     print("traj loaded")
@@ -29,7 +29,7 @@ def umap_main(args):
 
     labels = hdbscan.HDBSCAN(
         min_samples=1,
-        min_cluster_size=120,
+        min_cluster_size=50,
     ).fit_predict(standard_embedding)
 
     clustered = (labels >= 0)

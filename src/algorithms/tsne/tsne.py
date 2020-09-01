@@ -2,7 +2,6 @@ import os
 import time
 
 import matplotlib
-import mdtraj
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
@@ -15,20 +14,19 @@ from sklearn.metrics import silhouette_score
 from warnings import filterwarnings
 
 
-def cluster(args):
+def cluster(traj, args):
     filterwarnings('ignore')
 
-    # start_time = time.time()
-    # traj = mdtraj.load(os.path.join("data", "data_src", "MenW_ds_10_pf.pdb"))
-    # traj.remove_solvent(inplace=True)
-    # print(traj.n_atoms)
+    start_time = time.time()
+    traj.remove_solvent(inplace=True)
+    print(traj.n_atoms)
 
-    # traj_time = time.time()
-    # print("--- %s seconds to load trajectory---" % (traj_time - start_time))
-    # coords = np.reshape(traj.xyz, (traj.n_frames, 3*traj.n_atoms))
+    traj_time = time.time()
+    print("--- %s seconds to load trajectory---" % (traj_time - start_time))
+    coords = np.reshape(traj.xyz, (traj.n_frames, 3*traj.n_atoms))
     # print(coords[0])
 
-    iris = datasets.load_iris()
+    # iris = datasets.load_iris()
 
     # n_components=7 because we have 7 features in the dataset
     # pca = PCA(n_components=3*traj.n_atoms)
@@ -45,10 +43,10 @@ def cluster(args):
     # plt.show()
 
     pca = PCA(n_components=4)
-    pca_scale = pca.fit_transform(iris.data)
+    pca_scale = pca.fit_transform(coords)
     pca_df_scale = pd.DataFrame(pca_scale)
     pca_time = time.time()
-    # print("--- %s seconds to perform pca---" % (pca_time - traj_time))
+    print("--- %s seconds to perform pca---" % (pca_time - traj_time))
 
     tsne = TSNE(n_components=2, verbose=1, perplexity=80, n_iter=5000, learning_rate=200)
     tsne_scale_results = tsne.fit_transform(pca_df_scale)
@@ -84,16 +82,3 @@ def cluster(args):
                     s=100, alpha=0.6).set_title('Cluster Vis tSNE Scaled Data', fontsize=15)
     plt.legend()
     plt.show()
-
-    # Scene = dict(xaxis=dict(title='tsne1'), yaxis=dict(title='tsne2'), zaxis=dict(title='tsne3'))
-    # labels = labels_tsne_scale
-    # trace = go.Scatter3d(x=clusters_tsne_scale.iloc[:, 0],
-    #                      y=clusters_tsne_scale.iloc[:, 1],
-    #                      z=clusters_tsne_scale.iloc[:, 2],
-    #                      mode='markers', marker=dict(color=labels,
-    #                                                  colorscale='Viridis', size=10, line=dict(color='yellow', width=5)))
-    #
-    # layout = go.Layout(margin=dict(l=0, r=0), scene=Scene, height=1000, width=1000)
-    # data = [trace]
-    # fig = go.Figure(data=data, layout=layout)
-    # fig.show()
