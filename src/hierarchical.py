@@ -38,7 +38,7 @@ def produceClusters(linkage, no_frames, linkage_type):
     Arguments:
         linkage (numpy.ndarray): cluster linkage.
         no_frames (int): pairwise distance matrix.
-        linkage_type (string): linkage type. 
+        linkage_type (string): linkage type.
     '''
     user_input = input("Please enter a cutoff distance value (-d) or number of clusters (-c):\n") or "inconsistent, 3.2"
     type, value = user_input.split()
@@ -51,14 +51,8 @@ def produceClusters(linkage, no_frames, linkage_type):
         postprocessing.scatterplot_time(clusters, no_frames, linkage_type)
         postprocessing.saveClusters(clusters, linkage_type)
     else:
-        print("Default do nothing ATM")
+        print("Invalid Selection")
     # print(clusters)
-
-
-def cut_off_selection():
-    # TODO:
-    pass
-
 
 # Method used to run specific type of hierarchical clustering, based on users choices.
 def cluserting(rmsd_matrix_temp, hierarchical_type):
@@ -106,7 +100,7 @@ def runHierarchicalClustering(filename, type):
     rmsd_matrix_temp = preprocessing.preprocessing_hierarchical(traj)
     linkage_temp = cluserting(rmsd_matrix_temp, type)
     no_frames = preprocessing.numberOfFrames(traj)
-    postprocessing.save_dendrogram(type, linkage_temp, True)
+    postprocessing.save_dendrogram(type, linkage_temp, True) # False not to show dendrogram
     produceClusters(linkage_temp, no_frames, type)
 
 
