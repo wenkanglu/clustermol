@@ -44,11 +44,11 @@ def produceClusters(linkage_matrix, no_frames, linkage_type):
     type, value = user_input.split()
     if type == "-d":
         clusters = fcluster(linkage_matrix, value, criterion='distance')
-        postprocessing.scatterplot_time(clusters, no_frames, linkage_type)
+        postprocessing.scatterplot_cluster(clusters, no_frames, linkage_type)
         postprocessing.saveClusters(clusters, linkage_type)
     elif type == "-c":
         clusters = fcluster(linkage_matrix, value, criterion='maxclust')
-        postprocessing.scatterplot_time(clusters, no_frames, linkage_type)
+        postprocessing.scatterplot_cluster(clusters, no_frames, linkage_type)
         postprocessing.saveClusters(clusters, linkage_type)
     else:
         print("Invalid Selection")

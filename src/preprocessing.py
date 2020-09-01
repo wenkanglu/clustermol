@@ -76,7 +76,7 @@ def preprocessing_qt(traj):
     print('>>> RMSD matrix complete')
     return rmsd_matrix
 
-def getRMSD_first_frame(traj):
+def getRMSDvsFirstFrame(traj):
     '''
     DESCRIPTION
     Illustrate change of RMSD over frames with reference to the inital/first frame.

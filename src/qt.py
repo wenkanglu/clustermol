@@ -87,7 +87,7 @@ def qt_orginal(rmsd_matrix, no_frames, cutoff, minimum_membership):
         degrees = (rmsd_matrix < numpy.inf).sum(axis=0)
         if (degrees == 0).all():
             break
-    postprocessing.scatterplot_time(cluster_labels, no_frames, "qt_original")
+    postprocessing.scatterplot_cluster(cluster_labels, no_frames, "qt_original")
     postprocessing.saveClusters(cluster_labels, "qt_original")
     # return cluster_labels
 
@@ -130,7 +130,7 @@ def qt_like(rmsd_matrix, no_frames, cutoff, minimum_membership):
         rmsd_matrix[:, members] = False
         cluster_index = cluster_index + 1
         # print(membership)
-    postprocessing.scatterplot_time(cluster_labels, no_frames, "QT_like")
+    postprocessing.scatterplot_cluster(cluster_labels, no_frames, "QT_like")
     postprocessing.saveClusters(cluster_labels, "QT_like")
     # return cluster_labels
 
@@ -144,7 +144,7 @@ def getArguments():
         cutoff (float): threshold value for QT algotithm.
         minimum_membership (int): int value for minimum cluster size.
     '''
-    user_input = input("Please enter a cutoff value and minimum membership value\n") or "0.5 10"
+    user_input = input(">>> Please enter a cutoff value and minimum membership value\n") or "0.5 10"
     cutoff, min = user_input.split()
     return float(cutoff), int(min)
 
@@ -160,32 +160,31 @@ def runQT(filename, type):
     '''
     traj = preprocessing.preprocessing_file(filename)
     rmsd_matrix_temp = preprocessing.preprocessing_qt(traj)  # Need to write general pre-process.
-    no_frames = preprocessing.numberOfFrames(traj)
-    time = preprocessing.getTime(traj)
-    postprocessing.rmsd_vs_seconds(time, preprocessing.getRMSD_first_frame(traj))
+    no_frames = preprocessing.getNumberOfFrames(traj)
+    postprocessing.illustrateRMSD(rmsd_matrix_temp)
+    postprocessing.rmsd_vs_frame(no_frames, preprocessing.getRMSDvsFirstFrame(traj))
     cutoff, min = getArguments()
     if type == "qt_original":
         qt_orginal(rmsd_matrix_temp, no_frames, cutoff, min)
     elif type == "qt_like":
         qt_like(rmsd_matrix_temp, no_frames, cutoff, min)
     else:
-        display = preprocessing.getRMSD_first_frame(traj)
-        no_frames = preprocessing.numberOfFrames(traj)
+        pass
 
-def runPreprocessed(filename, no_frames, type):
+def runVMD_RMSD_QT(filename, type):
     '''
     DESCRIPTION
     Overall implementation of two diffrent implementations of the Quaility
-    Threshold algotithim using pre-processed rmsd matrix.
+    Threshold algotithim using pre-processed rmsd matrix from VMD.
 
     Arguments:
         filename (string): filename of .dat VMD matrix file.
         type (string): type of Quaility Threshold algotithm to implemnt.
-        no_frames (int): number of frames in .dat file.
     '''
-    rmsd_matrix_temp = preprocessing.VMD_RMSD_matrix(filename, no_frames)  # Need to write general pre-process.
-    no_frames = len(rmsd_matrix_temp[1])
+    no_frames = int(input(">>> Please enter the number of frames for the RMSD Matrix .dat file\n"))
+    rmsd_matrix_temp = preprocessing.VMD_RMSD_matrix(filename, no_frames)
     postprocessing.illustrateRMSD(rmsd_matrix_temp)
+    postprocessing.rmsd_vs_frame(no_frames, rmsd_matrix_temp[0])
     cutoff, min = getArguments()
     if type == "qt_original":
         qt_orginal(rmsd_matrix_temp, no_frames, cutoff, min)
@@ -220,5 +219,5 @@ def validation():
     #
 
 if __name__ == "__main__":
-    # runQT("MenW_0_to_1000ns_aligned(100skip).pdb", "qt_like")
-    runPreprocessed("trajrmsd_menW_nic_test.dat", 401, "qt_original")
+    runQT("MenW_0_to_1000ns_aligned(100skip).pdb", "qt_original")
+    # runVMD_RMSD_QT("trajrmsd_menW_nic_test.dat", "qt_original")
