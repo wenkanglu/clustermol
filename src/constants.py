@@ -4,6 +4,8 @@ SUBPARSER_PREP = "prep"
 
 HDBSCAN = "hdbscan"
 HIERARCHICAL = "hierarchical"
+QT = "qt"
+QTVECTOR = "qtvector"
 IMWKMEANS = "imwkmeans"
 TSNE = "tsne"
 UMAP = "umap"
