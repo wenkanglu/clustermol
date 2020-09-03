@@ -4,8 +4,9 @@ import copy
 import os
 
 from constants import SUBPARSER_CONF, SUBPARSER_CLUS, SUBPARSER_PREP, UMAP, TSNE, IMWKMEANS, HIERARCHICAL, HDBSCAN, \
-    ALGORITHM, SOURCE, DESTINATION, VISUALISE, DOWNSAMPLE, SELECTION, SAVECLUSTERS, LINKAGE, CONFIGURATION, AVERAGE, \
-    COMPLETE, SINGLE, WARD
+    ALGORITHM, SOURCE, DESTINATION, VISUALISE, VALIDATE, DOWNSAMPLE, SELECTION, SAVECLUSTERS, LINKAGE, MINCLUSTERSIZE, \
+    MINSAMPLES, CONFIGURATION, AVERAGE, COMPLETE, SINGLE, WARD, SILHOUETTE, DAVIESBOULDIN, CALINSKIHARABASZ
+
 from job import start_job
 
 os.chdir(os.path.join(os.path.dirname(__file__), '..'))  # changes cwd to always be at clustermol
@@ -13,6 +14,7 @@ directory = os.getcwd()
 
 algorithm_list = [HDBSCAN, HIERARCHICAL, IMWKMEANS, TSNE, UMAP]
 hierarchical_list = [AVERAGE, COMPLETE, SINGLE, WARD]
+validity_indices = [SILHOUETTE, DAVIESBOULDIN, CALINSKIHARABASZ]
 
 
 def parse():
@@ -52,6 +54,12 @@ def parse():
                              default="false",
                              choices=["true", "false"],
                              help="Select whether to visualise cluster results", )
+    parser_clus.add_argument("-cvi",
+                             VALIDATE,
+                             default=None,
+                             nargs='*',
+                             choices=validity_indices,
+                             help="Select CVIs to calculate from cluster results.", )
     parser_clus.add_argument("-ds",
                              DOWNSAMPLE,
                              default=None,
@@ -71,6 +79,14 @@ def parse():
                              default=None,
                              choices=hierarchical_list,
                              help="Select linkage type if using hierarchical clustering", )
+    parser_clus.add_argument("-mc",
+                             MINCLUSTERSIZE,
+                             default=None,
+                             help="Minimum cluster size for HDBSCAN clustering", )
+    parser_clus.add_argument("-ms",
+                             MINSAMPLES,
+                             default=None,
+                             help="Minimum samples for HDBSCAN clustering", )
 
     # subparser for handling preprocessing jobs
     parser_prep = subparsers.add_parser(SUBPARSER_PREP, help="Perform a preprocessing job")
@@ -122,6 +138,10 @@ def parse_configuration(args, filename):
                 args_copy.source = config[section][SOURCE]
                 args_copy.destination = config[section][DESTINATION]
                 args_copy.visualise = config[section][VISUALISE]
+                if config.has_option(section, VALIDATE):
+                    args_copy.validate = config[section][VALIDATE]
+                else:
+                    args_copy.validate = None
                 if config.has_option(section, DOWNSAMPLE):
                     args_copy.downsample = config[section][DOWNSAMPLE]
                 else:
@@ -138,8 +158,17 @@ def parse_configuration(args, filename):
                     args_copy.linkage = config[section][LINKAGE]
                 else:
                     args_copy.linkage = None
+                if args_copy.algorithm == HDBSCAN:
+                    args_copy.minclustersize = config[section][MINCLUSTERSIZE]
+                else:
+                    args_copy.minclustersize = None
+                if args_copy.algorithm == HDBSCAN:
+                    args_copy.minsamples = config[section][MINSAMPLES]
+                else:
+                    args_copy.minsamples = None
                 start_job(args_copy, SUBPARSER_CLUS)
             elif section[0] == "p":
+                args_copy = copy.copy(args)
                 args_copy.source = config[section][SOURCE]
                 args_copy.destination = config[section][DESTINATION]
                 if config.has_option(section, DOWNSAMPLE):
@@ -152,7 +181,7 @@ def parse_configuration(args, filename):
                     args_copy.selection = None
                 start_job(args_copy, SUBPARSER_PREP)
             else:
-                print("Config sections must start with 'p' or 'c' for processing and clustering jobs respectively")
+                print("Config sections must start with 'p' or 'c' for processing and clustering jobs respectively.")
     else:
         print(args.configuration + " is not .ini type")
 

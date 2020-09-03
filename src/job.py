@@ -7,18 +7,20 @@ from constants import SUBPARSER_PREP
 from processing import pre_placeholder
 from algorithms.hierarchical import hierarchical
 from algorithms.imwkmeans import cluster_imwkmeans
+from algorithms.hdbscan import hdbscan
 from algorithms.tsne import tsne
 from algorithms.umap import umap
 
 
 def start_job(args, job):
+    print("Loading trajectory from file...")
     traj = mdtraj.load(os.path.join("data", "data_src", args.source))
     if args.selection:
-        # TODO: do selection
-        None
-    elif args.downsample:
-        # TODO: do downsample
-        None
+        sel = traj.topology.select(args.selection)
+        traj = traj.atom_slice(sel)
+
+    if args.downsample:
+        traj = traj[::int(args.downsample)]
 
     if job == SUBPARSER_CLUS:
         if args.visualise == "true":
@@ -31,12 +33,14 @@ def start_job(args, job):
         elif args.algorithm == IMWKMEANS:
             cluster_imwkmeans.cluster(traj, args)
         elif args.algorithm == HDBSCAN:
-            cluster_imwkmeans.cluster_hdbscan(traj, args)
+            hdbscan.cluster(traj, args)
         elif args.algorithm == TSNE:
             tsne.cluster(traj, args)
         elif args.algorithm == UMAP:
             umap.umap_main(traj, args)
 
     elif job == SUBPARSER_PREP:
-        # TODO: save new processed file into args.destination
-        None
+        if args.destination.endswith(".pdb"):
+            traj.save_pdb("data/data_src/" + args.destination)
+        else:
+            traj.save_pdb("data/data_src/" + args.destination + ".pdb")
