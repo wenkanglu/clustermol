@@ -12,7 +12,7 @@ from job import start_job
 os.chdir(os.path.join(os.path.dirname(__file__), '..'))  # changes cwd to always be at clustermol
 directory = os.getcwd()
 
-algorithm_list = [HDBSCAN, HIERARCHICAL, IMWKMEANS, TSNE, UMAP]
+algorithm_list = [HDBSCAN, HIERARCHICAL, IMWKMEANS, QT, QTVECTOR, TSNE, UMAP]
 hierarchical_list = [AVERAGE, COMPLETE, SINGLE, WARD]
 validity_indices = [SILHOUETTE, DAVIESBOULDIN, CALINSKIHARABASZ]
 

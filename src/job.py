@@ -32,9 +32,9 @@ def start_job(args, job):
         if args.algorithm == HIERARCHICAL:
             hierarchical.runClustering(traj, args.source, args.destination, args.linkage, args.visualise)
         elif args.algorithm == QT:
-            qt.runClustering(traj)
+            qt.cluster(traj, "qt_original")
         elif args.algorithm == QTVECTOR:
-            qt.runClustering(traj)
+            qt.cluster(traj, "qt_vector")
         elif args.algorithm == IMWKMEANS:
             cluster_imwkmeans.cluster(traj, args)
         elif args.algorithm == HDBSCAN:
