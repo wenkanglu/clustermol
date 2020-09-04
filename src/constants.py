@@ -23,6 +23,10 @@ SAVECLUSTERS = "--saveclusters"
 LINKAGE = "--linkage"
 MINCLUSTERSIZE = "--minclustersize"
 MINSAMPLES = "--minsamples"
+QUALITYTHRESHOLD = "--qualitythreshold"
+K_CLUSTERS = "--numberofclusters"
+DDISTANCE = "--dendrogramdistance"
+
 
 AVERAGE = "average"
 COMPLETE = "complete"

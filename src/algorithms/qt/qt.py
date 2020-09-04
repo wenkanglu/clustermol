@@ -1,12 +1,142 @@
+import os
 import numpy
+import mdtraj
 import numpy.ma as ma
-import preprocessing
-import postprocessing
 import matplotlib.pyplot as plot
-from sklearn import cluster, datasets, mixture
 from scipy.spatial.distance import pdist, squareform
-import sys
+from sklearn import cluster, datasets, mixture
 
+def illustrateRMSD(rmsd_matrix, dest):
+    '''
+    DESCRIPTION
+    Creates an RMDS heatmap
+
+    Arguments:
+        rmsd_matrix (numpy.ndarray): rmsd matrix.
+        dest (str): destination to save rmsd matrix visualization.
+    '''
+    plot.figure()
+    plot.imshow(rmsd_matrix, cmap='viridis', interpolation='nearest')
+    print(">>> Max pairwise rmsd: %f nm" % numpy.max(rmsd_matrix))
+    print(">>> Average pairwise rmsd: %f nm" % numpy.mean(rmsd_matrix))
+    print(">>> Median pairwise rmsd: %f nm" % numpy.median(rmsd_matrix))
+    plot.colorbar()
+    plot.savefig("data/data_dest/" + dest + "/RMSD-matrix.png")
+    plot.show()
+    plot.close()
+
+def rmsd_vs_frame(no_frames, rmsds, dest):
+    '''
+    DESCRIPTION
+    Produce cluster scatter plot of frames. Skips first frame that computed against.
+
+    Arguments:
+        clusters_arr (mdtraj.traj): trajectory.
+        rmsds (numpy.ndarray): rmsd matrix for visualization.
+        dest (str): destination to save rmsd vs frame visualization.
+    '''
+    plot.figure()
+    plot.plot(numpy.arange(1,no_frames), rmsds[1:, ], 'r', label='all atoms')
+    plot.legend()
+    plot.title('RMSDs over time agaist first frame')
+    plot.xlabel('Simulation frames')
+    plot.ylabel('RMSD (nm)')
+    # os.chdir(os.path.join(os.path.dirname(__file__), '..')+ "/data/data_dest/")
+    plot.savefig("data/data_dest/" + dest + "/rmsd-vs-frame.png")
+    plot.show()
+    plot.close()
+
+def saveClusters(clusters_arr, dest, type):
+    '''
+    DESCRIPTION
+    Save cluster indexes to text file
+
+    Arguments:
+        clusters_arr (numpy.ndarray): Cluster indexes per frame.
+        dest (str): destination to save cluster labels.
+        type (str): type of qt implementation.
+    '''
+    # os.chdir(os.path.join(os.path.dirname(__file__), '..')+ "/data/data_dest/")
+    numpy.savetxt("data/data_dest/" + dest + "/clusters-%s.txt" %type, clusters_arr, fmt='%i')
+
+def scatterplot_cluster(clusters_arr, no_frames, dest, type):
+        '''
+        DESCRIPTION
+        Produce cluster scatter plot of frames
+
+        Arguments:
+            clusters_arr (numpy.ndarray): cluster indexes per frame.
+            no_frames (int): number of frames
+            dest (str): destination to save scatterplot of clusters.
+            type (str): type of qt implementation.
+        '''
+        plot.figure()
+        plot.scatter(numpy.arange(no_frames), clusters_arr, marker = '.',cmap='prism')
+        plot.xlabel("Frame Number")
+        plot.ylabel("Cluster Index")
+        plot.locator_params(axis="both", integer=True, tight=True)
+        plot.title("Scatterplot of clusters vs frame - %s" % type)
+        # os.chdir(os.path.join(os.path.dirname(__file__), '..')+ "/data/data_dest/")
+        #print(os.getcwd())
+        plot.savefig("data/data_dest/" + dest + "scatterplot-%s.png" % type)
+        plot.show()
+        plot.close()
+
+def getRMSDvsFirstFrame(traj):
+    '''
+    DESCRIPTION
+    Illustrate change of RMSD over frames with reference to the inital/first frame.
+
+    Arguments:
+        traj (mdtraj.Trajectory): trajectory object from MDTraj libary.
+    Return:
+        rmsd_matrix (numpy.np): rmsd matrix for visualization.
+    '''
+    rmsd_matrix = numpy.ndarray((traj.n_frames, traj.n_frames), dtype=numpy.float64)
+    rmsd_matrix = mdtraj.rmsd(traj, traj, 0)
+    return rmsd_matrix
+
+def getNumberOfFrames(traj):
+    '''
+    DESCRIPTION
+    Returns Number of frames within the Trajectory.
+
+    Arguments:
+        traj (mdtraj.Trajectory): trajectory object from MDTraj libary.
+    Return:
+        no_frames (int): number of frames from simulation.
+    '''
+    return traj.n_frames
+
+def preprocessing_qt(traj):
+    '''
+    DESCRIPTION
+    Preprocessing required for QT clustering. Calculates RMDS Matrix
+
+    Arguments:
+        traj (mdtraj.Trajectory): trajectory object from MDTraj libary.
+    Return:
+        rmsd_matrix (numpy.np): rmsd matrix for clustering.
+    '''
+    rmsd_matrix = numpy.ndarray((traj.n_frames, traj.n_frames), dtype=numpy.float64)
+    for i in range(traj.n_frames):
+        rmsd_ = mdtraj.rmsd(traj, traj, i, parallel=True)
+        rmsd_matrix[i] = rmsd_
+    print('>>> RMSD matrix complete')
+    return rmsd_matrix
+
+def clean_trajectory(traj):
+    '''
+    DESCRIPTION
+    Takes a trajectory object, removes ions. Other changes to the trajectory can
+    be done in this method.
+
+    Arguments:
+        traj (mdtraj.Trajectory): trajectory object to be cleaned.
+    Return:
+        trajectory (mdtraj.Trajectory): cleaned trajectory object.
+    '''
+    return traj.remove_solvent()
 
 def qt_orginal(rmsd_matrix, no_frames, cutoff, minimum_membership):
     '''
@@ -87,8 +217,7 @@ def qt_orginal(rmsd_matrix, no_frames, cutoff, minimum_membership):
         degrees = (rmsd_matrix < numpy.inf).sum(axis=0)
         if (degrees == 0).all():
             break
-    postprocessing.scatterplot_cluster(cluster_labels, no_frames, "qt_original")
-    postprocessing.saveClusters(cluster_labels, "qt_original")
+    return cluster_labels
     # return cluster_labels
 
 def qt_vector(rmsd_matrix, no_frames, cutoff, minimum_membership):
@@ -130,25 +259,9 @@ def qt_vector(rmsd_matrix, no_frames, cutoff, minimum_membership):
         rmsd_matrix[:, members] = False
         cluster_index = cluster_index + 1
         # print(membership)
-    postprocessing.scatterplot_cluster(cluster_labels, no_frames, "qt_vector")
-    postprocessing.saveClusters(cluster_labels, "qt_vector")
-    # return cluster_labels
+    return cluster_labels
 
-def getArguments():
-    '''
-    DESCRIPTION
-    Gets the cutoff/threshold value needed for Quality Threshold Algorithm.
-    In addtion requires a minimum_membership value.
-
-    Returns:
-        cutoff (float): threshold value for QT algotithm.
-        minimum_membership (int): int value for minimum cluster size.
-    '''
-    user_input = input(">>> Please enter a cutoff value and minimum membership value\n") or "0.5 10"
-    cutoff, min = user_input.split()
-    return float(cutoff), int(min)
-
-def cluster(traj, type):
+def cluster(traj, type, args):
     '''
     DESCRIPTION
     Overall implementation of two diffrent implementations of the Quaility
@@ -158,66 +271,87 @@ def cluster(traj, type):
         traj (mdtraj.traj): trajectory object.
         type (string): type of Quaility Threshold algotithm to implemnt.
     '''
-    # traj = preprocessing.preprocessing_file(filename)
-    rmsd_matrix_temp = preprocessing.preprocessing_qt(traj)  # Need to write general pre-process.
-    no_frames = preprocessing.getNumberOfFrames(traj)
-    postprocessing.illustrateRMSD(rmsd_matrix_temp)
-    postprocessing.rmsd_vs_frame(no_frames, preprocessing.getRMSDvsFirstFrame(traj))
-    cutoff, min = getArguments()
+    traj = clean_trajectory(traj)
+    rmsd_matrix_temp = preprocessing_qt(traj)  # Need to write general pre-process.
+    no_frames = getNumberOfFrames(traj)
+    illustrateRMSD(rmsd_matrix_temp, args.destination)
+    rmsd_vs_frame(no_frames, getRMSDvsFirstFrame(traj), args.destination)
     if type == "qt_original":
-        qt_orginal(rmsd_matrix_temp, no_frames, cutoff, min)
+        cluster_labels = qt_orginal(rmsd_matrix_temp, no_frames, float(args.qualitythreshold), int(args.minsamples))
+        scatterplot_cluster(cluster_labels, no_frames, args.destination, args.algorithm)
+        saveClusters(cluster_labels, args.destination, args.algorithm)
     elif type == "qt_vector":
-        qt_vector(rmsd_matrix_temp, no_frames, cutoff, min)
+        cluster_labels = qt_vector(rmsd_matrix_temp, no_frames, float(args.qualitythreshold), int(args.minsamples))
+        scatterplot_cluster(cluster_labels, no_frames, args.destination, args.algorithm)
+        saveClusters(cluster_labels, args.destination, args.algorithm)
     else:
         pass
 
-def runVMD_RMSD_QT(filename, type):
-    '''
-    DESCRIPTION
-    Overall implementation of two diffrent implementations of the Quaility
-    Threshold algotithim using pre-processed rmsd matrix from VMD.
+# def getArguments():
+#     '''
+#     DESCRIPTION
+#     Gets the cutoff/threshold value needed for Quality Threshold Algorithm.
+#     In addtion requires a minimum_membership value.
+#
+#     Returns:
+#         cutoff (float): threshold value for QT algotithm.
+#         minimum_membership (int): int value for minimum cluster size.
+#     '''
+#     user_input = input(">>> Please enter a cutoff value and minimum membership value\n") or "0.5 10"
+#     cutoff, min = user_input.split()
+#     return float(cutoff), int(min)
 
-    Arguments:
-        filename (string): filename of .dat VMD matrix file.
-        type (string): type of Quaility Threshold algotithm to implemnt.
-    '''
-    no_frames = int(input(">>> Please enter the number of frames for the RMSD Matrix .dat file\n"))
-    rmsd_matrix_temp = preprocessing.VMD_RMSD_matrix(filename, no_frames)
-    postprocessing.illustrateRMSD(rmsd_matrix_temp)
-    postprocessing.rmsd_vs_frame(no_frames, rmsd_matrix_temp[0])
-    cutoff, min = getArguments()
-    if type == "qt_original":
-        qt_orginal(rmsd_matrix_temp, no_frames, cutoff, min)
-    elif type == "qt_vector":
-        qt_vector(rmsd_matrix_temp, no_frames, cutoff, min)
-    else:
-        pass
+# def runVMD_RMSD_QT(filename, type):
+#     '''
+#     DESCRIPTION
+#     Overall implementation of two diffrent implementations of the Quaility
+#     Threshold algotithim using pre-processed rmsd matrix from VMD.
+#
+#     Arguments:
+#         filename (string): filename of .dat VMD matrix file.
+#         type (string): type of Quaility Threshold algotithm to implemnt.
+#     '''
+#     no_frames = int(input(">>> Please enter the number of frames for the RMSD Matrix .dat file\n"))
+#     rmsd_matrix_temp = preprocessing.VMD_RMSD_matrix(filename, no_frames)
+#     postprocessing.illustrateRMSD(rmsd_matrix_temp)
+#     postprocessing.rmsd_vs_frame(no_frames, rmsd_matrix_temp[0])
+#     cutoff, min = getArguments()
+#     if type == "qt_original":
+#         qt_orginal(rmsd_matrix_temp, no_frames, cutoff, min)
+#     elif type == "qt_vector":
+#         qt_vector(rmsd_matrix_temp, no_frames, cutoff, min)
+#     else:
+#         pass
 
-def validation():
-    # The iris dataset is available from the sci-kit learn package
-    n_samples =2000
-    blobs = datasets.make_blobs(n_samples=n_samples, random_state=8)
-    X,y = blobs
-    d = pdist(X, metric="euclidean")
-    iris = datasets.load_iris()
-    d = pdist(X=iris.data[:, [0, 3]], metric="euclidean")
-    reduced_distances = squareform(d, checks=True)
-    # print(numpy.ndim(reduced_distances))
-    postprocessing.illustrateRMSD(reduced_distances)
-    # Perform agglomerative hierarchical clustering
-    # Use 'average' link function
-    # linkage_temp = cluserting(reduced_distances, type)
-    no_frames = 2000
-    lb = qt_vector(reduced_distances, 150, 1.3, 20)
-    # plot.figure(figsize=(10, 8))
-    #clusters = fcluster(linkage_temp, 3, criterion='maxclust')
-    plot.scatter(iris.data[:,0],iris.data[:,3], c=lb, cmap='viridis')  # plot points with cluster dependent colors
-    plot.show()
-    # Print the first 6 rows
-    # Sepal Length, Sepal Width, Petal Length, Petal Width
-    # print(iris.data)
-    #
+# def validation():
+#     # The iris dataset is available from the sci-kit learn package
+#     n_samples =2000
+#     blobs = datasets.make_blobs(n_samples=n_samples, random_state=8)
+#     X,y = blobs
+#     d = pdist(X, metric="euclidean")
+#     iris = datasets.load_iris()
+#     d = pdist(X=iris.data[:, [0, 3]], metric="euclidean")
+#     reduced_distances = squareform(d, checks=True)
+#     # print(numpy.ndim(reduced_distances))
+#     illustrateRMSD(reduced_distances)
+#     # Perform agglomerative hierarchical clustering
+#     # Use 'average' link function
+#     # linkage_temp = cluserting(reduced_distances, type)
+#     no_frames = 2000
+#     lb = qt_vector(reduced_distances, 150, 1.3, 20)
+#     # plot.figure(figsize=(10, 8))
+#     #clusters = fcluster(linkage_temp, 3, criterion='maxclust')
+#     plot.scatter(iris.data[:,0],iris.data[:,3], c=lb, cmap='viridis')  # plot points with cluster dependent colors
+#     plot.show()
+#     # Print the first 6 rows
+#     # Sepal Length, Sepal Width, Petal Length, Petal Width
+#     # print(iris.data)
+#     #
 
 if __name__ == "__main__":
-    cluster("MenW_0_to_1000ns_aligned(100skip).pdb", "qt_original")
+    os.chdir(os.path.join(os.path.dirname(__file__), '..'))
+    os.chdir(os.path.join(os.path.dirname(__file__), '..'))
+    os.chdir(os.path.join(os.path.dirname(__file__), '..')+"/data/data_src")
+    traj = mdtraj.load("MenW_0_to_1000ns_aligned(100skip).pdb")
+    cluster(traj, "qt_original")
     # runVMD_RMSD_QT("trajrmsd_menW_nic_test.dat", "qt_original")

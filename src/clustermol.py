@@ -5,7 +5,8 @@ import os
 
 from constants import SUBPARSER_CONF, SUBPARSER_CLUS, SUBPARSER_PREP, UMAP, TSNE, IMWKMEANS, HIERARCHICAL, HDBSCAN, \
     ALGORITHM, SOURCE, DESTINATION, VISUALISE, VALIDATE, DOWNSAMPLE, SELECTION, SAVECLUSTERS, LINKAGE, MINCLUSTERSIZE, \
-    MINSAMPLES, CONFIGURATION, AVERAGE, COMPLETE, SINGLE, WARD, SILHOUETTE, DAVIESBOULDIN, CALINSKIHARABASZ, QT, QTVECTOR
+    MINSAMPLES, CONFIGURATION, AVERAGE, COMPLETE, SINGLE, WARD, SILHOUETTE, DAVIESBOULDIN, CALINSKIHARABASZ, QT, QTVECTOR, \
+    QUALITYTHRESHOLD, K_CLUSTERS, DDISTANCE
 
 from job import start_job
 
@@ -82,11 +83,23 @@ def parse():
     parser_clus.add_argument("-mc",
                              MINCLUSTERSIZE,
                              default=None,
-                             help="Minimum cluster size for HDBSCAN clustering", )
+                             help="Minimum cluster size for HDBSCAN or Quality Threshold clustering", )
     parser_clus.add_argument("-ms",
                              MINSAMPLES,
                              default=None,
                              help="Minimum samples for HDBSCAN clustering", )
+    parser_clus.add_argument("-t",
+                             QUALITYTHRESHOLD,
+                             default=None,
+                             help="Minimum Cutoff/Quality Threshold value for Quality Threshold clustering", )
+    parser_clus.add_argument("-k",
+                             K_CLUSTERS,
+                             default=None,
+                             help="Number of assumed clusters for Hierarchical clustering", )
+    parser_clus.add_argument("-dist",
+                             DDISTANCE,
+                             default=None,
+                             help="Distance cutoff for Hierarchical clustering mergers", )
 
     # subparser for handling preprocessing jobs
     parser_prep = subparsers.add_parser(SUBPARSER_PREP, help="Perform a preprocessing job")
@@ -124,6 +137,8 @@ def handle_configuration(args):
     elif os.path.isdir(os.path.abspath(args.configuration)):
         for filename in os.listdir(args.configuration):
             parse_configuration(args, os.path.join(args.configuration, filename))
+    else:
+        print("Error - Cannot find config file")
 
 
 def parse_configuration(args, filename):
@@ -156,8 +171,16 @@ def parse_configuration(args, filename):
                     args_copy.saveclusters = None
                 if args_copy.algorithm == HIERARCHICAL:
                     args_copy.linkage = config[section][LINKAGE]
+                    if config.has_option(section, K_CLUSTERS):
+                        args_copy.k_clusters = config[section][K_CLUSTERS]
+                        args_copy.ddistance = None
+                    elif config.has_option(section, DDISTANCE):
+                        args_copy.ddistance = config[section][DDISTANCE]
+                        args_copy.k_clusters = None
                 else:
                     args_copy.linkage = None
+                    args_copy.k_clusters = None
+                    args_copy.ddistance = None
                 if args_copy.algorithm == HDBSCAN:
                     args_copy.minclustersize = config[section][MINCLUSTERSIZE]
                 else:
@@ -166,7 +189,16 @@ def parse_configuration(args, filename):
                     args_copy.minsamples = config[section][MINSAMPLES]
                 else:
                     args_copy.minsamples = None
+
+                if args_copy.algorithm == QT or args_copy.algorithm == QTVECTOR:
+                    args_copy.qualitythreshold = config[section][QUALITYTHRESHOLD]
+                    args_copy.minsamples = config[section][MINSAMPLES]
+                else:
+                    args_copy.qualitythreshold = None
+                    args_copy.minsamples = None
+
                 start_job(args_copy, SUBPARSER_CLUS)
+                # Need to add my sections here - NIC
             elif section[0] == "p":
                 args_copy = copy.copy(args)
                 args_copy.source = config[section][SOURCE]
