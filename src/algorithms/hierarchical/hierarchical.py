@@ -43,7 +43,7 @@ def scatterplot_cluster(clusters_arr, cluster_type, dest):
         plot.title("Scatterplot of clusters vs frame - %s" %cluster_type )
         # os.chdir(os.path.join(os.path.dirname(__file__), '..')+ "/data/data_dest/")
         #print(os.getcwd())
-        plot.savefig("data/data_dest/" + dest + "/scatterplot-%s.png" %cluster_type)
+        plot.savefig("data/data_dest/" + dest + "/scatterplot-%s.png" %cluster_type, dpi=300)
         plot.show()
         plot.close()
 
@@ -71,7 +71,7 @@ def produceClusters(linkage_matrix, args):
 
     Arguments:
         linkage_matrix (numpy.ndarray): cluster linkage matrix.
-        args (args): arguments from parser.
+        args (args): arguments from parser for k_clusters or distance.
     '''
     # user_input = input("Please enter a cutoff distance value (-d) or number of clusters (-c):\n") or "inconsistent, 3.2"
     # type, value = user_input.split()
@@ -84,8 +84,8 @@ def produceClusters(linkage_matrix, args):
         clusters = fcluster(linkage_matrix, int(args.k_clusters), criterion='maxclust')
         scatterplot_cluster(clusters, args.linkage, args.destination)
         saveClusters(clusters, args.linkage, args.destination)
-    elif int(args.ddistance) > 0:
-        clusters = fcluster(linkage_matrix, int(args.ddistance), criterion='distance')
+    elif float(args.ddistance) > 0:
+        clusters = fcluster(linkage_matrix, float(args.ddistance), criterion='distance')
         scatterplot_cluster(clusters, args.linkage, args.destination)
         saveClusters(clusters, args.linkage, args.destination)
     else:
@@ -118,7 +118,7 @@ def save_dendrogram(linkage_type, linkage_matrix, dest, flag_display):
     # plt.text(0.50, 0.02, "Text relative to the AXES centered at : (0.50, 0.02)", transform=plt.gca().transAxes, fontsize=14, ha='center', color='blue')
     plot.text(0.8, 0.8, 'ToDO', style='italic',ha='left',transform=plot.gca().transAxes,
         bbox={'facecolor': 'blue', 'alpha': 0.1, 'pad': 4})
-    plot.savefig("data/data_dest/" + dest + "/dendrogram-clustering-%s.png" % linkage_type)
+    plot.savefig("data/data_dest/" + dest + "/dendrogram-clustering-%s.png" % linkage_type, dpi=300)
     if flag_display:
         plot.show()
     plot.close()

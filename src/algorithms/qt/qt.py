@@ -21,8 +21,8 @@ def illustrateRMSD(rmsd_matrix, dest):
     print(">>> Average pairwise rmsd: %f nm" % numpy.mean(rmsd_matrix))
     print(">>> Median pairwise rmsd: %f nm" % numpy.median(rmsd_matrix))
     plot.colorbar()
-    plot.savefig("data/data_dest/" + dest + "/RMSD-matrix.png")
-    plot.show()
+    plot.savefig("data/data_dest/" + dest + "/RMSD-matrix.png", dpi=300)
+    # plot.show()
     plot.close()
 
 def rmsd_vs_frame(no_frames, rmsds, dest):
@@ -42,8 +42,8 @@ def rmsd_vs_frame(no_frames, rmsds, dest):
     plot.xlabel('Simulation frames')
     plot.ylabel('RMSD (nm)')
     # os.chdir(os.path.join(os.path.dirname(__file__), '..')+ "/data/data_dest/")
-    plot.savefig("data/data_dest/" + dest + "/rmsd-vs-frame.png")
-    plot.show()
+    plot.savefig("data/data_dest/" + dest + "/rmsd-vs-frame.png", dpi=300)
+    # plot.show()
     plot.close()
 
 def saveClusters(clusters_arr, dest, type):
@@ -59,7 +59,7 @@ def saveClusters(clusters_arr, dest, type):
     # os.chdir(os.path.join(os.path.dirname(__file__), '..')+ "/data/data_dest/")
     numpy.savetxt("data/data_dest/" + dest + "/clusters-%s.txt" %type, clusters_arr, fmt='%i')
 
-def scatterplot_cluster(clusters_arr, no_frames, dest, type):
+def scatterplot_cluster(clusters_arr, dest, type):
         '''
         DESCRIPTION
         Produce cluster scatter plot of frames
@@ -71,14 +71,14 @@ def scatterplot_cluster(clusters_arr, no_frames, dest, type):
             type (str): type of qt implementation.
         '''
         plot.figure()
-        plot.scatter(numpy.arange(no_frames), clusters_arr, marker = '.',cmap='prism')
+        plot.scatter(numpy.arange(len(clusters_arr)), clusters_arr, marker = '.',cmap='prism')
         plot.xlabel("Frame Number")
         plot.ylabel("Cluster Index")
         plot.locator_params(axis="both", integer=True, tight=True)
         plot.title("Scatterplot of clusters vs frame - %s" % type)
         # os.chdir(os.path.join(os.path.dirname(__file__), '..')+ "/data/data_dest/")
         #print(os.getcwd())
-        plot.savefig("data/data_dest/" + dest + "scatterplot-%s.png" % type)
+        plot.savefig("data/data_dest/" + dest + "/scatterplot-%s.png" % type, dpi=300)
         plot.show()
         plot.close()
 
@@ -95,18 +95,6 @@ def getRMSDvsFirstFrame(traj):
     rmsd_matrix = numpy.ndarray((traj.n_frames, traj.n_frames), dtype=numpy.float64)
     rmsd_matrix = mdtraj.rmsd(traj, traj, 0)
     return rmsd_matrix
-
-def getNumberOfFrames(traj):
-    '''
-    DESCRIPTION
-    Returns Number of frames within the Trajectory.
-
-    Arguments:
-        traj (mdtraj.Trajectory): trajectory object from MDTraj libary.
-    Return:
-        no_frames (int): number of frames from simulation.
-    '''
-    return traj.n_frames
 
 def preprocessing_qt(traj):
     '''
@@ -273,33 +261,19 @@ def cluster(traj, type, args):
     '''
     traj = clean_trajectory(traj)
     rmsd_matrix_temp = preprocessing_qt(traj)  # Need to write general pre-process.
-    no_frames = getNumberOfFrames(traj)
+    no_frames = traj.n_frames
     illustrateRMSD(rmsd_matrix_temp, args.destination)
     rmsd_vs_frame(no_frames, getRMSDvsFirstFrame(traj), args.destination)
     if type == "qt_original":
         cluster_labels = qt_orginal(rmsd_matrix_temp, no_frames, float(args.qualitythreshold), int(args.minsamples))
-        scatterplot_cluster(cluster_labels, no_frames, args.destination, args.algorithm)
+        scatterplot_cluster(cluster_labels, args.destination, args.algorithm)
         saveClusters(cluster_labels, args.destination, args.algorithm)
     elif type == "qt_vector":
         cluster_labels = qt_vector(rmsd_matrix_temp, no_frames, float(args.qualitythreshold), int(args.minsamples))
-        scatterplot_cluster(cluster_labels, no_frames, args.destination, args.algorithm)
+        scatterplot_cluster(cluster_labels, args.destination, args.algorithm)
         saveClusters(cluster_labels, args.destination, args.algorithm)
     else:
         pass
-
-# def getArguments():
-#     '''
-#     DESCRIPTION
-#     Gets the cutoff/threshold value needed for Quality Threshold Algorithm.
-#     In addtion requires a minimum_membership value.
-#
-#     Returns:
-#         cutoff (float): threshold value for QT algotithm.
-#         minimum_membership (int): int value for minimum cluster size.
-#     '''
-#     user_input = input(">>> Please enter a cutoff value and minimum membership value\n") or "0.5 10"
-#     cutoff, min = user_input.split()
-#     return float(cutoff), int(min)
 
 # def runVMD_RMSD_QT(filename, type):
 #     '''
