@@ -12,37 +12,38 @@ from itertools import cycle, islice
 
 clustering_type = ["single", "complete", "average", "ward"]
 
-def saveClusters(clusters_arr, type):
+def saveClusters(clusters_arr, cluster_type, dest):
     '''
     DESCRIPTION
     Save cluster indexes to text file
 
     Arguments:
-        clusters_arr (numpy.ndarray): Cluster indexes per frame.
-        qt_type (str): qt types of implementation.
+        clusters_arr (numpy.ndarray): cluster indexes per frame.
+        cluster_type (str): qt types of implementation.
+        dest (str): destination to sae cluster indexes.
     '''
     # os.chdir(os.path.join(os.path.dirname(__file__), '..')+ "/data/data_dest/")
-    numpy.savetxt("clusters-%s.txt" %type, clusters_arr, fmt='%i')
+    numpy.savetxt("data/data_dest/" + dest + "/clusters-%s.txt" %cluster_type, clusters_arr, fmt='%i')
 
-def scatterplot_cluster(clusters_arr, no_frames, cluster_type):
+def scatterplot_cluster(clusters_arr, cluster_type, dest):
         '''
         DESCRIPTION
         Produce cluster scatter plot of frames
 
         Arguments:
             clusters_arr (numpy.ndarray): cluster indexes per frame.
-            no_frames (int): number of frames
-            qt_type (str): qt types of implementation.
+            cluster_type (str): hierarchical type of implementation.
+            dest (str): destination to save cluster scatterplot.
         '''
         plot.figure()
-        plot.scatter(numpy.arange(no_frames), clusters_arr, marker = '.',cmap='prism')
+        plot.scatter(numpy.arange(len(clusters_arr)), clusters_arr, marker = '.',cmap='prism')
         plot.xlabel("Frame Number")
         plot.ylabel("Cluster Index")
         plot.locator_params(axis="both", integer=True, tight=True)
         plot.title("Scatterplot of clusters vs frame - %s" %cluster_type )
         # os.chdir(os.path.join(os.path.dirname(__file__), '..')+ "/data/data_dest/")
         #print(os.getcwd())
-        plot.savefig("scatterplot-%s.png" %cluster_type)
+        plot.savefig("data/data_dest/" + dest + "/scatterplot-%s.png" %cluster_type)
         plot.show()
         plot.close()
 
@@ -62,7 +63,7 @@ def cophenetic(linkage_matrix, rmsd_matrix):
     c, coph_dists = cophenet(linkage_matrix, pdist(reduced_distances))
     print(">>> Cophenetic Distance: %s" % c)
 
-def produceClusters(linkage_matrix, no_frames, args):
+def produceClusters(linkage_matrix, args):
     '''
     DESCRIPTION
     Produces scatterplot of clusters as well as saving cluster indexes/labels
@@ -70,8 +71,7 @@ def produceClusters(linkage_matrix, no_frames, args):
 
     Arguments:
         linkage_matrix (numpy.ndarray): cluster linkage matrix.
-        no_frames (int): number of frames of trajectory.
-        linkage_type (string): linkage type.
+        args (args): arguments from parser.
     '''
     # user_input = input("Please enter a cutoff distance value (-d) or number of clusters (-c):\n") or "inconsistent, 3.2"
     # type, value = user_input.split()
@@ -80,27 +80,31 @@ def produceClusters(linkage_matrix, no_frames, args):
     #     clusters = fcluster(linkage_matrix, float(args.ddistance), criterion='distance')
     #     scatterplot_cluster(clusters, no_frames, args.linkage)
     #     saveClusters(clusters, args.linkage)
-    print(args.linkage)
-    print(args.k_clusters)
-    if args.k_clusters:
+    if int(args.k_clusters) > 0:
         clusters = fcluster(linkage_matrix, int(args.k_clusters), criterion='maxclust')
-        scatterplot_cluster(clusters, no_frames, args.linkage)
-        saveClusters(clusters, args.linkage)
+        scatterplot_cluster(clusters, args.linkage, args.destination)
+        saveClusters(clusters, args.linkage, args.destination)
+    elif int(args.ddistance) > 0:
+        clusters = fcluster(linkage_matrix, int(args.ddistance), criterion='distance')
+        scatterplot_cluster(clusters, args.linkage, args.destination)
+        saveClusters(clusters, args.linkage, args.destination)
     else:
         print("Invalid Selection")
 
-def save_dendrogram(hierarchical_type, linkage, flag_display):
+def save_dendrogram(linkage_type, linkage_matrix, dest, flag_display):
     '''
     DESCRIPTION
-    Popup Dendrogram produced by hierarchical clustering.
+    Popup and/or Dendrogram produced by hierarchical clustering.
 
     Arguments:
-        hierarchical_type (str): string for hierarchical type.
-        linkage (numpy.ndarray): linkage matrix from clustering.
+        linkage_type (str): string for hierarchical type.
+        linkage_matrix (numpy.ndarray): linkage matrix from clustering.
+        dest (str): destination to save dendrogram visualization.
+        flag_display (bool): flat to display dendrogram as popup.
     '''
-    plot.title('Dendrogram for %s linkage hierarchical clustering' %hierarchical_type)
+    plot.title('Dendrogram for %s linkage hierarchical clustering' %linkage_type)
     _ = scipy.cluster.hierarchy.dendrogram(
-    linkage.astype("float64"),
+    linkage_matrix.astype("float64"),
     truncate_mode='lastp',  # show only the last p merged clusters
     p=20,  # show only the last p merged clusters
     show_contracted=True,
@@ -114,7 +118,7 @@ def save_dendrogram(hierarchical_type, linkage, flag_display):
     # plt.text(0.50, 0.02, "Text relative to the AXES centered at : (0.50, 0.02)", transform=plt.gca().transAxes, fontsize=14, ha='center', color='blue')
     plot.text(0.8, 0.8, 'ToDO', style='italic',ha='left',transform=plot.gca().transAxes,
         bbox={'facecolor': 'blue', 'alpha': 0.1, 'pad': 4})
-    plot.savefig("dendrogram-clustering-%s.png" % hierarchical_type)
+    plot.savefig("data/data_dest/" + dest + "/dendrogram-clustering-%s.png" % linkage_type)
     if flag_display:
         plot.show()
     plot.close()
@@ -152,18 +156,6 @@ def clean_trajectory(traj):
     '''
     return traj.remove_solvent()
 
-def getNumberOfFrames(traj):
-    '''
-    DESCRIPTION
-    Returns Number of frames within the Trajectory.
-
-    Arguments:
-        traj (mdtraj.Trajectory): trajectory object from MDTraj libary.
-    Return:
-        no_frames (int): number of frames from simulation.
-    '''
-    return traj.n_frames
-
 def cluserting(rmsd_matrix, linkage_type):
     '''
     DESCRIPTION
@@ -178,19 +170,15 @@ def cluserting(rmsd_matrix, linkage_type):
     if linkage_type == clustering_type[0]:
         print(">>> Performing %s based Hierarchical clustering " % clustering_type[0])
         linkage_matrix = scipy.cluster.hierarchy.linkage(rmsd_matrix, method=clustering_type[0])
-        cophenetic(linkage_matrix, rmsd_matrix)
     elif linkage_type == clustering_type[1]:
         print(">>> Performing %s based Hierarchical clustering " % clustering_type[1])
         linkage_matrix = scipy.cluster.hierarchy.linkage(rmsd_matrix, method=clustering_type[1])
-        cophenetic(linkage_matrix, rmsd_matrix)
     elif linkage_type == clustering_type[2]:
         print(">>> Performing %s based Hierarchical clustering " % clustering_type[2])
         linkage_matrix = scipy.cluster.hierarchy.linkage(rmsd_matrix, method=clustering_type[2])
-        cophenetic(linkage_matrix, rmsd_matrix)
     elif linkage_type == clustering_type[3]:
         print(">>> Performing %s based Hierarchical clustering " % clustering_type[3])
         linkage_matrix = scipy.cluster.hierarchy.linkage(rmsd_matrix, method=clustering_type[3])
-        cophenetic(linkage_matrix, rmsd_matrix)
     print(">>> Hierarchical clustering (%s) complete " %linkage_type)
     return linkage_matrix
 
@@ -207,10 +195,10 @@ def runHierarchicalClustering(traj, args):
     '''
     traj = clean_trajectory(traj)
     rmsd_matrix_temp = preprocessing_hierarchical(traj)
-    linkage_temp = cluserting(rmsd_matrix_temp, args.linkage)
-    no_frames = getNumberOfFrames(traj)
-    save_dendrogram(args.linkage, linkage_temp, True) # False not to show dendrogram
-    produceClusters(linkage_temp, no_frames, args)
+    linkage_matrix = cluserting(rmsd_matrix_temp, args.linkage)
+    cophenetic(linkage_matrix, rmsd_matrix_temp)
+    save_dendrogram(args.linkage, linkage_matrix, args.destination, False) # False not to show dendrogram
+    produceClusters(linkage_matrix, args)
 
 def randomDataValidation():
     '''

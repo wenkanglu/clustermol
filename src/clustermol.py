@@ -173,10 +173,10 @@ def parse_configuration(args, filename):
                     args_copy.linkage = config[section][LINKAGE]
                     if config.has_option(section, K_CLUSTERS):
                         args_copy.k_clusters = config[section][K_CLUSTERS]
-                        args_copy.ddistance = None
+                        args_copy.ddistance = -1
                     elif config.has_option(section, DDISTANCE):
                         args_copy.ddistance = config[section][DDISTANCE]
-                        args_copy.k_clusters = None
+                        args_copy.k_clusters = -1
                 else:
                     args_copy.linkage = None
                     args_copy.k_clusters = None
