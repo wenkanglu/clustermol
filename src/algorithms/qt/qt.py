@@ -3,8 +3,9 @@ import numpy
 import mdtraj
 import numpy.ma as ma
 import matplotlib.pyplot as plot
-from scipy.spatial.distance import pdist, squareform
-from sklearn import cluster, datasets, mixture
+
+from main.constants import DATA_SRC, DATA, DATA_DEST
+
 
 def illustrateRMSD(rmsd_matrix, dest):
     '''
@@ -21,7 +22,7 @@ def illustrateRMSD(rmsd_matrix, dest):
     print(">>> Average pairwise rmsd: %f nm" % numpy.mean(rmsd_matrix))
     print(">>> Median pairwise rmsd: %f nm" % numpy.median(rmsd_matrix))
     plot.colorbar()
-    plot.savefig("data/data_dest/" + dest + "/RMSD-matrix.png", dpi=300)
+    plot.savefig(DATA + DATA_DEST + dest + "/RMSD-matrix.png", dpi=300)
     # plot.show()
     plot.close()
 
@@ -42,7 +43,7 @@ def rmsd_vs_frame(no_frames, rmsds, dest):
     plot.xlabel('Simulation frames')
     plot.ylabel('RMSD (nm)')
     # os.chdir(os.path.join(os.path.dirname(__file__), '..')+ "/data/data_dest/")
-    plot.savefig("data/data_dest/" + dest + "/rmsd-vs-frame.png", dpi=300)
+    plot.savefig(DATA + DATA_DEST + dest + "/rmsd-vs-frame.png", dpi=300)
     # plot.show()
     plot.close()
 
@@ -57,7 +58,7 @@ def saveClusters(clusters_arr, dest, type):
         type (str): type of qt implementation.
     '''
     # os.chdir(os.path.join(os.path.dirname(__file__), '..')+ "/data/data_dest/")
-    numpy.savetxt("data/data_dest/" + dest + "/clusters-%s.txt" %type, clusters_arr, fmt='%i')
+    numpy.savetxt(DATA + DATA_DEST + dest + "/clusters-%s.txt" %type, clusters_arr, fmt='%i')
 
 def scatterplot_cluster(clusters_arr, dest, type):
         '''
@@ -78,7 +79,7 @@ def scatterplot_cluster(clusters_arr, dest, type):
         plot.title("Scatterplot of clusters vs frame - %s" % type)
         # os.chdir(os.path.join(os.path.dirname(__file__), '..')+ "/data/data_dest/")
         #print(os.getcwd())
-        plot.savefig("data/data_dest/" + dest + "/scatterplot-%s.png" % type, dpi=300)
+        plot.savefig(DATA + DATA_DEST + dest + "/scatterplot-%s.png" % type, dpi=300)
         plot.show()
         plot.close()
 
@@ -325,7 +326,7 @@ def cluster(traj, type, args):
 if __name__ == "__main__":
     os.chdir(os.path.join(os.path.dirname(__file__), '..'))
     os.chdir(os.path.join(os.path.dirname(__file__), '..'))
-    os.chdir(os.path.join(os.path.dirname(__file__), '..')+"/data/data_src")
+    os.chdir(os.path.join(os.path.dirname(__file__), '..') + DATA + "/" + DATA_SRC)
     traj = mdtraj.load("MenW_0_to_1000ns_aligned(100skip).pdb")
     cluster(traj, "qt_original")
     # runVMD_RMSD_QT("trajrmsd_menW_nic_test.dat", "qt_original")

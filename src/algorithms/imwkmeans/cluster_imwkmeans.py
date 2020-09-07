@@ -1,10 +1,10 @@
-import mdtraj as md
 import numpy as np
 from algorithms.imwkmeans import clustering
-from sklearn.metrics import silhouette_score
 import sklearn.cluster
 import matplotlib.pyplot as plt #Vis
 import copy
+
+from main.constants import DATA, DATA_DEST
 
 plt.style.use('bmh') #Vis
 
@@ -79,8 +79,8 @@ def cluster(traj, args):
     centroids = kmeans_clusters.cluster_centers_
     silhouette_score = silhouette_score(data, labels, sample_size=sample_size)
 
-    np.savetxt('data/data_dest/' + args.destination + 'RescalediMWK_labels.txt', labels, fmt='%i')
-    with open ('data/data_dest/' + args.destination + 'imwk_silhouette_score.txt', 'w') as f:
+    np.savetxt(DATA + DATA_DEST + args.destination + 'RescalediMWK_labels.txt', labels, fmt='%i')
+    with open(DATA + DATA_DEST + args.destination + 'imwk_silhouette_score.txt', 'w') as f:
         f.write("silhouette score is {0} \n with p of {1}\n".format(silhouette_score, optimal_p))
 
     plt.figure()
@@ -88,7 +88,7 @@ def cluster(traj, args):
     plt.xlabel('Frame')
     plt.ylabel('Cluster')
     plt.title('iMWK-means with Explicit Rescaling and Kmeans')
-    plt.savefig('data/data_dest/' + args.destination + 'RescalediMWK_timeseries.png')
+    plt.savefig(DATA + DATA_DEST + args.destination + 'RescalediMWK_timeseries.png')
     if args.visualise:
         plt.show()
     plt.clf()

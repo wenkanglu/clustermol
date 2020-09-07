@@ -1,6 +1,8 @@
+import numpy
 from sklearn.metrics import silhouette_score, calinski_harabasz_score, davies_bouldin_score
 
-from constants import SILHOUETTE, DAVIESBOULDIN, CALINSKIHARABASZ
+from main.constants import SILHOUETTE, DAVIESBOULDIN, CALINSKIHARABASZ, DATA_DEST, DATA
+
 
 def handle_args(args):
     None
@@ -10,7 +12,7 @@ def label_counts(labels):
     return dict(zip(unique, counts))
 
 def calculate_CVI(indices, dest, data, labels):
-    with open ('data/data_dest/' + dest + '_cviresults.txt', 'w') as f:
+    with open (DATA + DATA_DEST + dest + '_cviresults.txt', 'w') as f:
         if SILHOUETTE in indices: #sample-size!
             f.write("Silhouette score is {0}\n".format(silhouette_score(data, labels)))
         if DAVIESBOULDIN in indices:

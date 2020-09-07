@@ -2,26 +2,31 @@ import os
 
 import mdtraj
 
-from constants import SUBPARSER_CLUS, HIERARCHICAL, QT, QTVECTOR, IMWKMEANS, HDBSCAN, TSNE, UMAP
-from constants import SUBPARSER_PREP
-from processing import pre_placeholder
+from main.constants import SUBPARSER_CLUS, HIERARCHICAL, QT, QTVECTOR, IMWKMEANS, HDBSCAN, TSNE, UMAP, DATA_SRC, DATA
+from main.constants import SUBPARSER_PREP
 from algorithms.hierarchical import hierarchical
 from algorithms.qt import qt
 from algorithms.imwkmeans import cluster_imwkmeans
 from algorithms.hdbscan import hdbscan
 from algorithms.tsne import tsne
-from algorithms.umap import umap
+from algorithms.umap_technique import umap_script
 
 
 def start_job(args, job):
     print("Loading trajectory from file...")
-    traj = mdtraj.load(os.path.join("data", "data_src", args.source))
+    traj = mdtraj.load(os.path.join(DATA, DATA_SRC, args.source))
     if args.selection:
         sel = traj.topology.select(args.selection)
         traj = traj.atom_slice(sel)
 
     if args.downsample:
         traj = traj[::int(args.downsample)]
+
+    if args.preprocess:
+        if args.preprocess == TSNE:
+            None
+        elif args.preprocess == UMAP:
+            traj = umap_script.umap_main(traj, args)
 
     if job == SUBPARSER_CLUS:
         if args.visualise == "true":
@@ -39,13 +44,9 @@ def start_job(args, job):
             cluster_imwkmeans.cluster(traj, args)
         elif args.algorithm == HDBSCAN:
             hdbscan.cluster(traj, args)
-        elif args.algorithm == TSNE:
-            tsne.cluster(traj, args)
-        elif args.algorithm == UMAP:
-            umap.umap_main(traj, args)
 
     elif job == SUBPARSER_PREP:
         if args.destination.endswith(".pdb"):
-            traj.save_pdb("data/data_src/" + args.destination)
+            traj.save_pdb(os.path.join(DATA, DATA_SRC, args.destination))
         else:
-            traj.save_pdb("data/data_src/" + args.destination + ".pdb")
+            traj.save_pdb(os.path.join(DATA, DATA_SRC, args.destination + ".pdb"))

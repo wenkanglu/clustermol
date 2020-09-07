@@ -1,5 +1,8 @@
-/data/data_dest/
-/data/data_src/
+/src/data/data_dest/
+/src/data/data_src/
 /misc/
 *.pyc
 .DS_Store
+/build
+/dist
+/src/clustermol.egg-info

@@ -1,3 +1,8 @@
+DATA = "data/"
+CONFIGS = "configs/"
+DATA_SRC = "data_src/"
+DATA_DEST = "data_dest/"
+
 SUBPARSER_CLUS = "clus"
 SUBPARSER_CONF = "conf"
 SUBPARSER_PREP = "prep"
@@ -9,7 +14,6 @@ QTVECTOR = "qtvector"
 IMWKMEANS = "imwkmeans"
 TSNE = "tsne"
 UMAP = "umap"
-
 
 CONFIGURATION = "--configuration"
 ALGORITHM = "--algorithm"
@@ -26,7 +30,10 @@ MINSAMPLES = "--minsamples"
 QUALITYTHRESHOLD = "--qualitythreshold"
 K_CLUSTERS = "--numberofclusters"
 DDISTANCE = "--dendrogramdistance"
+PREPROCESS = "--preprocess"
 
+N_COMPONENTS = "--ncomponents"
+N_NEIGHBOURS = "--nneighbours"
 
 AVERAGE = "average"
 COMPLETE = "complete"

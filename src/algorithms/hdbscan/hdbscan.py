@@ -1,18 +1,25 @@
 import numpy as np
-import mdtraj as md
 import sklearn.cluster
 import sklearn.metrics #Val
 import matplotlib.pyplot as plt #Vis
 import hdbscan
+from mdtraj import Trajectory
+
+from main.constants import DATA, DATA_DEST
 
 plt.style.use('bmh') #Vis
 
+
 def cluster(traj, args):
-    #Reshape the data
-    temp = traj.xyz
-    data = temp.reshape((traj.xyz.shape[0], traj.xyz.shape[1]*3))
-    data = data.astype('float64')
-    temp, traj = [], []
+    if isinstance(traj, Trajectory):
+        #Reshape the data
+        temp = traj.xyz
+        data = temp.reshape((traj.xyz.shape[0], traj.xyz.shape[1]*3))
+        data = data.astype('float64')
+        temp, traj = [], []
+
+    else:
+        data = traj
 
     print("Performing HDBSCAN clustering.")
     ## code adapted from Melvin et al.
@@ -24,8 +31,8 @@ def cluster(traj, args):
         sample_size = None
     raw_score = sklearn.metrics.silhouette_score(data, cluster_labels, sample_size=sample_size)
 
-    np.savetxt('data/data_dest/' + args.destination + 'hdbscan_labels.txt', cluster_labels, fmt='%i')
-    with open ('data/data_dest/' + args.destination + 'hdb_silhouette_score.txt', 'w') as f:
+    np.savetxt(DATA + DATA_DEST + args.destination + 'hdbscan_labels.txt', cluster_labels, fmt='%i')
+    with open(DATA + DATA_DEST + args.destination + 'hdb_silhouette_score.txt', 'w') as f:
         f.write("silhouette score is {0} \n".format(raw_score))
 
     plt.figure()
@@ -33,7 +40,7 @@ def cluster(traj, args):
     plt.xlabel('Frame')
     plt.ylabel('Cluster')
     plt.title('HDBSCAN')
-    plt.savefig('data/data_dest/' + args.destination + 'hdbscan_timeseries.png')
+    plt.savefig(DATA + DATA_DEST + args.destination + 'hdbscan_timeseries.png')
     if(args.visualise):
         plt.show()
     plt.clf()
