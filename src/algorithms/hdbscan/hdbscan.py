@@ -11,6 +11,7 @@ plt.style.use('bmh') #Vis
 
 
 def cluster(traj, args):
+    data = None
     if isinstance(traj, Trajectory):
         #Reshape the data
         temp = traj.xyz
@@ -35,14 +36,27 @@ def cluster(traj, args):
     with open(DATA + DATA_DEST + args.destination + 'hdb_silhouette_score.txt', 'w') as f:
         f.write("silhouette score is {0} \n".format(raw_score))
 
-    plt.figure()
-    plt.scatter(np.arange(cluster_labels.shape[0]), cluster_labels, marker = '+')
-    plt.xlabel('Frame')
-    plt.ylabel('Cluster')
-    plt.title('HDBSCAN')
-    plt.savefig(DATA + DATA_DEST + args.destination + 'hdbscan_timeseries.png')
-    if(args.visualise):
+    if args.visualise:
+        plt.figure()
+        plt.scatter(np.arange(cluster_labels.shape[0]), cluster_labels, marker='+')
+        plt.xlabel('Frame')
+        plt.ylabel('Cluster')
+        plt.title('HDBSCAN')
+        plt.savefig(DATA + DATA_DEST + args.destination + 'hdbscan_timeseries.png')
         plt.show()
-    plt.clf()
+        plt.clf()
+
+        clustered = (cluster_labels >= 0)
+        plt.scatter(data[~clustered, 0],
+                    data[~clustered, 1],
+                    c=(0.5, 0.5, 0.5),
+                    s=1,
+                    alpha=0.5)
+        plt.scatter(data[clustered, 0],
+                    data[clustered, 1],
+                    c=cluster_labels[clustered],
+                    s=1,
+                    cmap='Set1')
+        plt.show()
 
     #print("Noise: ", label_counts(cluster_labels)[-1])

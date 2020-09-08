@@ -8,8 +8,9 @@ from algorithms.hierarchical import hierarchical
 from algorithms.qt import qt
 from algorithms.imwkmeans import cluster_imwkmeans
 from algorithms.hdbscan import hdbscan
-from algorithms.tsne import tsne
-from algorithms.umap_technique import umap_script
+from algorithms.pca import pca_script
+from algorithms.tsne import tsne_script
+from algorithms.umap import umap_script
 
 
 def start_job(args, job):
@@ -24,7 +25,7 @@ def start_job(args, job):
 
     if args.preprocess:
         if args.preprocess == TSNE:
-            None
+            traj = tsne_script.tsne_main(pca_script.pca_main(traj, args), args)
         elif args.preprocess == UMAP:
             traj = umap_script.umap_main(traj, args)
 

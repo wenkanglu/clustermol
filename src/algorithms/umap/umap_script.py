@@ -1,3 +1,5 @@
+import time
+
 import numpy as np
 import matplotlib.pyplot as plt
 from mdtraj import Trajectory
@@ -9,11 +11,12 @@ from sklearn.metrics import silhouette_score, calinski_harabasz_score, davies_bo
 
 
 def umap_main(input_data, args):
-    sns.set(style='white', rc={'figure.figsize': (10, 8)})
+    # sns.set(style='white', rc={'figure.figsize': (10, 8)})
     umap_cluster = umap.UMAP(n_components=int(args.ncomponents),
                              n_neighbors=int(args.nneighbours),
                              min_dist=0.0,
                              random_state=42,)
+    start_time = time.time()
     if isinstance(input_data, Trajectory):
         coords = np.reshape(input_data.xyz, (input_data.n_frames, 3 * input_data.n_atoms))
         print("trajectory loaded")
@@ -23,11 +26,15 @@ def umap_main(input_data, args):
         print("data loaded")
         embedding = umap_cluster.fit_transform(input_data)
 
+    umap_time = time.time()
+    print("--- %s seconds to perform UMAP---" % (umap_time - start_time))
+
+    if args.visualise:
+        plt.scatter(embedding[:, 0], embedding[:, 1], s=2)
+        plt.show()
+
     return embedding
 
-    # plt.scatter(embedding[:, 0], embedding[:, 1], s=2)
-    # plt.show()
-    #
     # labels = hdbscan.HDBSCAN(
     #     min_samples=1,
     #     min_cluster_size=10,

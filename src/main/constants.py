@@ -34,6 +34,7 @@ PREPROCESS = "--preprocess"
 
 N_COMPONENTS = "--ncomponents"
 N_NEIGHBOURS = "--nneighbours"
+PERPLEXITY = "--perplexity"
 
 AVERAGE = "average"
 COMPLETE = "complete"
