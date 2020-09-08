@@ -156,7 +156,9 @@ def clean_trajectory(traj):
     Return:
         trajectory (mdtraj.Trajectory): cleaned trajectory object.
     '''
-    return traj.remove_solvent()
+    traj = traj.center_coordinates() # Centre center_coordinates
+    traj = traj.remove_solvent()
+    return traj
 
 def cluserting(rmsd_matrix, linkage_type):
     '''

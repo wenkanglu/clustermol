@@ -24,6 +24,8 @@ def illustrateRMSD(rmsd_matrix, dest):
     print(">>> Max pairwise rmsd: %f" % numpy.max(rmsd_matrix))
     print(">>> Average pairwise rmsd: %f" % numpy.mean(rmsd_matrix))
     print(">>> Median pairwise rmsd: %f" % numpy.median(rmsd_matrix))
+    plot.xlabel('Simulation frames')
+    plot.ylabel('Simulation frames')
     plot.colorbar()
     plot.savefig(directory+DATA + DATA_DEST + dest + "/RMSD-matrix.png", dpi=300)
     # plot.savefig("RMSD-matrix.png", dpi=300)
@@ -130,7 +132,8 @@ def clean_trajectory(traj):
         trajectory (mdtraj.Trajectory): cleaned trajectory object.
     '''
     traj = traj.center_coordinates() # Centre center_coordinates
-    return traj.remove_solvent()
+    traj = traj.remove_solvent()
+    return traj
 
 def qt_orginal(rmsd_matrix, no_frames, cutoff, minimum_membership):
     '''
@@ -201,7 +204,7 @@ def qt_orginal(rmsd_matrix, no_frames, cutoff, minimum_membership):
         # ---- Store cluster frames -----------------------------------------------
         cluster_labels[max_precluster] = cluster_index
         cluster_index += 1
-        print('>>> Cluster # {} found with {} frames <<<'.format(
+        print('>>> Cluster # {} found with {} frames'.format(
               cluster_index, len_precluster))
 
         # ---- Update matrix & degrees (discard found clusters) -------------------
@@ -231,50 +234,27 @@ def qt_vector(rmsd_matrix, no_frames, cutoff, minimum_membership):
     Return:
         cluster_labels (numpy.ndarray): cleaned trajectory object.
     '''
-    cutoff_mask = rmsd_matrix <= cutoff
+    rmsd_matrix = rmsd_matrix <= cutoff
     centers = []
-    cluster = 0
-    labels = numpy.empty(no_frames)
-    labels.fill(numpy.NAN)
+    cluster_index = 0
+    cluster_labels = numpy.empty(no_frames)
+    cluster_labels.fill(numpy.NAN)
 
-    while cutoff_mask.any():
-        membership = cutoff_mask.sum(axis=1)
+    while rmsd_matrix.any():
+        membership = rmsd_matrix.sum(axis=1)
         center = numpy.argmax(membership)
-        members = numpy.where(cutoff_mask[center,:]==True)
+        members = numpy.where(rmsd_matrix[center,:]==True)
         if max(membership) <= minimum_membership:
-            labels[numpy.where(numpy.isnan(labels))] = -1
+            cluster_labels[numpy.where(numpy.isnan(cluster_labels))] = -1
             break
-        labels[members] = cluster
+        cluster_labels[members] = cluster_index
         centers.append(center)
-        cutoff_mask[members,:] = False
-        cutoff_mask[:,members] = False
-        cluster = cluster + 1
-    return labels
-    # # print(rmsd_matrix)
-    # rmsd_matrix = rmsd_matrix <= cutoff  # Remove all those less than or equal to the cut-off value
-    # # print(rmsd_matrix)
-    # centers = []  # Empty centers, cenrtal frame of cluster.
-    # cluster_index = 0  # Cluster index, used for cluster indexing to frame.
-    # cluster_labels = numpy.empty(no_frames) # Frame size needs to change
-    # cluster_labels.fill(-1)
-    #
-    # # Looping while cutoff_mask is not empty.
-    # while rmsd_matrix.any():
-    #     membership = rmsd_matrix.sum(axis=1)
-    #     center = numpy.argmax(membership)
-    #     members = numpy.where(rmsd_matrix[center, :]==True)
-    #     if max(membership) <= minimum_membership:
-    #         cluster_labels = -1
-    #         break
-    #     cluster_labels[members] = cluster_index
-    #     centers.append(center)
-    #     rmsd_matrix[members, :] = False
-    #     rmsd_matrix[:, members] = False
-    #     cluster_index = cluster_index + 1
-    #     print('>>> Cluster # {} found with {} frames <<<'.format(
-    #           cluster_index, 10))
-    #     # print(membership)
-    # return cluster_labels
+        rmsd_matrix[members,:] = False
+        rmsd_matrix[:,members] = False
+        cluster_index = cluster_index + 1
+
+    return cluster_labels
+
 
 def cluster(traj, type, args):
     '''

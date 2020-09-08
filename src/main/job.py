@@ -11,15 +11,16 @@ from algorithms.hdbscan import hdbscan
 from algorithms.tsne import tsne
 from algorithms.umap_technique import umap_script
 
+directory = os.getcwd()
 
 def start_job(args, job):
     print("Loading trajectory from file...")
-    wd = os.getcwd()
-    wd = wd + DATA + DATA_SRC + args.source
-    traj = mdtraj.load(wd)
+    traj = mdtraj.load(directory+ DATA + DATA_SRC + args.source)
+    print(traj)
     if args.selection:
         sel = traj.topology.select(args.selection)
         traj = traj.atom_slice(sel)
+        print(traj)
 
     if args.downsample:
         traj = traj[::int(args.downsample)]
