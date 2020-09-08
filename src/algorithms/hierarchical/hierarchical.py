@@ -11,6 +11,7 @@ from sklearn.preprocessing import StandardScaler
 from itertools import cycle, islice
 from main.constants import DATA, DATA_DEST
 
+directory = os.getcwd()
 clustering_type = ["single", "complete", "average", "ward"]
 
 def saveClusters(clusters_arr, cluster_type, dest):
@@ -24,7 +25,7 @@ def saveClusters(clusters_arr, cluster_type, dest):
         dest (str): destination to sae cluster indexes.
     '''
     # os.chdir(os.path.join(os.path.dirname(__file__), '..')+ "/data/data_dest/")
-    numpy.savetxt("data/data_dest/" + dest + "/clusters-%s.txt" %cluster_type, clusters_arr, fmt='%i')
+    numpy.savetxt(directory + DATA + DATA_DEST + dest + "/clusters-%s.txt" %cluster_type, clusters_arr, fmt='%i')
 
 def scatterplot_cluster(clusters_arr, cluster_type, dest):
         '''
@@ -44,7 +45,7 @@ def scatterplot_cluster(clusters_arr, cluster_type, dest):
         plot.title("Scatterplot of clusters vs frame - %s" %cluster_type )
         # os.chdir(os.path.join(os.path.dirname(__file__), '..')+ "/data/data_dest/")
         #print(os.getcwd())
-        plot.savefig("data/data_dest/" + dest + "/scatterplot-%s.png" %cluster_type, dpi=300)
+        plot.savefig(directory + DATA + DATA_DEST + dest + "/scatterplot-%s.png" %cluster_type, dpi=300)
         plot.show()
         plot.close()
 
@@ -119,7 +120,7 @@ def save_dendrogram(linkage_type, linkage_matrix, dest, flag_display):
     # plt.text(0.50, 0.02, "Text relative to the AXES centered at : (0.50, 0.02)", transform=plt.gca().transAxes, fontsize=14, ha='center', color='blue')
     plot.text(0.8, 0.8, 'ToDO', style='italic',ha='left',transform=plot.gca().transAxes,
         bbox={'facecolor': 'blue', 'alpha': 0.1, 'pad': 4})
-    plot.savefig("data/data_dest/" + dest + "/dendrogram-clustering-%s.png" % linkage_type, dpi=300)
+    plot.savefig(directory + DATA + DATA_DEST + dest + "/dendrogram-clustering-%s.png" % linkage_type, dpi=300)
     if flag_display:
         plot.show()
     plot.close()

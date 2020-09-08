@@ -12,8 +12,8 @@ from main.constants import SUBPARSER_CONF, SUBPARSER_CLUS, SUBPARSER_PREP, UMAP,
 from main.job import start_job
 
 # os.chdir(os.getcwd())  # changes cwd to always be at clustermol
-
-print(os.getcwd())
+directory = os.getcwd()
+print(directory)
 
 algorithm_list = [HDBSCAN, HIERARCHICAL, IMWKMEANS, QT, QTVECTOR]
 hierarchical_list = [AVERAGE, COMPLETE, SINGLE, WARD]
@@ -148,13 +148,11 @@ def parse():
 
 
 def handle_configuration(args):
-    print(os.path.join(DATA + CONFIGS + args.configuration))
-    print(DATA + CONFIGS + args.configuration)
-    if os.path.isfile(DATA + CONFIGS + args.configuration):
-        parse_configuration(args, DATA + CONFIGS + args.configuration)
-    elif os.path.isdir(os.path.abspath(DATA + CONFIGS + args.configuration)):
-        for filename in os.listdir(DATA + CONFIGS + args.configuration):
-            parse_configuration(args, os.path.join(DATA + CONFIGS + args.configuration, filename))
+    if os.path.isfile(directory + DATA + CONFIGS + args.configuration):
+        parse_configuration(args, directory + DATA + CONFIGS + args.configuration)
+    elif os.path.isdir(os.path.abspath(directory + DATA + CONFIGS + args.configuration)):
+        for filename in os.listdir(directory + DATA + CONFIGS + args.configuration):
+            parse_configuration(args, os.path.join(directory + DATA + CONFIGS + args.configuration, filename))
     else:
         print("Error - Cannot find config file")
 
