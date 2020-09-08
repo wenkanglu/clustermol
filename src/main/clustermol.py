@@ -11,7 +11,7 @@ from main.constants import SUBPARSER_CONF, SUBPARSER_CLUS, SUBPARSER_PREP, UMAP,
 
 from main.job import start_job
 
-# os.chdir(os.path.join(os.path.dirname(__file__), '../..'))  # changes cwd to always be at clustermol
+# os.chdir(os.getcwd())  # changes cwd to always be at clustermol
 
 print(os.getcwd())
 
@@ -148,6 +148,8 @@ def parse():
 
 
 def handle_configuration(args):
+    print(os.path.join(DATA + CONFIGS + args.configuration))
+    print(DATA + CONFIGS + args.configuration)
     if os.path.isfile(DATA + CONFIGS + args.configuration):
         parse_configuration(args, DATA + CONFIGS + args.configuration)
     elif os.path.isdir(os.path.abspath(DATA + CONFIGS + args.configuration)):
@@ -159,6 +161,7 @@ def handle_configuration(args):
 
 def parse_configuration(args, filename):
     if filename.endswith(".ini"):
+        # print(os.getcwd())
         config = configparser.ConfigParser(allow_no_value=True)
         config.read(filename)
         for section in config.sections():
@@ -221,7 +224,7 @@ def parse_configuration(args, filename):
                 # qt
                 if args_copy.algorithm == QT or args_copy.algorithm == QTVECTOR:
                     args_copy.qualitythreshold = config[section][QUALITYTHRESHOLD]
-                    args_copy.minsamples = config[section][MINSAMPLES]
+                    args_copy.minsamples = config[section][MINCLUSTERSIZE]
                 # else:
                 #     args_copy.qualitythreshold = None
                 #     args_copy.minsamples = None

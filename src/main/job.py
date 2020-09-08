@@ -14,7 +14,9 @@ from algorithms.umap_technique import umap_script
 
 def start_job(args, job):
     print("Loading trajectory from file...")
-    traj = mdtraj.load(os.path.join(DATA, DATA_SRC, args.source))
+    wd = os.getcwd()
+    wd = wd + DATA + DATA_SRC + args.source
+    traj = mdtraj.load(wd)
     if args.selection:
         sel = traj.topology.select(args.selection)
         traj = traj.atom_slice(sel)

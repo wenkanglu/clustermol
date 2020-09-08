@@ -1,4 +1,4 @@
-DATA = "data/"
+DATA = "/data/"
 CONFIGS = "configs/"
 DATA_SRC = "data_src/"
 DATA_DEST = "data_dest/"

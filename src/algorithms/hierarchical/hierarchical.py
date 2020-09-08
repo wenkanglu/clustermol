@@ -1,12 +1,15 @@
+import os
 import numpy
 import mdtraj
 import scipy.cluster.hierarchy
 from scipy.spatial.distance import pdist, squareform
-from scipy.cluster.hierarchy import cophenet, fcluster
+from scipy.cluster.hierarchy import linkage, dendrogram, cophenet, fcluster
 import matplotlib.pyplot as plot
-from sklearn import datasets
-
-from main.constants import DATA_DEST, DATA
+from sklearn import cluster, datasets, mixture
+from sklearn.neighbors import kneighbors_graph
+from sklearn.preprocessing import StandardScaler
+from itertools import cycle, islice
+from main.constants import DATA, DATA_DEST
 
 clustering_type = ["single", "complete", "average", "ward"]
 
@@ -20,8 +23,8 @@ def saveClusters(clusters_arr, cluster_type, dest):
         cluster_type (str): qt types of implementation.
         dest (str): destination to sae cluster indexes.
     '''
-    # os.chdir(os.path.join(os.path.dirname(__file__), '..')+ "/" + DATA + DATA_DEST)
-    numpy.savetxt(DATA + DATA_DEST + dest + "/clusters-%s.txt" %cluster_type, clusters_arr, fmt='%i')
+    # os.chdir(os.path.join(os.path.dirname(__file__), '..')+ "/data/data_dest/")
+    numpy.savetxt("data/data_dest/" + dest + "/clusters-%s.txt" %cluster_type, clusters_arr, fmt='%i')
 
 def scatterplot_cluster(clusters_arr, cluster_type, dest):
         '''
@@ -41,7 +44,7 @@ def scatterplot_cluster(clusters_arr, cluster_type, dest):
         plot.title("Scatterplot of clusters vs frame - %s" %cluster_type )
         # os.chdir(os.path.join(os.path.dirname(__file__), '..')+ "/data/data_dest/")
         #print(os.getcwd())
-        plot.savefig(DATA + DATA_DEST + dest + "/scatterplot-%s.png" % cluster_type, dpi=300)
+        plot.savefig("data/data_dest/" + dest + "/scatterplot-%s.png" %cluster_type, dpi=300)
         plot.show()
         plot.close()
 
@@ -80,14 +83,14 @@ def produceClusters(linkage_matrix, args):
     #     saveClusters(clusters, args.linkage)
     if int(args.k_clusters) > 0:
         clusters = fcluster(linkage_matrix, int(args.k_clusters), criterion='maxclust')
-        scatterplot_cluster(clusters, args.linkage, args.destination)
-        saveClusters(clusters, args.linkage, args.destination)
     elif float(args.ddistance) > 0:
         clusters = fcluster(linkage_matrix, float(args.ddistance), criterion='distance')
-        scatterplot_cluster(clusters, args.linkage, args.destination)
-        saveClusters(clusters, args.linkage, args.destination)
     else:
         print("Invalid Selection")
+    return clusters
+
+def produceClustersTest(linkage_matrix, k):
+    return fcluster(linkage_matrix, k, criterion='maxclust')
 
 def save_dendrogram(linkage_type, linkage_matrix, dest, flag_display):
     '''
@@ -116,7 +119,7 @@ def save_dendrogram(linkage_type, linkage_matrix, dest, flag_display):
     # plt.text(0.50, 0.02, "Text relative to the AXES centered at : (0.50, 0.02)", transform=plt.gca().transAxes, fontsize=14, ha='center', color='blue')
     plot.text(0.8, 0.8, 'ToDO', style='italic',ha='left',transform=plot.gca().transAxes,
         bbox={'facecolor': 'blue', 'alpha': 0.1, 'pad': 4})
-    plot.savefig(DATA + DATA_DEST + dest + "/dendrogram-clustering-%s.png" % linkage_type, dpi=300)
+    plot.savefig("data/data_dest/" + dest + "/dendrogram-clustering-%s.png" % linkage_type, dpi=300)
     if flag_display:
         plot.show()
     plot.close()
@@ -196,83 +199,113 @@ def runHierarchicalClustering(traj, args):
     linkage_matrix = cluserting(rmsd_matrix_temp, args.linkage)
     cophenetic(linkage_matrix, rmsd_matrix_temp)
     save_dendrogram(args.linkage, linkage_matrix, args.destination, False) # False not to show dendrogram
-    produceClusters(linkage_matrix, args)
-
-def randomDataValidation():
-    '''
-    DESCRIPTION
-    Method for validation with random shapes of clusters for baseline test of algorithms.
-    '''
-    # Random seed
-    numpy.random.seed(0)
-    n_samples = 2000  # Sample size - 2000
-    # Noisy cirle data
-    noisy_circles = datasets.make_circles(n_samples=n_samples, factor=.5,noise=.05)
-    # Noisy moon data
-    noisy_moons = datasets.make_moons(n_samples=n_samples, noise=.05)
-    # Blob data
-    blobs = datasets.make_blobs(n_samples=n_samples, random_state=8)
-    # Unstructured data
-    no_structure = numpy.random.rand(n_samples, 2), None
-    # Anisotropicly distributed data
-    random_state = 170
-    X, y = datasets.make_blobs(n_samples=n_samples, random_state=random_state)
-    transformation = [[0.6, -0.6], [-0.4, 0.8]]
-    X_aniso = numpy.dot(X, transformation)
-    aniso = (X_aniso, y)
-    # Blobs with varied variances
-    varied = datasets.make_blobs(n_samples=n_samples,cluster_std=[1.0, 2.5, 0.5],random_state=random_state)
-
-    X, y = aniso
-    plot.scatter(X[:, 0], X[:, 1])
-    plot.show()
-    d = pdist(X, metric="euclidean")
-    linkage_temp = cluserting(d, "ward")
-    postprocessing.show_dendrogram("ward", linkage_temp)
+    clusters = produceClusters(linkage_matrix, args)
+    scatterplot_cluster(clusters, args.linkage, args.destination)
+    saveClusters(clusters, args.linkage, args.destination)
 
 def validation():
-    # The iris dataset is available from the sci-kit learn package
-    n_samples =2000
-    blobs = datasets.make_blobs(n_samples=n_samples, random_state=8)
-    X,y = blobs
-    d = pdist(X, metric="euclidean")
+    data_set_size = 3
+    n_samples = 500    # Sample szie of 10 000.
+    random_state = 3
+    centres = 16
+    center_box = (0, 10)
+    cluster_std = [5.0, 2.5, 0.5, 1.0, 1.1, 2.0, 1.0, 1.0, 2.5, 0.5, 0.5, 0.7, 1.2, 0.2, 1.0, 3.0]
+    blobs = datasets.make_blobs(n_samples=n_samples, centers =centres, random_state=random_state, cluster_std =0.2, center_box=center_box)
+    no_structure = numpy.random.rand(n_samples, random_state), None
+    varied_blobs = datasets.make_blobs(n_samples=n_samples,
+                             centers =centres,
+                             cluster_std=cluster_std,
+                             random_state=random_state, center_box=center_box)
+    Xblobs,yblobs = blobs
+    Xno_structure,yno_structure = no_structure
+    Xvaried_blobs,yvaried_blobs = varied_blobs
 
-    iris = datasets.load_iris()
-    type = "ward"
-    # Plot results
-    # print(iris.data[:, 0])
+    blobs_distance = pdist(Xblobs, metric="euclidean")
+    reduced_distances_b = squareform(blobs_distance, checks=True)
+    struct_distance = pdist(Xno_structure, metric="euclidean")
+    reduced_distances_s = squareform(struct_distance, checks=True)
+    varied_distance = pdist(Xvaried_blobs, metric="euclidean")
+    reduced_distances_v = squareform(varied_distance, checks=True)
 
-    # plot.scatter(iris.data[:, 3], iris.data[:, 0])
-    # plot.xlabel('Petal width (cm)')
-    # plot.ylabel('Sepal length (cm)')
-    # plot.show()
+    linkage_matrix = cluserting(reduced_distances_b, "single")
+    clusters_b_single = produceClustersTest(linkage_matrix, 16)
+    linkage_matrix = cluserting(reduced_distances_b, "complete")
+    clusters_b_complete = produceClustersTest(linkage_matrix, 16)
+    linkage_matrix = cluserting(reduced_distances_b, "average")
+    clusters_b_average = produceClustersTest(linkage_matrix, 16)
+    linkage_matrix = cluserting(reduced_distances_b, "ward")
+    clusters_b_ward = produceClustersTest(linkage_matrix, 16)
 
-    # plot.show()
-    # Compute distance matrix
-    # d = pdist(X=iris.data[:, [0, 3]], metric="euclidean")
-    # print(numpy.ndim(d))
-    reduced_distances = squareform(d, checks=True)
-    # print(numpy.ndim(reduced_distances))
-    # postprocessing.illustrateRMSD(reduced_distances)
-    # Perform agglomerative hierarchical clustering
-    # Use 'average' link function
-    linkage_temp = cluserting(reduced_distances, type)
-    no_frames = 2000
-    save_dendrogram(type, linkage_temp, False)
-    cophenetic(linkage_temp, reduced_distances)
-    produceClusters(linkage_temp, no_frames, type)
-    # plot.figure(figsize=(10, 8))
-    #clusters = fcluster(linkage_temp, 3, criterion='maxclust')
-    # plot.scatter(X[:,0], X[:,1], c=clusters, cmap='prism')  # plot points with cluster dependent colors
-    # plot.show()
-    # Print the first 6 rows
-    # Sepal Length, Sepal Width, Petal Length, Petal Width
-    # print(iris.data)
+    linkage_matrix = cluserting(reduced_distances_s, "single")
+    clusters_s_single = produceClustersTest(linkage_matrix, 10)
+    linkage_matrix = cluserting(reduced_distances_s, "complete")
+    clusters_s_complete = produceClustersTest(linkage_matrix, 10)
+    linkage_matrix = cluserting(reduced_distances_s, "average")
+    clusters_s_average = produceClustersTest(linkage_matrix, 10)
+    linkage_matrix = cluserting(reduced_distances_s, "ward")
+    clusters_s_ward = produceClustersTest(linkage_matrix, 10)
+
+    linkage_matrix = cluserting(reduced_distances_v, "single")
+    clusters_v_single = produceClustersTest(linkage_matrix, 16)
+    linkage_matrix = cluserting(reduced_distances_v, "complete")
+    clusters_v_complete = produceClustersTest(linkage_matrix, 16)
+    linkage_matrix = cluserting(reduced_distances_v, "average")
+    clusters_v_average = produceClustersTest(linkage_matrix, 16)
+    linkage_matrix = cluserting(reduced_distances_v, "ward")
+    clusters_v_ward = produceClustersTest(linkage_matrix, 16)
+
+    # lb_b1 = qt_vector(reduced_distances_b, 500, 0.6, 10).astype('int')
+    # lb_s1 = qt_vector(reduced_distances_s, 500, 1.3, 20)
+    # lb_v1 = qt_vector(reduced_distances_v, 500, 2.2, 20)
     #
+    # lb_b2 = qt_orginal(reduced_distances_b, 500, 0.6, 10).astype('int')
+    # lb_s2 = qt_orginal(reduced_distances_s, 500, 1.3, 20)
+    # lb_v2 = qt_orginal(reduced_distances_v, 500, 2.2, 20)
+    # colors = numpy.array(list(islice(cycle(['#377eb8', '#ff7f00', '#4daf4a',
+    #                                          '#f781bf', '#a65628', '#984ea3',
+    #                                          '#999999', '#e41a1c', '#dede00']),
+    #                                   int(max(lb_b2) + 1))))
+    # # add black color for outliers (if any)
+    # colors = numpy.append(colors, ["#000000"])
+    plot.figure(figsize=(8, 6))
+    plot.subplots_adjust(left=.1, right=.98, bottom=.05, top=.96, wspace=.2,
+                    hspace=.2)
+    plot.subplot(data_set_size, len(clustering_type), 1)
+    plot.scatter(Xblobs[:, 0], Xblobs[:, 1], c =clusters_b_single, cmap =plot.cm.tab20 )
+    plot.subplot(data_set_size, len(clustering_type), 2)
+    plot.scatter(Xblobs[:, 0], Xblobs[:, 1], c =clusters_b_complete, cmap =plot.cm.tab20)
+    plot.subplot(data_set_size, len(clustering_type), 3)
+    plot.scatter(Xblobs[:, 0], Xblobs[:, 1], c =clusters_b_average, cmap =plot.cm.tab20)
+    plot.subplot(data_set_size, len(clustering_type), 4)
+    plot.scatter(Xblobs[:, 0], Xblobs[:, 1], c =clusters_b_ward, cmap =plot.cm.tab20)
+
+    plot.subplot(data_set_size, len(clustering_type), 5)
+    plot.scatter(Xno_structure[:, 0], Xno_structure[:, 1], c =clusters_s_single, cmap =plot.cm.tab20)
+    plot.subplot(data_set_size, len(clustering_type), 6)
+    plot.scatter(Xno_structure[:, 0], Xno_structure[:, 1], c =clusters_s_complete, cmap =plot.cm.tab20)
+    plot.subplot(data_set_size, len(clustering_type), 7)
+    plot.scatter(Xno_structure[:, 0], Xno_structure[:, 1], c =clusters_s_average, cmap =plot.cm.tab20)
+    plot.subplot(data_set_size, len(clustering_type), 8)
+    plot.scatter(Xno_structure[:, 0], Xno_structure[:, 1], c =clusters_s_ward, cmap =plot.cm.tab20)
+
+    plot.subplot(data_set_size, len(clustering_type), 9)
+    plot.scatter(Xvaried_blobs[:, 0], Xvaried_blobs[:, 1], c =clusters_v_single, cmap =plot.cm.tab20)
+    plot.subplot(data_set_size, len(clustering_type), 10)
+    plot.scatter(Xvaried_blobs[:, 0], Xvaried_blobs[:, 1], c =clusters_v_complete, cmap =plot.cm.tab20)
+    plot.subplot(data_set_size, len(clustering_type), 11)
+    plot.scatter(Xvaried_blobs[:, 0], Xvaried_blobs[:, 1], c =clusters_v_average, cmap =plot.cm.tab20)
+    plot.subplot(data_set_size, len(clustering_type), 12)
+    plot.scatter(Xvaried_blobs[:, 0], Xvaried_blobs[:, 1], c =clusters_v_ward, cmap =plot.cm.tab20)
+
+
+    plot.show()
+    # print(numpy.ndim(reduced_distances))
+    # illustrateRMSD(reduced_distances_b, "test_validation")
+    # lb = qt_vector(reduced_distances, 150, 1.3, 20)
 
 if __name__ == "__main__":
     # runHierarchicalClustering("MenY_aligned_downsamp10_reduced(Nic).pdb", "graphics", "ward")
     # validation()
     # randomDataValidation()
-    runHierarchicalClustering("MenY_0_to_1000ns_aligned(100first).pdb", "ward")
-    # validation()
+    # runHierarchicalClustering("MenY_0_to_1000ns_aligned(100first).pdb", "ward")
+    validation()
