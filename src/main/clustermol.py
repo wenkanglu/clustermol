@@ -7,7 +7,8 @@ from main.constants import SUBPARSER_CONF, SUBPARSER_CLUS, SUBPARSER_PREP, UMAP,
     ALGORITHM, SOURCE, DESTINATION, VISUALISE, VALIDATE, DOWNSAMPLE, SELECTION, SAVECLUSTERS, LINKAGE, MINCLUSTERSIZE, \
     MINSAMPLES, CONFIGURATION, AVERAGE, COMPLETE, SINGLE, WARD, SILHOUETTE, DAVIESBOULDIN, CALINSKIHARABASZ, QT, \
     QTVECTOR, \
-    QUALITYTHRESHOLD, K_CLUSTERS, DDISTANCE, CONFIGS, DATA, N_COMPONENTS, N_NEIGHBOURS, PREPROCESS, PERPLEXITY
+    QUALITYTHRESHOLD, K_CLUSTERS, DDISTANCE, CONFIGS, DATA, N_COMPONENTS, N_NEIGHBOURS, PREPROCESS, \
+    IRIS, DIGITS, WINE, BREASTCANCER, TEST
 
 from main.job import start_job
 
@@ -17,8 +18,9 @@ print(os.getcwd())
 
 algorithm_list = [HDBSCAN, HIERARCHICAL, IMWKMEANS, QT, QTVECTOR]
 hierarchical_list = [AVERAGE, COMPLETE, SINGLE, WARD]
-validity_indices = [SILHOUETTE, DAVIESBOULDIN, CALINSKIHARABASZ]
+validity_indices = [CALINSKIHARABASZ, DAVIESBOULDIN, SILHOUETTE]
 preprocess_list = [TSNE, UMAP]
+test_data_list = [IRIS, BREASTCANCER, DIGITS, WINE]
 
 
 def parse():
@@ -46,7 +48,6 @@ def parse():
     parser_clus.add_argument("-s",
                              SOURCE,
                              default=None,
-                             required=True,
                              help="Select the input source", )
     parser_clus.add_argument("-d",
                              DESTINATION,
@@ -83,7 +84,6 @@ def parse():
                              default=None,
                              choices=preprocess_list,
                              help="Select a preprocessing technique", )
-
     # algorithm specific arguments
     parser_clus.add_argument("-l",
                              LINKAGE,
@@ -100,7 +100,7 @@ def parse():
                              default=None,
                              type=int,
                              help="Minimum samples for HDBSCAN clustering", )
-    parser_clus.add_argument("-t",
+    parser_clus.add_argument("-qt",
                              QUALITYTHRESHOLD,
                              default=None,
                              type=float,
@@ -126,6 +126,11 @@ def parse():
                              type=int,
                              help="Number of neighbours for UMAP or perplexity for t-SNE, higher values focus on "
                                   "global structure")
+    parser_clus.add_argument("-t",
+                             TEST,
+                             default=None,
+                             choices=test_data_list,
+                             help="Select test data as source", )
 
     # subparser for handling preprocessing jobs
     parser_prep = subparsers.add_parser(SUBPARSER_PREP, help="Perform a preprocessing job")
@@ -180,7 +185,14 @@ def parse_configuration(args, filename):
                         # general required arguments
                         args_copy = copy.copy(args)
                         args_copy.algorithm = config[section][ALGORITHM]  # sets algorithm from config file
-                        args_copy.source = config[section][SOURCE]
+                        if config.has_option(section, SOURCE):
+                            args_copy.source = config[section][SOURCE]
+                            args_copy.test = None
+                        elif config.has_option(section, TEST):
+                            args_copy.test = config[section][TEST]
+                            args_copy.source = None
+                        else:
+                            KeyError
                         args_copy.destination = config[section][DESTINATION]
 
                         if config.has_option(section, VISUALISE):
@@ -247,8 +259,9 @@ def parse_configuration(args, filename):
                         else:
                             args_copy.selection = None
                         start_job(args_copy, SUBPARSER_PREP)
+
                     else:
-                        print("Config sections must start with 'p' or 'c' for processing and clustering jobs "
+                        print("Config sections must start with 'p' or 'c' for processing, and clustering jobs "
                               "respectively.")
                 except ValueError:
                     print("Error in string-to-int/float conversion in section " + section +
