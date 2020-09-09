@@ -20,15 +20,28 @@ from sklearn.datasets import load_iris, load_wine, load_digits, load_breast_canc
 
 def start_job(args, job):
     input_data = None
+    traj_unselected = None
     if args.source:
         print("Loading trajectory from file...")
         input_data = mdtraj.load(os.path.join(DATA, DATA_SRC, args.source))
+        print("Trajectory load complete:")
+        print(input_data)
+        if args.downsample:
+            input_data = input_data[::int(args.downsample)]
+            print("Trajectory downsample complete:")
+            print(input_data)
+
+        #TODO if start/end selection
+
+        if args.saveclusters:
+            traj_unselected = copy.copy(input_data)
+
         if args.selection:
             sel = input_data.topology.select(args.selection)
             input_data = input_data.atom_slice(sel)
+            print("Trajectory selection operation complete:")
+            print(input_data)
 
-        if args.downsample:
-            input_data = input_data[::int(args.downsample)]
     elif args.test:
         if args.test == IRIS:
             input_data = load_iris().data
@@ -59,9 +72,9 @@ def start_job(args, job):
         elif args.algorithm == QTVECTOR:
             qt.cluster(input_data, "qt_vector", args)
         elif args.algorithm == IMWKMEANS:
-            labels = cluster_imwkmeans.cluster(traj, args)
+            labels = cluster_imwkmeans.cluster(input_data, args)
         elif args.algorithm == HDBSCAN:
-            labels = hdbscan.cluster(traj, args)
+            labels = hdbscan.cluster(input_data, args)
 
         if args.saveclusters:
              post_proc.save_largest_clusters(int(args.saveclusters), traj_unselected, labels, args.destination)

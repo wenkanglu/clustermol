@@ -1,7 +1,7 @@
 import numpy as np
 from sklearn.metrics import silhouette_score, calinski_harabasz_score, davies_bouldin_score
 
-from main.constants import SILHOUETTE, DAVIESBOULDIN, CALINSKIHARABASZ, DATA_DEST, DATA
+from main.constants import SILHOUETTE, DAVIESBOULDIN, CALINSKIHARABASZ, DATA_DEST, DATA_SRC, DATA
 
 def label_counts(labels, dest=None):
     unique, counts = np.unique(labels, return_counts=True)
@@ -63,4 +63,4 @@ def save_without_noise(traj, labels, dest): #note not tested
         noiseless = noiseless.join(traj[start:il])
     else:
         noiseless = traj[start:il]
-    noiseless.save_pdb(DATA + DATA_DEST + dest + "_nonoise" + str(k) + ".pdb")# TODO smarter naming
+    noiseless.save_pdb(DATA + DATA_SRC + dest + "_nonoise" + str(k) + ".pdb")# TODO smarter naming
