@@ -1,6 +1,6 @@
 import numpy as np
+from processing import post_proc
 import sklearn.cluster
-import sklearn.metrics #Val
 import matplotlib.pyplot as plt #Vis
 import hdbscan
 from mdtraj import Trajectory
@@ -10,31 +10,26 @@ from main.constants import DATA, DATA_DEST
 plt.style.use('bmh') #Vis
 
 
-def cluster(traj, args):
+def cluster(input, args):
     data = None
-    if isinstance(traj, Trajectory):
+    if isinstance(input, Trajectory):
         #Reshape the data
-        temp = traj.xyz
-        data = temp.reshape((traj.xyz.shape[0], traj.xyz.shape[1]*3))
+        temp = input.xyz
+        data = temp.reshape((input.xyz.shape[0], input.xyz.shape[1]*3))
         data = data.astype('float64')
-        temp, traj = [], []
+        temp, input = [], []
 
     else:
-        data = traj
+        data = input
 
     print("Performing HDBSCAN clustering.")
-    ## code adapted from Melvin et al.
-    cl = hdbscan.HDBSCAN(min_cluster_size=int(args.minclustersize), min_samples=int(args.minsamples)) #min cluster size -> parameter?
+    cl = hdbscan.HDBSCAN(min_cluster_size=int(args.minclustersize), min_samples=int(args.minsamples))
     cluster_labels = cl.fit_predict(data)
-    if data.shape[0] > 10000:
-        sample_size = 10000
-    else:
-        sample_size = None
-    raw_score = sklearn.metrics.silhouette_score(data, cluster_labels, sample_size=sample_size)
 
     np.savetxt(DATA + DATA_DEST + args.destination + 'hdbscan_labels.txt', cluster_labels, fmt='%i')
-    with open(DATA + DATA_DEST + args.destination + 'hdb_silhouette_score.txt', 'w') as f:
-        f.write("silhouette score is {0} \n".format(raw_score))
+    post_proc.label_counts(cluster_labels, args.destination)
+    if args.validate:
+        post_proc.calculate_CVI(args.validate, data, cluster_labels, args.destination)
 
     if args.visualise:
         plt.figure()
@@ -59,4 +54,4 @@ def cluster(traj, args):
                     cmap='Set1')
         plt.show()
 
-    #print("Noise: ", label_counts(cluster_labels)[-1])
+    return cluster_labels
