@@ -34,7 +34,6 @@ PREPROCESS = "--preprocess"
 
 N_COMPONENTS = "--ncomponents"
 N_NEIGHBOURS = "--nneighbours"
-PERPLEXITY = "--perplexity"
 
 AVERAGE = "average"
 COMPLETE = "complete"
@@ -44,3 +43,9 @@ WARD = "ward"
 SILHOUETTE = "S"
 DAVIESBOULDIN = "DB"
 CALINSKIHARABASZ = "CH"
+
+IRIS = "iris"
+DIGITS = "digits"
+WINE = "wine"
+BREASTCANCER = "breastcancer"
+TEST = "--test"

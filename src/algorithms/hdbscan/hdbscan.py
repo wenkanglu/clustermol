@@ -7,7 +7,7 @@ from mdtraj import Trajectory
 
 from main.constants import DATA, DATA_DEST
 
-plt.style.use('bmh') #Vis
+plt.style.use('bmh')  # Vis
 
 
 def cluster(input, args):
@@ -31,27 +31,24 @@ def cluster(input, args):
     if args.validate:
         post_proc.calculate_CVI(args.validate, data, cluster_labels, args.destination)
 
-    if args.visualise:
         plt.figure()
         plt.scatter(np.arange(cluster_labels.shape[0]), cluster_labels, marker='+')
         plt.xlabel('Frame')
         plt.ylabel('Cluster')
         plt.title('HDBSCAN')
         plt.savefig(DATA + DATA_DEST + args.destination + 'hdbscan_timeseries.png')
-        plt.show()
-        plt.clf()
 
-        clustered = (cluster_labels >= 0)
-        plt.scatter(data[~clustered, 0],
-                    data[~clustered, 1],
-                    c=(0.5, 0.5, 0.5),
-                    s=1,
-                    alpha=0.5)
-        plt.scatter(data[clustered, 0],
-                    data[clustered, 1],
-                    c=cluster_labels[clustered],
-                    s=1,
-                    cmap='Set1')
-        plt.show()
+        if args.visualise:
+            plt.show()
+            plt.clf()
+            clustered = (cluster_labels >= 0)
+            plt.scatter(data[clustered, 0],
+                        data[clustered, 1],
+                        c=cluster_labels[clustered],
+                        s=1,
+                        cmap='Set1')
+            plt.legend(cluster_labels[clustered])
+            plt.savefig(DATA + DATA_DEST + args.destination + 'hdbscan_scatter.png')
+            plt.show()
 
     return cluster_labels
