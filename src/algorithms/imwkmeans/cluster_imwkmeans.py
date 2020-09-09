@@ -1,27 +1,32 @@
 import numpy as np
 from algorithms.imwkmeans import clustering
+from processing import post_proc
 import sklearn.cluster
+from sklearn.metrics import silhouette_score
 import matplotlib.pyplot as plt #Vis
 import copy
+from mdtraj import Trajectory
 
 from main.constants import DATA, DATA_DEST
 
 plt.style.use('bmh') #Vis
 
-def cluster(traj, args):
-    #Reshape the data
-    temp = traj.xyz
-    original_data = temp.reshape((traj.xyz.shape[0], traj.xyz.shape[1]*3))
-    original_data = original_data.astype('float64')
-    temp, traj = [], []
+def cluster(input, args):
+    original_data = None
+    if isinstance(input, Trajectory):
+        #Reshape the data
+        temp = input.xyz
+        original_data = temp.reshape((input.xyz.shape[0], input.xyz.shape[1]*3))
+        original_data = original_data.astype('float64')
+        temp, input = [], []
+
+    else:
+        original_data = input
 
     ## code adapted from Melvin et al.
     np.seterr(all='raise')
     cl = clustering.Clustering()
-    if original_data.shape[0] > 10000:
-        sample_size = 10000
-    else:
-        sample_size = None
+    sample_size = 10000 if original_data.shape[0] > 10000 else None
 
     original_data = cl.my_math.standardize(original_data)  # Not clear if I should do this
 
@@ -76,19 +81,22 @@ def cluster(traj, args):
     kmeans_clusterer = sklearn.cluster.KMeans(n_clusters=optimal_k, n_init=100)
     kmeans_clusters = kmeans_clusterer.fit(data)
     labels = kmeans_clusters.labels_
-    centroids = kmeans_clusters.cluster_centers_
-    silhouette_score = silhouette_score(data, labels, sample_size=sample_size)
+    #centroids = kmeans_clusters.cluster_centers_
+    #silhouette_score = silhouette_score(data, labels, sample_size=sample_size)
 
     np.savetxt(DATA + DATA_DEST + args.destination + 'RescalediMWK_labels.txt', labels, fmt='%i')
-    with open(DATA + DATA_DEST + args.destination + 'imwk_silhouette_score.txt', 'w') as f:
-        f.write("silhouette score is {0} \n with p of {1}\n".format(silhouette_score, optimal_p))
+    post_proc.label_counts(labels, args.destination)
+    if args.validate:
+        post_proc.calculate_CVI(args.validate, data, labels, args.destination) #call on original data or rescaled? TODO
 
-    plt.figure()
-    plt.scatter(np.arange(labels.shape[0]), labels, marker='+')
-    plt.xlabel('Frame')
-    plt.ylabel('Cluster')
-    plt.title('iMWK-means with Explicit Rescaling and Kmeans')
-    plt.savefig(DATA + DATA_DEST + args.destination + 'RescalediMWK_timeseries.png')
     if args.visualise:
+        plt.figure()
+        plt.scatter(np.arange(labels.shape[0]), labels, marker='+')
+        plt.xlabel('Frame')
+        plt.ylabel('Cluster')
+        plt.title('iMWK-means with Explicit Rescaling and Kmeans')
+        plt.savefig(DATA + DATA_DEST + args.destination + 'RescalediMWK_timeseries.png')
         plt.show()
-    plt.clf()
+        plt.clf()
+
+    return labels

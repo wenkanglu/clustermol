@@ -1,9 +1,5 @@
 from setuptools import setup, find_packages
 
-# packages=['algorithms', 'algorithms.qt', 'algorithms.tsne', 'algorithms.umap_technique', 'algorithms.hdbscan',
-#               'algorithms.imwkmeans', 'algorithms.hierarchical', 'processing'],
-#     package_dir={'': 'src'}
-
 setup(
     name='clustermol',
     version='1.0',

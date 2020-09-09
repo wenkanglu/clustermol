@@ -7,7 +7,8 @@ from main.constants import SUBPARSER_CONF, SUBPARSER_CLUS, SUBPARSER_PREP, UMAP,
     ALGORITHM, SOURCE, DESTINATION, VISUALISE, VALIDATE, DOWNSAMPLE, SELECTION, SAVECLUSTERS, LINKAGE, MINCLUSTERSIZE, \
     MINSAMPLES, CONFIGURATION, AVERAGE, COMPLETE, SINGLE, WARD, SILHOUETTE, DAVIESBOULDIN, CALINSKIHARABASZ, QT, \
     QTVECTOR, \
-    QUALITYTHRESHOLD, K_CLUSTERS, DDISTANCE, CONFIGS, DATA, N_COMPONENTS, N_NEIGHBOURS, PREPROCESS
+    QUALITYTHRESHOLD, K_CLUSTERS, DDISTANCE, CONFIGS, DATA, N_COMPONENTS, N_NEIGHBOURS, PREPROCESS, \
+    IRIS, DIGITS, WINE, BREASTCANCER, TEST
 
 from main.job import start_job
 
@@ -17,8 +18,9 @@ print(directory)
 
 algorithm_list = [HDBSCAN, HIERARCHICAL, IMWKMEANS, QT, QTVECTOR]
 hierarchical_list = [AVERAGE, COMPLETE, SINGLE, WARD]
-validity_indices = [SILHOUETTE, DAVIESBOULDIN, CALINSKIHARABASZ]
+validity_indices = [CALINSKIHARABASZ, DAVIESBOULDIN, SILHOUETTE]
 preprocess_list = [TSNE, UMAP]
+test_data_list = [IRIS, BREASTCANCER, DIGITS, WINE]
 
 
 def parse():
@@ -46,7 +48,6 @@ def parse():
     parser_clus.add_argument("-s",
                              SOURCE,
                              default=None,
-                             required=True,
                              help="Select the input source", )
     parser_clus.add_argument("-d",
                              DESTINATION,
@@ -67,6 +68,7 @@ def parse():
     parser_clus.add_argument("-ds",
                              DOWNSAMPLE,
                              default=None,
+                             type=int,
                              help="Select every nth frame to be kept", )
     parser_clus.add_argument("-sel",
                              SELECTION,
@@ -75,13 +77,13 @@ def parse():
     parser_clus.add_argument("-sc",
                              SAVECLUSTERS,
                              default=None,
+                             type=int,
                              help="Save the largest n number of clusters to destination", )
     parser_clus.add_argument("-p",
                              PREPROCESS,
                              default=None,
                              choices=preprocess_list,
                              help="Select a preprocessing technique", )
-
     # algorithm specific arguments
     parser_clus.add_argument("-l",
                              LINKAGE,
@@ -91,31 +93,44 @@ def parse():
     parser_clus.add_argument("-mc",
                              MINCLUSTERSIZE,
                              default=None,
+                             type=int,
                              help="Minimum cluster size for HDBSCAN or Quality Threshold clustering", )
     parser_clus.add_argument("-ms",
                              MINSAMPLES,
                              default=None,
+                             type=int,
                              help="Minimum samples for HDBSCAN clustering", )
-    parser_clus.add_argument("-t",
+    parser_clus.add_argument("-qt",
                              QUALITYTHRESHOLD,
                              default=None,
+                             type=float,
                              help="Minimum Cutoff/Quality Threshold value for Quality Threshold clustering", )
     parser_clus.add_argument("-k",
                              K_CLUSTERS,
                              default=None,
+                             type=int,
                              help="Number of assumed clusters for Hierarchical clustering", )
     parser_clus.add_argument("-dist",
                              DDISTANCE,
                              default=None,
+                             type=float,
                              help="Distance cutoff for Hierarchical clustering mergers", )
     parser_clus.add_argument("-nc",
                              N_COMPONENTS,
                              default=None,
-                             help="Number of components (dimensions) for UMAP to embed to")
+                             type=int,
+                             help="Number of components (dimensions) for UMAP or t-SNE to embed to")
     parser_clus.add_argument("-nn",
                              N_NEIGHBOURS,
                              default=None,
-                             help="Number of neighbours for UMAP to focus on")
+                             type=int,
+                             help="Number of neighbours for UMAP or perplexity for t-SNE, higher values focus on "
+                                  "global structure")
+    parser_clus.add_argument("-t",
+                             TEST,
+                             default=None,
+                             choices=test_data_list,
+                             help="Select test data as source", )
 
     # subparser for handling preprocessing jobs
     parser_prep = subparsers.add_parser(SUBPARSER_PREP, help="Perform a preprocessing job")
@@ -133,6 +148,7 @@ def parse():
     parser_prep.add_argument("-ds",
                              DOWNSAMPLE,
                              default=None,
+                             type=int,
                              help="Select every nth frame to be kept", )
     parser_prep.add_argument("-sel",
                              SELECTION,
@@ -154,97 +170,109 @@ def handle_configuration(args):
         for filename in os.listdir(directory + DATA + CONFIGS + args.configuration):
             parse_configuration(args, os.path.join(directory + DATA + CONFIGS + args.configuration, filename))
     else:
-        print("Error - Cannot find config file")
+        print("Error - Cannot find config file.")
 
 
 def parse_configuration(args, filename):
     if filename.endswith(".ini"):
-        # print(os.getcwd())
-        config = configparser.ConfigParser(allow_no_value=True)
-        config.read(filename)
-        for section in config.sections():
-            # if section is for clustering job
-            if section[0] == "c":
-                # general required arguments
-                args_copy = copy.copy(args)
-                args_copy.algorithm = config[section][ALGORITHM]  # sets algorithm from config file
-                args_copy.source = config[section][SOURCE]
-                args_copy.destination = config[section][DESTINATION]
-                args_copy.visualise = config[section][VISUALISE]
-                # trajectory preprocessing
-                if config.has_option(section, VALIDATE):
-                    args_copy.validate = config[section][VALIDATE]
-                else:
-                    args_copy.validate = None
-                if config.has_option(section, DOWNSAMPLE):
-                    args_copy.downsample = config[section][DOWNSAMPLE]
-                else:
-                    args_copy.downsample = None
-                if config.has_option(section, SELECTION):
-                    args_copy.selection = config[section][SELECTION]
-                else:
-                    args_copy.selection = None
-                if config.has_option(section, SAVECLUSTERS):
-                    args_copy.saveclusters = config[section][SAVECLUSTERS]
-                else:
-                    args_copy.saveclusters = None
-                # cluster preprocessing
-                if config.has_option(section, PREPROCESS):
-                    args_copy.preprocess = config[section][PREPROCESS]
-                    if config[section][PREPROCESS] == UMAP:
-                        args_copy.ncomponents = config[section][N_COMPONENTS]
-                        args_copy.nneighbours = config[section][N_NEIGHBOURS]
-                    elif config[section][PREPROCESS] == TSNE:
-                        args_copy.ncomponents = None
-                        args_copy.nneighbours = None
-                else:
-                    args_copy.preprocess = None
-                # hierarchical
-                if args_copy.algorithm == HIERARCHICAL:
-                    args_copy.linkage = config[section][LINKAGE]
-                    if config.has_option(section, K_CLUSTERS):
-                        args_copy.k_clusters = config[section][K_CLUSTERS]
-                        args_copy.ddistance = -1
-                    elif config.has_option(section, DDISTANCE):
-                        args_copy.ddistance = config[section][DDISTANCE]
-                        args_copy.k_clusters = -1
-                # else:
-                #     args_copy.linkage = None
-                #     args_copy.k_clusters = None
-                #     args_copy.ddistance = None
-                # hdbscan
-                if args_copy.algorithm == HDBSCAN:
-                    args_copy.minclustersize = config[section][MINCLUSTERSIZE]
-                    args_copy.minsamples = config[section][MINSAMPLES]
-                # else:
-                #     args_copy.minclustersize = None
-                #     args_copy.minsamples = None
-                # qt
-                if args_copy.algorithm == QT or args_copy.algorithm == QTVECTOR:
-                    args_copy.qualitythreshold = config[section][QUALITYTHRESHOLD]
-                    args_copy.minsamples = config[section][MINCLUSTERSIZE]
-                # else:
-                #     args_copy.qualitythreshold = None
-                #     args_copy.minsamples = None
-                start_job(args_copy, SUBPARSER_CLUS)
-            # if section is for preprocessing job
-            elif section[0] == "p":
-                args_copy = copy.copy(args)
-                args_copy.source = config[section][SOURCE]
-                args_copy.destination = config[section][DESTINATION]
-                if config.has_option(section, DOWNSAMPLE):
-                    args_copy.downsample = config[section][DOWNSAMPLE]
-                else:
-                    args_copy.downsample = None
-                if config.has_option(section, SELECTION):
-                    args_copy.selection = config[section][SELECTION]
-                else:
-                    args_copy.selection = None
-                start_job(args_copy, SUBPARSER_PREP)
-            else:
-                print("Config sections must start with 'p' or 'c' for processing and clustering jobs respectively.")
+        try:
+            config = configparser.ConfigParser(allow_no_value=False)
+            config.read(filename)
+            for section in config.sections():
+                # if section is for clustering job
+                try:
+                    if section[0] == "c":
+                        # general required arguments
+                        args_copy = copy.copy(args)
+                        args_copy.algorithm = config[section][ALGORITHM]  # sets algorithm from config file
+                        if config.has_option(section, SOURCE):
+                            args_copy.source = config[section][SOURCE]
+                            args_copy.test = None
+                        elif config.has_option(section, TEST):
+                            args_copy.test = config[section][TEST]
+                            args_copy.source = None
+                        else:
+                            KeyError
+                        args_copy.destination = config[section][DESTINATION]
+
+                        if config.has_option(section, VISUALISE):
+                            args_copy.visualise = config[section][VISUALISE]
+                        else:
+                            args_copy.visualise = "false"
+                        # trajectory preprocessing
+                        if config.has_option(section, VALIDATE):
+                            args_copy.validate = config[section][VALIDATE]
+                        else:
+                            args_copy.validate = None
+                        if config.has_option(section, DOWNSAMPLE):
+                            args_copy.downsample = int(config[section][DOWNSAMPLE])
+                        else:
+                            args_copy.downsample = None
+                        if config.has_option(section, SELECTION):
+                            args_copy.selection = config[section][SELECTION]
+                        else:
+                            args_copy.selection = None
+                        if config.has_option(section, SAVECLUSTERS):
+                            args_copy.saveclusters = int(config[section][SAVECLUSTERS])
+                        else:
+                            args_copy.saveclusters = None
+                        # cluster preprocessing
+                        if config.has_option(section, PREPROCESS):
+                            args_copy.preprocess = config[section][PREPROCESS]
+                            if config[section][PREPROCESS] == UMAP or config[section][PREPROCESS] == TSNE:
+                                args_copy.ncomponents = int(config[section][N_COMPONENTS])
+                                args_copy.nneighbours = int(config[section][N_NEIGHBOURS])
+                        else:
+                            args_copy.preprocess = None
+                        # hierarchical
+                        if args_copy.algorithm == HIERARCHICAL:
+                            args_copy.linkage = config[section][LINKAGE]
+                            if config.has_option(section, K_CLUSTERS):
+                                args_copy.k_clusters = config[section][K_CLUSTERS]
+                                args_copy.ddistance = -1
+                            elif config.has_option(section, DDISTANCE):
+                                args_copy.ddistance = config[section][DDISTANCE]
+                                args_copy.k_clusters = -1
+                            else:
+                                raise KeyError
+                        # hdbscan
+                        if args_copy.algorithm == HDBSCAN:
+                            args_copy.minclustersize = int(config[section][MINCLUSTERSIZE])
+                            args_copy.minsamples = int(config[section][MINSAMPLES])
+                        # qt
+                        if args_copy.algorithm == QT or args_copy.algorithm == QTVECTOR:
+                            args_copy.qualitythreshold = float(config[section][QUALITYTHRESHOLD])
+                            args_copy.minsamples = int(config[section][MINSAMPLES])
+
+                        start_job(args_copy, SUBPARSER_CLUS)
+                    # if section is for preprocessing job
+                    elif section[0] == "p":
+                        args_copy = copy.copy(args)
+                        args_copy.source = config[section][SOURCE]
+                        args_copy.destination = config[section][DESTINATION]
+                        if config.has_option(section, DOWNSAMPLE):
+                            args_copy.downsample = int(config[section][DOWNSAMPLE])
+                        else:
+                            args_copy.downsample = None
+                        if config.has_option(section, SELECTION):
+                            args_copy.selection = config[section][SELECTION]
+                        else:
+                            args_copy.selection = None
+                        start_job(args_copy, SUBPARSER_PREP)
+
+                    else:
+                        print("Config sections must start with 'p' or 'c' for processing, and clustering jobs "
+                              "respectively.")
+                except ValueError:
+                    print("Error in string-to-int/float conversion in section " + section +
+                          ".\nPlease ensure that the expected numeric parameters are represented as such.")
+                except KeyError:
+                    print("A required parameter could not be found in section " + section +
+                          ".\nPerhaps check if all algorithm-specific parameters are present.")
+        except configparser.ParsingError:
+            print("Interpolation of a parameter has failed.\nPlease ensure that each option has an associated value.")
     else:
-        print(args.configuration + " is not .ini type")
+        print(args.configuration + " is not .ini type. Skipped.")
 
 
 def main():
