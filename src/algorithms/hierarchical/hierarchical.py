@@ -10,6 +10,7 @@ from sklearn.neighbors import kneighbors_graph
 from sklearn.preprocessing import StandardScaler
 from itertools import cycle, islice
 from main.constants import DATA, DATA_DEST
+from mdtraj import Trajectory
 
 directory = os.getcwd()
 clustering_type = ["single", "complete", "average", "ward"]
@@ -75,13 +76,7 @@ def produceClusters(linkage_matrix, args):
         linkage_matrix (numpy.ndarray): cluster linkage matrix.
         args (args): arguments from parser for k_clusters or distance.
     '''
-    # user_input = input("Please enter a cutoff distance value (-d) or number of clusters (-c):\n") or "inconsistent, 3.2"
-    # type, value = user_input.split()
-    # if args.ddistance:
-    #     print("1")
-    #     clusters = fcluster(linkage_matrix, float(args.ddistance), criterion='distance')
-    #     scatterplot_cluster(clusters, no_frames, args.linkage)
-    #     saveClusters(clusters, args.linkage)
+    clusters = 0
     if int(args.k_clusters) > 0:
         clusters = fcluster(linkage_matrix, int(args.k_clusters), criterion='maxclust')
     elif float(args.ddistance) > 0:
@@ -197,14 +192,20 @@ def runHierarchicalClustering(traj, args):
         filename (str): string of filename.
         linkage_type (str): string for hierarchical type.
     '''
-    traj = clean_trajectory(traj)
-    rmsd_matrix_temp = preprocessing_hierarchical(traj)
-    linkage_matrix = cluserting(rmsd_matrix_temp, args.linkage)
-    cophenetic(linkage_matrix, rmsd_matrix_temp)
-    save_dendrogram(args.linkage, linkage_matrix, args.destination, False) # False not to show dendrogram
-    clusters = produceClusters(linkage_matrix, args)
-    scatterplot_cluster(clusters, args.linkage, args.destination)
-    saveClusters(clusters, args.linkage, args.destination)
+    if isinstance(traj, Trajectory):
+        traj = clean_trajectory(traj)
+        rmsd_matrix_temp = preprocessing_hierarchical(traj)
+        linkage_matrix = cluserting(rmsd_matrix_temp, args.linkage)
+        cophenetic(linkage_matrix, rmsd_matrix_temp)
+        save_dendrogram(args.linkage, linkage_matrix, args.destination, False) # False not to show dendrogram
+        clusters = produceClusters(linkage_matrix, args)
+        scatterplot_cluster(clusters, args.linkage, args.destination)
+        saveClusters(clusters, args.linkage, args.destination)
+
+    else:
+        print("ToDo test data")
+        data = traj
+
 
 def validation():
     data_set_size = 3

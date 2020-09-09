@@ -7,6 +7,7 @@ from scipy.spatial.distance import pdist, squareform
 from sklearn import cluster, datasets, mixture
 from itertools import cycle, islice
 from main.constants import DATA, DATA_DEST
+from mdtraj import Trajectory
 
 directory = os.getcwd()
 
@@ -252,6 +253,8 @@ def qt_vector(rmsd_matrix, no_frames, cutoff, minimum_membership):
         rmsd_matrix[members,:] = False
         rmsd_matrix[:,members] = False
         cluster_index = cluster_index + 1
+        print('>>> Cluster # {} found with {} frames'.format(
+              cluster_index, max(membership)))
 
     return cluster_labels
 
@@ -266,21 +269,25 @@ def cluster(traj, type, args):
         traj (mdtraj.traj): trajectory object.
         type (string): type of Quaility Threshold algotithm to implemnt.
     '''
-    traj = clean_trajectory(traj)
-    rmsd_matrix_temp = preprocessing_qt(traj)  # Need to write general pre-process.
-    no_frames = traj.n_frames
-    illustrateRMSD(rmsd_matrix_temp, args.destination)
-    rmsd_vs_frame(no_frames, getRMSDvsFirstFrame(traj), args.destination)
-    if type == "qt_original":
-        cluster_labels = qt_orginal(rmsd_matrix_temp, no_frames, float(args.qualitythreshold), int(args.minsamples))
-        scatterplot_cluster(cluster_labels, args.destination, args.algorithm)
-        saveClusters(cluster_labels, args.destination, args.algorithm)
-    elif type == "qt_vector":
-        cluster_labels = qt_vector(rmsd_matrix_temp, no_frames, float(args.qualitythreshold), int(args.minsamples))
-        scatterplot_cluster(cluster_labels, args.destination, args.algorithm)
-        saveClusters(cluster_labels, args.destination, args.algorithm)
+    if isinstance(traj, Trajectory):
+        traj = clean_trajectory(traj)
+        rmsd_matrix_temp = preprocessing_qt(traj)  # Need to write general pre-process.
+        no_frames = traj.n_frames
+        illustrateRMSD(rmsd_matrix_temp, args.destination)
+        rmsd_vs_frame(no_frames, getRMSDvsFirstFrame(traj), args.destination)
+        if type == "qt_original":
+            cluster_labels = qt_orginal(rmsd_matrix_temp, no_frames, float(args.qualitythreshold), int(args.minsamples))
+            scatterplot_cluster(cluster_labels, args.destination, args.algorithm)
+            saveClusters(cluster_labels, args.destination, args.algorithm)
+        elif type == "qt_vector":
+            cluster_labels = qt_vector(rmsd_matrix_temp, no_frames, float(args.qualitythreshold), int(args.minsamples))
+            scatterplot_cluster(cluster_labels, args.destination, args.algorithm)
+            saveClusters(cluster_labels, args.destination, args.algorithm)
+        else:
+            print("Invalid Quailty Algorithm selection")
     else:
-        print("Invalid Quailty Algorithm selection")
+        print("ToDo test data")
+        data = traj
 
 # def runVMD_RMSD_QT(filename, type):
 #     '''
