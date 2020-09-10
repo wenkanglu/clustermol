@@ -26,7 +26,7 @@ def start_job(args, job):
     if args.source:
         print("Loading trajectory from file...")
         try:
-            input_data = mdtraj.load(os.path.join(DATA, DATA_SRC, args.source))
+            input_data = mdtraj.load(os.path.join(directory + DATA, DATA_SRC, args.source))
         except IOError:
             print(args.source + " could not be found.")
         print("Trajectory load complete:")
@@ -85,23 +85,23 @@ def start_job(args, job):
             if args.algorithm == HIERARCHICAL:
                 if args.linkage is None:
                     raise Exception(LINKAGE + " is required for " + HIERARCHICAL)
-                if args.numberofclusters is None and args.dendrogramdistance is None:
+                if args.k_clusters is None and args.ddistance is None:
                     raise Exception("Either " + K_CLUSTERS + " or " + DDISTANCE + " is required for " + HIERARCHICAL)
-                if args.numberofclusters is not None and args.dendrogramdistance is not None:
+                if args.k_clusters is not None and args.ddistance is not None:
                     raise Exception("Only " + K_CLUSTERS + " or " + DDISTANCE + " is required for " + HIERARCHICAL)
-                hierarchical.runHierarchicalClustering(input_data, args)
+                labels = hierarchical.runHierarchicalClustering(input_data, args)
             elif args.algorithm == QT:
                 if args.qualitythreshold is None:
                     raise Exception(QUALITYTHRESHOLD + " is required for " + QT)
-                if args.minsamples is None:
-                    raise Exception(MINSAMPLES + " is required for " + QT)
-                qt.cluster(input_data, "qt_original", args)
+                if args.minclustersize is None:
+                    raise Exception(MINCLUSTERSIZE + " is required for " + QT)
+                labels = qt.cluster(input_data, "qt_original", args)
             elif args.algorithm == QTVECTOR:
                 if args.qualitythreshold is None:
                     raise Exception(QUALITYTHRESHOLD + " is required for " + QTVECTOR)
-                if args.minsamples is None:
-                    raise Exception(MINSAMPLES + " is required for " + QTVECTOR)
-                qt.cluster(input_data, "qt_vector", args)
+                if args.minclustersize is None:
+                    raise Exception(MINCLUSTERSIZE + " is required for " + QTVECTOR)
+                labels = qt.cluster(input_data, "qt_vector", args)
             elif args.algorithm == IMWKMEANS:
                 labels = cluster_imwkmeans.cluster(input_data, args)
             elif args.algorithm == HDBSCAN:
@@ -111,8 +111,14 @@ def start_job(args, job):
                     raise Exception(MINSAMPLES + " is required for " + HDBSCAN)
                 labels = hdbscan.cluster(input_data, args)
 
+            post_proc.saveClusters(labels, args.destination, args.algorithm) # save cluster text file
+
             if args.saveclusters:
                  post_proc.save_largest_clusters(int(args.saveclusters), traj_unselected, labels, args.destination)
+
+            if args.visualise:
+                post_proc.scatterplot_cluster(labels, args.destination, args.algorithm)
+                # TODO: Open VMD and show cluster results here.
 
             elif job == SUBPARSER_PREP:
                 if args.destination.endswith(".pdb"):

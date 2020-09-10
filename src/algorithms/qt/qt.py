@@ -19,11 +19,11 @@ def illustrateRMSD(rmsd_matrix, dest):
         rmsd_matrix (numpy.ndarray): rmsd matrix.
         dest (str): destination to save rmsd matrix visualization.
     '''
-    plot.figure()
-    plot.imshow(rmsd_matrix, cmap='viridis', interpolation='nearest')
     print(">>> Max pairwise rmsd: %f" % np.max(rmsd_matrix))
     print(">>> Average pairwise rmsd: %f" % np.mean(rmsd_matrix))
     print(">>> Median pairwise rmsd: %f" % np.median(rmsd_matrix))
+    plot.figure()
+    plot.imshow(rmsd_matrix, cmap='viridis', interpolation='nearest')
     plot.xlabel('Simulation frames')
     plot.ylabel('Simulation frames')
     plot.colorbar()
@@ -46,7 +46,7 @@ def rmsd_vs_frame(no_frames, rmsds, dest):
     plot.legend()
     plot.title('RMSDs over time agaist first frame')
     plot.xlabel('Simulation frames')
-    plot.ylabel('RMSD (nm)')
+    plot.ylabel('RMSD')
     plot.savefig(directory + DATA + DATA_DEST + dest + "/rmsd-vs-frame.png", dpi=300)
     # plot.show()
     plot.close()
@@ -233,7 +233,7 @@ def cluster(traj, type, args):
         traj = clean_trajectory(traj)
         rmsd_matrix_temp = preprocessing_qt(traj)  # Need to write general pre-process.
         illustrateRMSD(rmsd_matrix_temp, args.destination) # outputs rmsd matrix to destintion
-        rmsd_vs_frame(traj.n_frames, getRMSDvsFirstFrame(traj), args.destination) # saves rmsd vs first frame. 
+        rmsd_vs_frame(traj.n_frames, getRMSDvsFirstFrame(traj), args.destination) # saves rmsd vs first frame.
         if type == "qt_original":
             cluster_labels = qt_orginal(rmsd_matrix_temp, traj.n_frames, args.qualitythreshold, args.minclustersize)
         elif type == "qt_vector":

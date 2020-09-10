@@ -235,10 +235,10 @@ def parse_configuration(args, filename):
                             args_copy.linkage = config[section][LINKAGE]
                             if config.has_option(section, K_CLUSTERS):
                                 args_copy.k_clusters = config[section][K_CLUSTERS]
-                                args_copy.ddistance = -1
+                                args_copy.ddistance = None
                             elif config.has_option(section, DDISTANCE):
                                 args_copy.ddistance = config[section][DDISTANCE]
-                                args_copy.k_clusters = -1
+                                args_copy.k_clusters = None
                             else:
                                 raise KeyError
                         # hdbscan
@@ -251,8 +251,8 @@ def parse_configuration(args, filename):
                         if args_copy.algorithm == QT or args_copy.algorithm == QTVECTOR:
                             current = QUALITYTHRESHOLD
                             args_copy.qualitythreshold = float(config[section][QUALITYTHRESHOLD])
-                            current = MINSAMPLES
-                            args_copy.minsamples = int(config[section][MINSAMPLES])
+                            current = MINCLUSTERSIZE
+                            args_copy.minclustersize = int(config[section][MINCLUSTERSIZE])
 
                         start_job(args_copy, SUBPARSER_CLUS)
                     # if section is for preprocessing job
