@@ -174,6 +174,7 @@ def handle_configuration(args):
 
 
 def parse_configuration(args, filename):
+    current = None
     if filename.endswith(".ini"):
         try:
             config = configparser.ConfigParser(allow_no_value=False)
@@ -184,6 +185,7 @@ def parse_configuration(args, filename):
                     if section[0] == "c":
                         # general required arguments
                         args_copy = copy.copy(args)
+                        current = ALGORITHM
                         args_copy.algorithm = config[section][ALGORITHM]  # sets algorithm from config file
                         if config.has_option(section, SOURCE):
                             args_copy.source = config[section][SOURCE]
@@ -193,6 +195,7 @@ def parse_configuration(args, filename):
                             args_copy.source = None
                         else:
                             KeyError
+                        current = DESTINATION
                         args_copy.destination = config[section][DESTINATION]
 
                         if config.has_option(section, VISUALISE):
@@ -220,12 +223,15 @@ def parse_configuration(args, filename):
                         if config.has_option(section, PREPROCESS):
                             args_copy.preprocess = config[section][PREPROCESS]
                             if config[section][PREPROCESS] == UMAP or config[section][PREPROCESS] == TSNE:
+                                current = N_COMPONENTS
                                 args_copy.ncomponents = int(config[section][N_COMPONENTS])
+                                current = N_NEIGHBOURS
                                 args_copy.nneighbours = int(config[section][N_NEIGHBOURS])
                         else:
                             args_copy.preprocess = None
                         # hierarchical
                         if args_copy.algorithm == HIERARCHICAL:
+                            current = LINKAGE
                             args_copy.linkage = config[section][LINKAGE]
                             if config.has_option(section, K_CLUSTERS):
                                 args_copy.k_clusters = config[section][K_CLUSTERS]
@@ -237,18 +243,24 @@ def parse_configuration(args, filename):
                                 raise KeyError
                         # hdbscan
                         if args_copy.algorithm == HDBSCAN:
+                            current = MINCLUSTERSIZE
                             args_copy.minclustersize = int(config[section][MINCLUSTERSIZE])
+                            current = MINSAMPLES
                             args_copy.minsamples = int(config[section][MINSAMPLES])
                         # qt
                         if args_copy.algorithm == QT or args_copy.algorithm == QTVECTOR:
+                            current = QUALITYTHRESHOLD
                             args_copy.qualitythreshold = float(config[section][QUALITYTHRESHOLD])
+                            current = MINSAMPLES
                             args_copy.minsamples = int(config[section][MINSAMPLES])
 
                         start_job(args_copy, SUBPARSER_CLUS)
                     # if section is for preprocessing job
                     elif section[0] == "p":
                         args_copy = copy.copy(args)
+                        current = SOURCE
                         args_copy.source = config[section][SOURCE]
+                        current = DESTINATION
                         args_copy.destination = config[section][DESTINATION]
                         if config.has_option(section, DOWNSAMPLE):
                             args_copy.downsample = int(config[section][DOWNSAMPLE])
@@ -267,8 +279,7 @@ def parse_configuration(args, filename):
                     print("Error in string-to-int/float conversion in section " + section +
                           ".\nPlease ensure that the expected numeric parameters are represented as such.")
                 except KeyError:
-                    print("A required parameter could not be found in section " + section +
-                          ".\nPerhaps check if all algorithm-specific parameters are present.")
+                    print("Required parameter " + current + " could not be found in section " + section + ".")
         except configparser.ParsingError:
             print("Interpolation of a parameter has failed.\nPlease ensure that each option has an associated value.")
     else:
