@@ -38,17 +38,17 @@ def cluster(input, args):
         plt.title('HDBSCAN')
         plt.savefig(DATA + DATA_DEST + args.destination + 'hdbscan_timeseries.png')
 
-        if args.visualise:
-            plt.show()
-            plt.clf()
-            clustered = (cluster_labels >= 0)
-            plt.scatter(data[clustered, 0],
-                        data[clustered, 1],
-                        c=cluster_labels[clustered],
-                        s=1,
-                        cmap='Set1')
-            plt.legend(cluster_labels[clustered])
-            plt.savefig(DATA + DATA_DEST + args.destination + 'hdbscan_scatter.png')
-            plt.show()
+    if args.visualise:
+        plt.show()
+        plt.clf()
+        clustered = (cluster_labels >= 0)
+        plt.scatter(data[clustered, 0],
+                    data[clustered, 1],
+                    c=cluster_labels[clustered],
+                    s=1,
+                    cmap='Set1')
+        plt.legend(cluster_labels[clustered])
+        plt.savefig(DATA + DATA_DEST + args.destination + 'hdbscan_scatter.png')
+        plt.show()
 
     return cluster_labels
