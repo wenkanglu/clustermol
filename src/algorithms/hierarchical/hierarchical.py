@@ -1,91 +1,51 @@
 import os
-import numpy
+import numpy as np
 import mdtraj
 import scipy.cluster.hierarchy
 from scipy.spatial.distance import pdist, squareform
-from scipy.cluster.hierarchy import linkage, dendrogram, cophenet, fcluster
+from scipy.cluster.hierarchy import linkage, dendrogram, fcluster
 import matplotlib.pyplot as plot
-from sklearn import cluster, datasets, mixture
-from sklearn.neighbors import kneighbors_graph
-from sklearn.preprocessing import StandardScaler
+from sklearn import cluster, datasets
 from itertools import cycle, islice
 from main.constants import DATA, DATA_DEST
-from mdtraj import Trajectory
+from processing import post_proc
 
 directory = os.getcwd()
 clustering_type = ["single", "complete", "average", "ward"]
 
-def saveClusters(clusters_arr, cluster_type, dest):
-    '''
-    DESCRIPTION
-    Save cluster indexes to text file
-
-    Arguments:
-        clusters_arr (numpy.ndarray): cluster indexes per frame.
-        cluster_type (str): qt types of implementation.
-        dest (str): destination to sae cluster indexes.
-    '''
-    # os.chdir(os.path.join(os.path.dirname(__file__), '..')+ "/data/data_dest/")
-    numpy.savetxt(directory + DATA + DATA_DEST + dest + "/clusters-%s.txt" %cluster_type, clusters_arr, fmt='%i')
-
-def scatterplot_cluster(clusters_arr, cluster_type, dest):
-        '''
-        DESCRIPTION
-        Produce cluster scatter plot of frames
-
-        Arguments:
-            clusters_arr (numpy.ndarray): cluster indexes per frame.
-            cluster_type (str): hierarchical type of implementation.
-            dest (str): destination to save cluster scatterplot.
-        '''
-        plot.figure()
-        plot.scatter(numpy.arange(len(clusters_arr)), clusters_arr, marker = '.',cmap='prism')
-        plot.xlabel("Frame Number")
-        plot.ylabel("Cluster Index")
-        plot.locator_params(axis="both", integer=True, tight=True)
-        plot.title("Scatterplot of clusters vs frame - %s" %cluster_type )
-        # os.chdir(os.path.join(os.path.dirname(__file__), '..')+ "/data/data_dest/")
-        #print(os.getcwd())
-        plot.savefig(directory + DATA + DATA_DEST + dest + "/scatterplot-%s.png" %cluster_type, dpi=300)
-        plot.show()
-        plot.close()
-
-def cophenetic(linkage_matrix, rmsd_matrix):
-    '''
-    DESCRIPTION
-    Computes Cophenetic distance given linkage and rmsd_matrix.
-
-    Arguments:
-        linkage_matrix (numpy.ndarray): cluster linkage.
-        rmsd_matrix (numpy.ndarray): pairwise distance matrix.
-
-    Return:
-        c (int): cophenetic distance.
-    '''
-    reduced_distances = squareform(rmsd_matrix, checks=True)
-    c, coph_dists = cophenet(linkage_matrix, pdist(reduced_distances))
-    print(">>> Cophenetic Distance: %s" % c)
-
 def produceClusters(linkage_matrix, args):
     '''
     DESCRIPTION
-    Produces scatterplot of clusters as well as saving cluster indexes/labels
-    further analysis.
+    Produces clusters provided linkage matrix and either number of clusters or
+    dendrogramdistance
 
     Arguments:
         linkage_matrix (numpy.ndarray): cluster linkage matrix.
-        args (args): arguments from parser for k_clusters or distance.
+        args (args): arguments of parser for k_clusters or distance.
+    Return:
+        clusters (numpy.ndarray): list of clusters produced.
     '''
-    clusters = 0
+    clusters = -1
     if int(args.k_clusters) > 0:
         clusters = fcluster(linkage_matrix, int(args.k_clusters), criterion='maxclust')
     elif float(args.ddistance) > 0:
         clusters = fcluster(linkage_matrix, float(args.ddistance), criterion='distance')
     else:
-        print("Invalid Selection")
+        print("Argument Error (Hierarchical) - Invalid Selection")
     return clusters
 
-def produceClustersTest(linkage_matrix, k):
+def produceClustersV(linkage_matrix, k):
+    '''
+    DESCRIPTION
+    Produces clusters provided linkage matrix and either number of clusters
+    for test case.
+
+    Arguments:
+        linkage_matrix (numpy.ndarray): cluster linkage matrix.
+        k (int): number of clusters to produce.
+    Return:
+        clusters (numpy.ndarray): list of clusters produced.
+    '''
     return fcluster(linkage_matrix, k, criterion='maxclust')
 
 def save_dendrogram(linkage_type, linkage_matrix, dest, flag_display):
@@ -113,7 +73,7 @@ def save_dendrogram(linkage_type, linkage_matrix, dest, flag_display):
     plot.xlabel('Frame Count')
     plot.ylabel('Distance')
     # plt.text(0.50, 0.02, "Text relative to the AXES centered at : (0.50, 0.02)", transform=plt.gca().transAxes, fontsize=14, ha='center', color='blue')
-    plot.text(0.8, 0.8, 'ToDO', style='italic',ha='left',transform=plot.gca().transAxes,
+    plot.text(0.8, 0.8, 'Cut-off line [broken]', style='italic',ha='left',transform=plot.gca().transAxes,
         bbox={'facecolor': 'blue', 'alpha': 0.1, 'pad': 4})
     plot.savefig(directory + DATA + DATA_DEST + dest + "/dendrogram-clustering-%s.png" % linkage_type, dpi=300)
     if flag_display:
@@ -131,12 +91,12 @@ def preprocessing_hierarchical(traj):
     Return:
         rmsd_matrix (numpy.np): rmsd matrix for clustering.
     '''
-    rmsd_matrix = numpy.ndarray((traj.n_frames, traj.n_frames), dtype=numpy.float64)
+    rmsd_matrix = np.ndarray((traj.n_frames, traj.n_frames), dtype=np.float64)
     for i in range(traj.n_frames):
         rmsd_ = mdtraj.rmsd(traj, traj, i, parallel=True)
         rmsd_matrix[i] = rmsd_
     print('>>> RMSD matrix complete')
-    # assert numpy.all(rmsd_matrix - rmsd_matrix.T < 1e-6) # Need to figure out what this is for.
+    # assert np.all(rmsd_matrix - rmsd_matrix.T < 1e-6) # Need to figure out what this is for.
     reduced_distances = squareform(rmsd_matrix, checks=False)
     return reduced_distances
 
@@ -155,10 +115,10 @@ def clean_trajectory(traj):
     traj = traj.remove_solvent()
     return traj
 
-def cluserting(rmsd_matrix, linkage_type):
+def clustering(rmsd_matrix, linkage_type):
     '''
     DESCRIPTION
-    Runs Hierarchical clustering methods.
+    Runs Hierarchical clustering methods from scipy libary.
 
     Arguments:
         rmsd_matrix (numpy.ndarray): rmsd matrix used for clustering.
@@ -166,18 +126,8 @@ def cluserting(rmsd_matrix, linkage_type):
     Return:
         linkage_matrix (numpy.ndarray): cluster linkage matrix.
     '''
-    if linkage_type == clustering_type[0]:
-        print(">>> Performing %s based Hierarchical clustering " % clustering_type[0])
-        linkage_matrix = scipy.cluster.hierarchy.linkage(rmsd_matrix, method=clustering_type[0])
-    elif linkage_type == clustering_type[1]:
-        print(">>> Performing %s based Hierarchical clustering " % clustering_type[1])
-        linkage_matrix = scipy.cluster.hierarchy.linkage(rmsd_matrix, method=clustering_type[1])
-    elif linkage_type == clustering_type[2]:
-        print(">>> Performing %s based Hierarchical clustering " % clustering_type[2])
-        linkage_matrix = scipy.cluster.hierarchy.linkage(rmsd_matrix, method=clustering_type[2])
-    elif linkage_type == clustering_type[3]:
-        print(">>> Performing %s based Hierarchical clustering " % clustering_type[3])
-        linkage_matrix = scipy.cluster.hierarchy.linkage(rmsd_matrix, method=clustering_type[3])
+    print(">>> Performing %s based Hierarchical clustering " % linkage_type)
+    linkage_matrix = scipy.cluster.hierarchy.linkage(rmsd_matrix, method=linkage_type)
     print(">>> Hierarchical clustering (%s) complete " %linkage_type)
     return linkage_matrix
 
@@ -189,23 +139,22 @@ def runHierarchicalClustering(traj, args):
     files and destination of desired output.
 
     Arguments:
-        filename (str): string of filename.
+        traj (mdtraj.traj): data used for clustering (test cases will not be Trajectory object)
         linkage_type (str): string for hierarchical type.
     '''
-    if isinstance(traj, Trajectory):
+    clusters = -1
+    if isinstance(traj, mdtraj.Trajectory):
         traj = clean_trajectory(traj)
         rmsd_matrix_temp = preprocessing_hierarchical(traj)
-        linkage_matrix = cluserting(rmsd_matrix_temp, args.linkage)
-        cophenetic(linkage_matrix, rmsd_matrix_temp)
-        save_dendrogram(args.linkage, linkage_matrix, args.destination, False) # False not to show dendrogram
+        linkage_matrix = clustering(rmsd_matrix_temp, args.linkage)
+        post_proc.cophenetic(linkage_matrix, rmsd_matrix_temp)
+        save_dendrogram(args.linkage, linkage_matrix, args.destination, args.visualise) # False not to show dendrogram
         clusters = produceClusters(linkage_matrix, args)
-        scatterplot_cluster(clusters, args.linkage, args.destination)
-        saveClusters(clusters, args.linkage, args.destination)
-
     else:
         print("ToDo test data")
         data = traj
 
+    return clusters
 
 def validation():
     data_set_size = 3
@@ -215,7 +164,7 @@ def validation():
     center_box = (0, 10)
     cluster_std = [5.0, 2.5, 0.5, 1.0, 1.1, 2.0, 1.0, 1.0, 2.5, 0.5, 0.5, 0.7, 1.2, 0.2, 1.0, 3.0]
     blobs = datasets.make_blobs(n_samples=n_samples, centers =centres, random_state=random_state, cluster_std =0.2, center_box=center_box)
-    no_structure = numpy.random.rand(n_samples, random_state), None
+    no_structure = np.random.rand(n_samples, random_state), None
     varied_blobs = datasets.make_blobs(n_samples=n_samples,
                              centers =centres,
                              cluster_std=cluster_std,
@@ -308,8 +257,4 @@ def validation():
     # lb = qt_vector(reduced_distances, 150, 1.3, 20)
 
 if __name__ == "__main__":
-    # runHierarchicalClustering("MenY_aligned_downsamp10_reduced(Nic).pdb", "graphics", "ward")
-    # validation()
-    # randomDataValidation()
-    # runHierarchicalClustering("MenY_0_to_1000ns_aligned(100first).pdb", "ward")
     validation()

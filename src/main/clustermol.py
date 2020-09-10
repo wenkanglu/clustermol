@@ -12,7 +12,7 @@ from main.constants import SUBPARSER_CONF, SUBPARSER_CLUS, SUBPARSER_PREP, UMAP,
 
 from main.job import start_job
 
-# os.chdir(os.getcwd())  # changes cwd to always be at clustermol
+os.chdir(os.getcwd())  # changes cwd to always be at clustermol
 directory = os.getcwd()
 print(directory)
 
@@ -165,7 +165,7 @@ def parse():
 
 def handle_configuration(args):
     if os.path.isfile(directory + DATA + CONFIGS + args.configuration):
-        parse_configuration(args, directory + DATA + CONFIGS + args.configuration)
+        parse_configuration(args,directory + DATA + CONFIGS + args.configuration)
     elif os.path.isdir(os.path.abspath(directory + DATA + CONFIGS + args.configuration)):
         for filename in os.listdir(directory + DATA + CONFIGS + args.configuration):
             parse_configuration(args, os.path.join(directory + DATA + CONFIGS + args.configuration, filename))
@@ -193,6 +193,7 @@ def parse_configuration(args, filename):
                             args_copy.source = None
                         else:
                             KeyError
+
                         args_copy.destination = config[section][DESTINATION]
 
                         if config.has_option(section, VISUALISE):
@@ -242,7 +243,7 @@ def parse_configuration(args, filename):
                         # qt
                         if args_copy.algorithm == QT or args_copy.algorithm == QTVECTOR:
                             args_copy.qualitythreshold = float(config[section][QUALITYTHRESHOLD])
-                            args_copy.minsamples = int(config[section][MINSAMPLES])
+                            args_copy.minclustersize = int(config[section][MINCLUSTERSIZE])
 
                         start_job(args_copy, SUBPARSER_CLUS)
                     # if section is for preprocessing job

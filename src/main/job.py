@@ -24,7 +24,7 @@ def start_job(args, job):
     traj_unselected = None
     if args.source:
         print("Loading trajectory from file...")
-        input_data = mdtraj.load(os.path.join(DATA, DATA_SRC, args.source))
+        input_data = mdtraj.load(os.path.join(directory+DATA, DATA_SRC, args.source))
         print("Trajectory load complete:")
         print(input_data)
         if args.downsample:
@@ -67,15 +67,21 @@ def start_job(args, job):
 
         labels = None
         if args.algorithm == HIERARCHICAL:
-            hierarchical.runHierarchicalClustering(input_data, args)
+            labels = hierarchical.runHierarchicalClustering(input_data, args)
         elif args.algorithm == QT:
-            qt.cluster(input_data, "qt_original", args)
+            labels = qt.cluster(input_data, "qt_original", args)
         elif args.algorithm == QTVECTOR:
-            qt.cluster(input_data, "qt_vector", args)
+            labels = qt.cluster(input_data, "qt_vector", args)
         elif args.algorithm == IMWKMEANS:
             labels = cluster_imwkmeans.cluster(input_data, args)
         elif args.algorithm == HDBSCAN:
             labels = hdbscan.cluster(input_data, args)
+
+        if args.visualise:
+            post_proc.scatterplot_cluster(labels, args.destination, args.algorithm)
+            # TODO: Open VMD and show cluster results here.
+
+        post_proc.saveClusters(labels, args.destination, args.algorithm) # save cluster text file
 
         if args.saveclusters:
              post_proc.save_largest_clusters(int(args.saveclusters), traj_unselected, labels, args.destination)
