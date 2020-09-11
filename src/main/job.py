@@ -1,5 +1,6 @@
 import os
 import copy
+from traceback import print_exception
 
 import mdtraj
 from processing import post_proc
@@ -19,6 +20,7 @@ from algorithms.umap import umap_script
 from sklearn.datasets import load_iris, load_wine, load_digits, load_breast_cancer
 
 directory = os.getcwd()
+
 
 def start_job(args, job):
     input_data = None
@@ -60,27 +62,27 @@ def start_job(args, job):
         elif args.test == WINE:
             input_data = load_wine().data
 
-    if job == SUBPARSER_CLUS:
-        if args.visualise == "true":
-            args.visualise = True
-        else:
-            args.visualise = False
+    try:
+        if job == SUBPARSER_CLUS:
+            if args.visualise == "true":
+                args.visualise = True
+            else:
+                args.visualise = False
 
-        if args.preprocess:
-            if args.preprocess == TSNE:
-                if args.nneighbours is None:
-                    raise Exception(N_NEIGHBOURS + " is required for " + TSNE)
-                if args.ncomponents is None:
-                    raise Exception(N_COMPONENTS + " is required for " + TSNE)
-                input_data = tsne_script.tsne_main(pca_script.pca_main(input_data, args), args)
-            elif args.preprocess == UMAP:
-                if args.nneighbours is None:
-                    raise Exception(N_NEIGHBOURS + " is required for " + UMAP)
-                if args.ncomponents is None:
-                    raise Exception(N_COMPONENTS + " is required for " + UMAP)
-                input_data = umap_script.umap_main(input_data, args)
+            if args.preprocess:
+                if args.preprocess == TSNE:
+                    if args.nneighbours is None:
+                        raise Exception(N_NEIGHBOURS + " is required for " + TSNE)
+                    if args.ncomponents is None:
+                        raise Exception(N_COMPONENTS + " is required for " + TSNE)
+                    input_data = tsne_script.tsne_main(pca_script.pca_main(input_data, args), args)
+                elif args.preprocess == UMAP:
+                    if args.nneighbours is None:
+                        raise Exception(N_NEIGHBOURS + " is required for " + UMAP)
+                    if args.ncomponents is None:
+                        raise Exception(N_COMPONENTS + " is required for " + UMAP)
+                    input_data = umap_script.umap_main(input_data, args)
 
-        try:
             labels = None
             if args.algorithm == HIERARCHICAL:
                 if args.linkage is None:
@@ -120,11 +122,11 @@ def start_job(args, job):
                 post_proc.scatterplot_cluster(labels, args.destination, args.algorithm)
                 # TODO: Open VMD and show cluster results here.
 
-            elif job == SUBPARSER_PREP:
-                if args.destination.endswith(".pdb"):
-                    input_data.save_pdb(os.path.join(DATA, DATA_SRC, args.destination))
-                else:
-                    input_data.save_pdb(os.path.join(DATA, DATA_SRC, args.destination + ".pdb"))
+        elif job == SUBPARSER_PREP:
+            if args.destination.endswith(".pdb"):
+                input_data.save_pdb(os.path.join(DATA, DATA_SRC, args.destination))
+            else:
+                input_data.save_pdb(os.path.join(DATA, DATA_SRC, args.destination + ".pdb"))
 
-        except IOError:
-            print("Error in handling " + args.destination + ". Check if data/data_dest/<subfolders>/ exist.")
+    except IOError:
+        print("Error in handling " + args.destination + ". Check if data/data_dest/<subfolders>/ exist.")
