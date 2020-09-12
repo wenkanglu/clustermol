@@ -4,24 +4,36 @@ import matplotlib.pyplot as plot
 from scipy.spatial.distance import pdist, squareform
 from scipy.cluster.hierarchy import cophenet
 from sklearn.metrics import silhouette_score, calinski_harabasz_score, davies_bouldin_score
+from mdtraj import Trajectory
 
 from main.constants import SILHOUETTE, DAVIESBOULDIN, CALINSKIHARABASZ, DATA_DEST, DATA_SRC, DATA
 
 directory = os.getcwd()
 
-def label_counts(labels, dest=None):
+def label_counts(labels, type=None, dest=None):
     unique, counts = np.unique(labels, return_counts=True)
     d = dict(zip(unique, counts))
-    if dest:
-        with open (directory + DATA + DATA_DEST + dest + '_results.txt', 'a') as f:
+    if dest and type:
+        with open (directory + DATA + DATA_DEST + dest + "/results-%s.txt" %type, 'w') as f:
             f.write("total frames: {0}\n".format(len(labels)))
             f.write("cluster label: frame count\n")
             for k in d.keys():
                 f.write("{0}: {1}\n".format(k, d[k]))
     return d
 
-def calculate_CVI(indices, data, labels, dest):
-    with open (directory + DATA + DATA_DEST + dest + '_results.txt', 'a') as f:
+def calculate_CVI(indices, input_data, labels, dest, type):
+    data = None
+    if isinstance(input_data, Trajectory):
+        #Reshape the data
+        temp = input_data.xyz
+        data = temp.reshape((input_data.xyz.shape[0], input_data.xyz.shape[1]*3))
+        data = data.astype('float64')
+        temp, input_data = [], []
+
+    else:
+        data = input_data
+
+    with open (directory + DATA + DATA_DEST + dest + "/results-%s.txt" %type, 'a') as f:
         if SILHOUETTE in indices:
             sample_size = 10000 if data.shape[0] > 10000 else None
             f.write("Silhouette score is {0}\n".format(silhouette_score(data, labels, sample_size=sample_size)))
@@ -43,8 +55,7 @@ def cophenetic(linkage_matrix, rmsd_matrix):
     c, coph_dists = cophenet(linkage_matrix, pdist(reduced_distances))
     print(">>> Cophenetic Distance: %s" % c)
 
-def save_largest_clusters(n, traj, labels, dest): #note not thoroughly tested
-    #check is a trajectory! TODO
+def save_largest_clusters(n, traj, labels, dest, type):
     c = label_counts(labels)
     n_labels = []
     c.pop(-1, None) #ignore "noise" cluster
@@ -63,10 +74,9 @@ def save_largest_clusters(n, traj, labels, dest): #note not thoroughly tested
                 trajectories[j] = traj[il]
         il += 1
     for k in n_labels:
-        trajectories[i].save_pdb(directory + DATA + DATA_DEST + dest + "/cluster" + str(k) + ".pdb")
+        trajectories[i].save_pdb(directory + DATA + DATA_DEST + dest + "/%s-cluster%d" %(type, k) + ".pdb")
 
-def save_without_noise(traj, labels, dest): #note not tested
-    #check is a trajectory! TODO
+def save_without_noise(traj, labels, dest):
     noiseless = None
     start = 0
     il = 0
@@ -82,7 +92,7 @@ def save_without_noise(traj, labels, dest): #note not tested
         noiseless = noiseless.join(traj[start:il])
     else:
         noiseless = traj[start:il]
-    noiseless.save_pdb(directory +DATA + DATA_SRC + dest + "_nonoise" + str(k) + ".pdb")# TODO smarter naming
+    noiseless.save_pdb(directory + DATA + DATA_SRC + "nonoise.pdb")
 
 def saveClusters(labels, dest, type):
     '''

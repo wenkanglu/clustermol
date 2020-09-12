@@ -4,9 +4,9 @@ import copy
 import os
 
 from main.constants import SUBPARSER_CONF, SUBPARSER_CLUS, SUBPARSER_PREP, UMAP, TSNE, IMWKMEANS, HIERARCHICAL, HDBSCAN, \
-    ALGORITHM, SOURCE, DESTINATION, VISUALISE, VALIDATE, DOWNSAMPLE, SELECTION, SAVECLUSTERS, LINKAGE, MINCLUSTERSIZE, \
-    MINSAMPLES, CONFIGURATION, AVERAGE, COMPLETE, SINGLE, WARD, SILHOUETTE, DAVIESBOULDIN, CALINSKIHARABASZ, QT, \
-    QTVECTOR, \
+    ALGORITHM, SOURCE, DESTINATION, VISUALISE, VALIDATE, DOWNSAMPLE, FRAMESELECT, SELECTION, SAVECLUSTERS, LINKAGE, \
+    MINCLUSTERSIZE, MINSAMPLES, CONFIGURATION, AVERAGE, COMPLETE, SINGLE, WARD, SILHOUETTE, DAVIESBOULDIN, \
+    CALINSKIHARABASZ, QT, QTVECTOR, \
     QUALITYTHRESHOLD, K_CLUSTERS, DDISTANCE, CONFIGS, DATA, N_COMPONENTS, N_NEIGHBOURS, PREPROCESS, \
     IRIS, DIGITS, WINE, BREASTCANCER, TEST
 
@@ -62,7 +62,7 @@ def parse():
     parser_clus.add_argument("-cvi",
                              VALIDATE,
                              default=None,
-                             nargs='*',
+                             nargs='+',
                              choices=validity_indices,
                              help="Select CVIs to calculate from cluster results.", )
     parser_clus.add_argument("-ds",
@@ -70,6 +70,12 @@ def parse():
                              default=None,
                              type=int,
                              help="Select every nth frame to be kept", )
+    parser_clus.add_argument("-fs",
+                             FRAMESELECT,
+                             default=None,
+                             nargs=2,
+                             type=int,
+                             help="Select start and end of frames to cluster on", )
     parser_clus.add_argument("-sel",
                              SELECTION,
                              default=None,
@@ -150,6 +156,12 @@ def parse():
                              default=None,
                              type=int,
                              help="Select every nth frame to be kept", )
+    parser_prep.add_argument("-fs",
+                             FRAMESELECT,
+                             default=None,
+                             nargs='*',
+                             type=int,
+                             help="Select start and end of frames to keep", )
     parser_prep.add_argument("-sel",
                              SELECTION,
                              default=None,
@@ -204,13 +216,20 @@ def parse_configuration(args, filename):
                             args_copy.visualise = "false"
                         # trajectory preprocessing
                         if config.has_option(section, VALIDATE):
-                            args_copy.validate = config[section][VALIDATE]
+                            args_copy.validate = config[section][VALIDATE].split()
                         else:
                             args_copy.validate = None
                         if config.has_option(section, DOWNSAMPLE):
                             args_copy.downsample = int(config[section][DOWNSAMPLE])
                         else:
                             args_copy.downsample = None
+                        if config.has_option(section, FRAMESELECT):
+                            fs  = config[section][FRAMESELECT].split()
+                            for i in range(len(fs)):
+                                fs[i] = int(fs[i])
+                            args_copy.frameselect = fs
+                        else:
+                            args_copy.frameselect = None
                         if config.has_option(section, SELECTION):
                             args_copy.selection = config[section][SELECTION]
                         else:
@@ -266,6 +285,13 @@ def parse_configuration(args, filename):
                             args_copy.downsample = int(config[section][DOWNSAMPLE])
                         else:
                             args_copy.downsample = None
+                        if config.has_option(section, FRAMESELECT):
+                            fs  = config[section][FRAMESELECT].split()
+                            for i in range(len(fs)):
+                                fs[i] = int(fs[i])
+                            args_copy.frameselect = fs
+                        else:
+                            args_copy.frameselect = None
                         if config.has_option(section, SELECTION):
                             args_copy.selection = config[section][SELECTION]
                         else:

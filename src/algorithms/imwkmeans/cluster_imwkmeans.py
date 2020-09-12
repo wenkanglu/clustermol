@@ -3,13 +3,10 @@ from algorithms.imwkmeans import clustering
 from processing import post_proc
 import sklearn.cluster
 from sklearn.metrics import silhouette_score
-import matplotlib.pyplot as plt #Vis
 import copy
 from mdtraj import Trajectory
 
 from main.constants import DATA, DATA_DEST
-
-plt.style.use('bmh') #Vis
 
 def cluster(input, args):
     original_data = None
@@ -81,22 +78,9 @@ def cluster(input, args):
     kmeans_clusterer = sklearn.cluster.KMeans(n_clusters=optimal_k, n_init=100)
     kmeans_clusters = kmeans_clusterer.fit(data)
     labels = kmeans_clusters.labels_
-    #centroids = kmeans_clusters.cluster_centers_
-    #silhouette_score = silhouette_score(data, labels, sample_size=sample_size)
 
-    np.savetxt(DATA + DATA_DEST + args.destination + 'RescalediMWK_labels.txt', labels, fmt='%i')
     post_proc.label_counts(labels, args.destination)
     if args.validate:
         post_proc.calculate_CVI(args.validate, data, labels, args.destination) #call on original data or rescaled? TODO
-
-    if args.visualise:
-        plt.figure()
-        plt.scatter(np.arange(labels.shape[0]), labels, marker='+')
-        plt.xlabel('Frame')
-        plt.ylabel('Cluster')
-        plt.title('iMWK-means with Explicit Rescaling and Kmeans')
-        plt.savefig(DATA + DATA_DEST + args.destination + 'RescalediMWK_timeseries.png')
-        plt.show()
-        plt.clf()
 
     return labels

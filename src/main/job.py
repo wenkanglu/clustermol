@@ -5,8 +5,8 @@ from traceback import print_exception
 import mdtraj
 from processing import post_proc
 
-from main.constants import SUBPARSER_CLUS, HIERARCHICAL, QT, QTVECTOR, IMWKMEANS, HDBSCAN, TSNE, UMAP, DATA_SRC, DATA, \
-    IRIS, BREASTCANCER, DIGITS, WINE, LINKAGE, K_CLUSTERS, DDISTANCE, QUALITYTHRESHOLD, MINSAMPLES, MINCLUSTERSIZE, \
+from main.constants import SUBPARSER_CLUS, HIERARCHICAL, QT, QTVECTOR, IMWKMEANS, HDBSCAN, TSNE, UMAP, DATA_SRC, DATA_DEST, \
+    DATA, IRIS, BREASTCANCER, DIGITS, WINE, LINKAGE, K_CLUSTERS, DDISTANCE, QUALITYTHRESHOLD, MINSAMPLES, MINCLUSTERSIZE, \
     N_NEIGHBOURS, N_COMPONENTS
 from main.constants import SUBPARSER_PREP
 from algorithms.hierarchical import hierarchical
@@ -33,12 +33,13 @@ def start_job(args, job):
             print(args.source + " could not be found.")
         print("Trajectory load complete:")
         print(input_data)
-        if args.downsample:
-            input_data = input_data[::int(args.downsample)]
-            print("Trajectory downsample complete:")
+        if args.frameselect or args.downsample:
+            start = args.frameselect[0] if args.frameselect else None
+            end = args.frameselect[1] if args.frameselect  else None
+            step = args.downsample if args.downsample else None
+            input_data = input_data[start:end:step]
+            print("Trajectory frame selection and/or downsample complete:")
             print(input_data)
-
-        # TODO if start/end selection
 
         if args.saveclusters:
             traj_unselected = copy.copy(input_data)
@@ -47,7 +48,7 @@ def start_job(args, job):
             try:
                 sel = input_data.topology.select(args.selection)
                 input_data = input_data.atom_slice(sel)
-                print("Trajectory selection operation complete:")
+                print("Trajectory atom selection operation complete:")
                 print(input_data)
             except:
                 print("Selection statement could not be parsed. Please check if it correct.")
@@ -68,6 +69,9 @@ def start_job(args, job):
                 args.visualise = True
             else:
                 args.visualise = False
+
+            if not os.path.isdir(os.path.join(directory + DATA, DATA_DEST, args.destination)):
+                os.mkdir(os.path.join(directory + DATA, DATA_DEST, args.destination))
 
             if args.preprocess:
                 if args.preprocess == TSNE:
@@ -116,11 +120,19 @@ def start_job(args, job):
             post_proc.saveClusters(labels, args.destination, args.algorithm) # save cluster text file
 
             if args.saveclusters:
-                 post_proc.save_largest_clusters(int(args.saveclusters), traj_unselected, labels, args.destination)
+                post_proc.save_largest_clusters(int(args.saveclusters), traj_unselected, labels, args.destination, args.algorithm)
 
             if args.visualise:
                 post_proc.scatterplot_cluster(labels, args.destination, args.algorithm)
                 # TODO: Open VMD and show cluster results here.
+
+            #write results
+            counts = post_proc.label_counts(labels, args.algorithm, args.destination) # must be run first to create file
+            if args.validate:
+                if len(counts)>1:
+                    post_proc.calculate_CVI(args.validate, input_data, labels, args.destination, args.algorithm)
+                else:
+                    print("Error: CVIs can only be calculated when more than one cluster is produced.")
 
         elif job == SUBPARSER_PREP:
             if args.destination.endswith(".pdb"):
