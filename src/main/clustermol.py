@@ -165,7 +165,7 @@ def parse():
 
 def handle_configuration(args):
     if os.path.isfile(directory + DATA + CONFIGS + args.configuration):
-        parse_configuration(args,directory + DATA + CONFIGS + args.configuration)
+        parse_configuration(directory + DATA + CONFIGS + args.configuration)
     elif os.path.isdir(os.path.abspath(directory + DATA + CONFIGS + args.configuration)):
         for filename in os.listdir(directory + DATA + CONFIGS + args.configuration):
             parse_configuration(args, os.path.join(directory + DATA + CONFIGS + args.configuration, filename))
