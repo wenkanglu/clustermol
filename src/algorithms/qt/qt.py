@@ -6,10 +6,9 @@ import matplotlib.pyplot as plot
 from scipy.spatial.distance import pdist, squareform
 from sklearn import cluster, datasets, mixture
 from itertools import cycle, islice
-from main.constants import DATA, DATA_DEST
+from main.constants import DATA, DATA_DEST, CWD
 from processing import post_proc
 
-directory = os.getcwd() # could remove this and would need to remove all directory infile.
 
 def illustrateRMSD(rmsd_matrix, dest):
     '''
@@ -25,7 +24,7 @@ def illustrateRMSD(rmsd_matrix, dest):
     plot.xlabel('Simulation frames')
     plot.ylabel('Simulation frames')
     plot.colorbar()
-    plot.savefig(directory+DATA + DATA_DEST + dest + "/RMSD-matrix.png", dpi=300)
+    plot.savefig(CWD+DATA + DATA_DEST + dest + "/RMSD-matrix.png", dpi=300)
     # plot.show()
     plot.close()
 
@@ -57,7 +56,7 @@ def rmsd_vs_frame(no_frames, rmsds, dest):
     plot.title('RMSDs over time agaist first frame')
     plot.xlabel('Simulation frames')
     plot.ylabel('RMSD')
-    plot.savefig(directory + DATA + DATA_DEST + dest + "/rmsd-vs-frame.png", dpi=300)
+    plot.savefig(CWD + DATA + DATA_DEST + dest + "/rmsd-vs-frame.png", dpi=300)
     # plot.show()
     plot.close()
 

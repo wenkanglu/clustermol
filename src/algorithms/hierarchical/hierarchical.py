@@ -12,7 +12,6 @@ from processing import post_proc
 from warnings import simplefilter
 simplefilter("ignore", ClusterWarning) # Used to ignore warning for test cases
 
-directory = os.getcwd()
 clustering_type = ["single", "complete", "average", "ward"]
 
 def illustrateRMSD(rmsd_matrix, dest):
@@ -29,7 +28,7 @@ def illustrateRMSD(rmsd_matrix, dest):
     plot.xlabel('Simulation frames')
     plot.ylabel('Simulation frames')
     plot.colorbar()
-    plot.savefig(directory+DATA + DATA_DEST + dest + "/RMSD-matrix.png", dpi=300)
+    plot.savefig(CWD+DATA + DATA_DEST + dest + "/RMSD-matrix.png", dpi=300)
     # plot.show()
     plot.close()
 
@@ -108,7 +107,7 @@ def save_dendrogram(linkage_type, linkage_matrix, dest):
     # plt.text(0.50, 0.02, "Text relative to the AXES centered at : (0.50, 0.02)", transform=plt.gca().transAxes, fontsize=14, ha='center', color='blue')
     plot.text(0.8, 0.8, 'Cut-off line [broken]', style='italic',ha='left',transform=plot.gca().transAxes,
         bbox={'facecolor': 'blue', 'alpha': 0.1, 'pad': 4})
-    plot.savefig(directory + DATA + DATA_DEST + dest + "/dendrogram-clustering-%s.png" % linkage_type, dpi=300)
+    plot.savefig(CWD + DATA + DATA_DEST + dest + "/dendrogram-clustering-%s.png" % linkage_type, dpi=300)
     plot.close()
 
 def preprocessing_hierarchical(traj):

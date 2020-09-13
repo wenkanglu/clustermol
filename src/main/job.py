@@ -8,7 +8,7 @@ from processing import post_proc
 
 from main.constants import SUBPARSER_CLUS, HIERARCHICAL, QT, QTVECTOR, IMWKMEANS, HDBSCAN, TSNE, UMAP, DATA_SRC, DATA_DEST, \
     DATA, IRIS, BREASTCANCER, DIGITS, WINE, TEST, NOISE, BLOBS, VBLOBS, LINKAGE, K_CLUSTERS, DDISTANCE, QUALITYTHRESHOLD, MINSAMPLES, MINCLUSTERSIZE, \
-    N_NEIGHBOURS, N_COMPONENTS
+    N_NEIGHBOURS, N_COMPONENTS, CWD
 from main.constants import SUBPARSER_PREP
 from algorithms.hierarchical import hierarchical
 from algorithms.qt import qt
@@ -21,16 +21,13 @@ from algorithms.umap import umap_script
 from sklearn.datasets import load_iris, load_wine, load_digits, load_breast_cancer
 from sklearn import cluster, datasets, mixture
 
-directory = os.getcwd()
-
-
 def start_job(args, job):
     input_data = None
     traj_unselected = None
     if args.source:
         print("Loading trajectory from file...")
         try:
-            input_data = mdtraj.load(os.path.join(directory + DATA, DATA_SRC, args.source))
+            input_data = mdtraj.load(os.path.join(CWD + DATA, DATA_SRC, args.source))
         except IOError:
             print(args.source + " could not be found.")
         print("Trajectory load complete:")
@@ -83,8 +80,8 @@ def start_job(args, job):
             else:
                 args.visualise = False
 
-            if not os.path.isdir(os.path.join(directory + DATA, DATA_DEST, args.destination)):
-                os.mkdir(os.path.join(directory + DATA, DATA_DEST, args.destination))
+            if not os.path.isdir(os.path.join(CWD + DATA, DATA_DEST, args.destination)):
+                os.mkdir(os.path.join(CWD + DATA, DATA_DEST, args.destination))
 
             if args.preprocess:
                 if args.preprocess == TSNE:

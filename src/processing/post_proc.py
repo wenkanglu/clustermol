@@ -7,15 +7,14 @@ from sklearn.metrics import silhouette_score, calinski_harabasz_score, davies_bo
 from mdtraj import Trajectory
 from itertools import cycle, islice
 
-from main.constants import SILHOUETTE, DAVIESBOULDIN, CALINSKIHARABASZ, DATA_DEST, DATA_SRC, DATA
+from main.constants import SILHOUETTE, DAVIESBOULDIN, CALINSKIHARABASZ, DATA_DEST, DATA_SRC, DATA, CWD
 
-directory = os.getcwd()
 
 def label_counts(labels, type=None, dest=None):
     unique, counts = np.unique(labels, return_counts=True)
     d = dict(zip(unique, counts))
     if dest and type:
-        with open (directory + DATA + DATA_DEST + dest + "/results-%s.txt" %type, 'w') as f:
+        with open (CWD + DATA + DATA_DEST + dest + "/results-%s.txt" %type, 'w') as f:
             f.write("total frames: {0}\n".format(len(labels)))
             f.write("cluster label: frame count\n")
             for k in d.keys():
@@ -34,7 +33,7 @@ def calculate_CVI(indices, input_data, labels, dest, type):
     else:
         data = input_data
 
-    with open (directory + DATA + DATA_DEST + dest + "/results-%s.txt" %type, 'a') as f:
+    with open (CWD + DATA + DATA_DEST + dest + "/results-%s.txt" %type, 'a') as f:
         if SILHOUETTE in indices:
             sample_size = 10000 if data.shape[0] > 10000 else None
             f.write("Silhouette score is {0}\n".format(silhouette_score(data, labels, sample_size=sample_size)))
@@ -68,7 +67,7 @@ def plotTestData(data, labels, dest):
     plot.xlabel('x coordinates')
     plot.ylabel('y coordinates')
     plot.scatter(data[:, 0], data[:, 1], c =labels, cmap =plot.cm.Set1)
-    plot.savefig(directory + DATA + DATA_DEST + dest + "/test-scatter.png", dpi=300)
+    plot.savefig(CWD + DATA + DATA_DEST + dest + "/test-scatter.png", dpi=300)
     plot.close()
 
 def save_largest_clusters(n, traj, labels, dest, type):
@@ -90,7 +89,7 @@ def save_largest_clusters(n, traj, labels, dest, type):
                 trajectories[j] = traj[il]
         il += 1
     for k in n_labels:
-        trajectories[i].save_pdb(directory + DATA + DATA_DEST + dest + "/%s-cluster%d" %(type, k) + ".pdb")
+        trajectories[i].save_pdb(CWD + DATA + DATA_DEST + dest + "/%s-cluster%d" %(type, k) + ".pdb")
 
 def save_without_noise(traj, labels, dest):
     noiseless = None
@@ -108,7 +107,7 @@ def save_without_noise(traj, labels, dest):
         noiseless = noiseless.join(traj[start:il])
     else:
         noiseless = traj[start:il]
-    noiseless.save_pdb(directory + DATA + DATA_SRC + "nonoise.pdb")
+    noiseless.save_pdb(CWD + DATA + DATA_SRC + "nonoise.pdb")
 
 def saveClusters(labels, dest, type):
     '''
@@ -120,7 +119,7 @@ def saveClusters(labels, dest, type):
         dest (str): destination to save cluster labels.
         type (str): type of algorithm implementation.
     '''
-    np.savetxt(directory + DATA + DATA_DEST + dest + "/clusters-%s.txt" %type, labels, fmt='%i')
+    np.savetxt(CWD + DATA + DATA_DEST + dest + "/clusters-%s.txt" %type, labels, fmt='%i')
 
 def scatterplot_cluster(labels, dest, type):
         '''
@@ -141,6 +140,6 @@ def scatterplot_cluster(labels, dest, type):
         plot.title("Scatterplot of clusters vs frame - %s" % type)
         # os.chdir(os.path.join(os.path.dirname(__file__), '..')+ "/data/data_dest/")
         #print(os.getcwd())
-        plot.savefig(directory + DATA + DATA_DEST + dest +  "/scatterplot-%s.png" % type, dpi=300)
+        plot.savefig(CWD + DATA + DATA_DEST + dest +  "/scatterplot-%s.png" % type, dpi=300)
         plot.show()
         plot.close()

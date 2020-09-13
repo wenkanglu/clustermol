@@ -8,13 +8,10 @@ from main.constants import SUBPARSER_CONF, SUBPARSER_CLUS, SUBPARSER_PREP, UMAP,
     MINCLUSTERSIZE, MINSAMPLES, CONFIGURATION, AVERAGE, COMPLETE, SINGLE, WARD, SILHOUETTE, DAVIESBOULDIN, \
     CALINSKIHARABASZ, QT, QTVECTOR, \
     QUALITYTHRESHOLD, K_CLUSTERS, DDISTANCE, CONFIGS, DATA, N_COMPONENTS, N_NEIGHBOURS, PREPROCESS, \
-    IRIS, DIGITS, WINE, BREASTCANCER, TEST, NOISE, BLOBS, VBLOBS
+    IRIS, DIGITS, WINE, BREASTCANCER, TEST, NOISE, BLOBS, VBLOBS, CWD
 
 from main.job import start_job
-
-os.chdir(os.getcwd())  # changes cwd to always be at clustermol
-directory = os.getcwd()
-print(directory)
+print(CWD)
 
 algorithm_list = [HDBSCAN, HIERARCHICAL, IMWKMEANS, QT, QTVECTOR]
 hierarchical_list = [AVERAGE, COMPLETE, SINGLE, WARD]
@@ -176,11 +173,11 @@ def parse():
 
 
 def handle_configuration(args):
-    if os.path.isfile(directory + DATA + CONFIGS + args.configuration):
-        parse_configuration(args, directory + DATA + CONFIGS + args.configuration)
-    elif os.path.isdir(os.path.abspath(directory + DATA + CONFIGS + args.configuration)):
-        for filename in os.listdir(directory + DATA + CONFIGS + args.configuration):
-            parse_configuration(args, os.path.join(directory + DATA + CONFIGS + args.configuration, filename))
+    if os.path.isfile(CWD + DATA + CONFIGS + args.configuration):
+        parse_configuration(args, CWD + DATA + CONFIGS + args.configuration)
+    elif os.path.isdir(os.path.abspath(CWD + DATA + CONFIGS + args.configuration)):
+        for filename in os.listdir(CWD + DATA + CONFIGS + args.configuration):
+            parse_configuration(args, os.path.join(CWD + DATA + CONFIGS + args.configuration, filename))
     else:
         print("Error - Cannot find config file.")
 
