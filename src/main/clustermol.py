@@ -202,7 +202,7 @@ def parse_configuration(args, filename):
                             args_copy.algorithm = config[section][ALGORITHM]  # sets algorithm from config file
                             if args_copy.algorithm not in algorithm_list:
                                 raise Exception(
-                                    args_copy.algorithm + " is not a valid option. Choose from:\n".join(algorithm_list)
+                                    args_copy.algorithm + " is not a valid option."
                                 )
                         else:
                             raise KeyError
@@ -214,7 +214,7 @@ def parse_configuration(args, filename):
                             args_copy.test = config[section][TEST]
                             if args_copy.test not in test_data_list:
                                 raise Exception(
-                                    args_copy.test + " is not a valid option. Choose from:\n".join(test_data_list)
+                                    args_copy.test + " is not a valid option."
                                 )
                             args_copy.source = None
                         else:
@@ -232,7 +232,7 @@ def parse_configuration(args, filename):
                             for cvi in args_copy.validate:
                                 if cvi not in validity_indices:
                                     raise Exception(
-                                        cvi + " is not a valid option. Choose from:\n".join(validity_indices)
+                                        cvi + " is not a valid option."
                                     )
                         else:
                             args_copy.validate = None
@@ -265,7 +265,7 @@ def parse_configuration(args, filename):
                                 args_copy.nneighbours = int(config[section][N_NEIGHBOURS])
                             else:
                                 raise Exception(
-                                    args_copy.preprocess + " is not a valid option. Choose from:\n".join(preprocess_list)
+                                    args_copy.preprocess + " is not a valid option"
                                 )
                         else:
                             args_copy.preprocess = None
@@ -275,7 +275,7 @@ def parse_configuration(args, filename):
                             args_copy.linkage = config[section][LINKAGE]
                             if args_copy.linkage not in hierarchical_list:
                                 raise Exception(
-                                    args_copy.linkage + " is not a valid option. Choose from:\n".join(hierarchical_list)
+                                    args_copy.linkage + " is not a valid option."
                                 )
                             current = K_CLUSTERS + "/" + DDISTANCE
                             if config.has_option(section, K_CLUSTERS):
