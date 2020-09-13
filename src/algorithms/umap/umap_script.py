@@ -6,7 +6,6 @@ from mdtraj import Trajectory
 import seaborn as sns
 
 import umap
-import hdbscan
 from sklearn.metrics import silhouette_score, calinski_harabasz_score, davies_bouldin_score
 
 
@@ -34,25 +33,3 @@ def umap_main(input_data, args):
         plt.show()
 
     return embedding
-
-    # labels = hdbscan.HDBSCAN(
-    #     min_samples=1,
-    #     min_cluster_size=10,
-    # ).fit_predict(embedding)
-    #
-    # print("50: " + str(silhouette_score(embedding, labels=labels)) + " " +
-    #       str(calinski_harabasz_score(embedding, labels=labels)) + " " +
-    #       str(davies_bouldin_score(embedding, labels=labels)))
-    #
-    # clustered = (labels >= 0)
-    # plt.scatter(embedding[~clustered, 0],
-    #             embedding[~clustered, 1],
-    #             c=(0.5, 0.5, 0.5),
-    #             s=1,
-    #             alpha=0.5)
-    # plt.scatter(embedding[clustered, 0],
-    #             embedding[clustered, 1],
-    #             c=labels[clustered],
-    #             s=1,
-    #             cmap='Set1')
-    # plt.show()

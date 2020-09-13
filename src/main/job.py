@@ -4,11 +4,14 @@ import numpy as np
 from traceback import print_exception
 
 import mdtraj
+from mdtraj import Trajectory
 from processing import post_proc
 
-from main.constants import SUBPARSER_CLUS, HIERARCHICAL, QT, QTVECTOR, IMWKMEANS, HDBSCAN, TSNE, UMAP, DATA_SRC, DATA_DEST, \
-    DATA, IRIS, BREASTCANCER, DIGITS, WINE, TEST, NOISE, BLOBS, VBLOBS, LINKAGE, K_CLUSTERS, DDISTANCE, QUALITYTHRESHOLD, MINSAMPLES, MINCLUSTERSIZE, \
-    N_NEIGHBOURS, N_COMPONENTS
+from main.constants import SUBPARSER_CLUS, HIERARCHICAL, QT, QTVECTOR, IMWKMEANS, HDBSCAN, TSNE, UMAP, DATA_SRC, \
+    DATA_DEST, \
+    DATA, IRIS, BREASTCANCER, DIGITS, WINE, TEST, NOISE, BLOBS, VBLOBS, LINKAGE, K_CLUSTERS, DDISTANCE, \
+    QUALITYTHRESHOLD, MINSAMPLES, MINCLUSTERSIZE, \
+    N_NEIGHBOURS, N_COMPONENTS, CONFIGS
 from main.constants import SUBPARSER_PREP
 from algorithms.hierarchical import hierarchical
 from algorithms.qt import qt
@@ -20,6 +23,7 @@ from algorithms.umap import umap_script
 
 from sklearn.datasets import load_iris, load_wine, load_digits, load_breast_cancer
 from sklearn import cluster, datasets, mixture
+
 
 def start_job(args, job):
     input_data = None
@@ -65,13 +69,12 @@ def start_job(args, job):
             noise = np.random.rand(60, 3), None
             input_data, y = noise
         elif args.test == BLOBS:
-            blobs = datasets.make_blobs(n_samples=60, centers =6, random_state=3, cluster_std =0.2, center_box=(0, 10))
+            blobs = datasets.make_blobs(n_samples=60, centers=6, random_state=3, cluster_std =0.2, center_box=(0, 10))
             input_data, y = blobs
         elif args.test == VBLOBS:
             cluster_std = [5.0, 2.5, 0.5, 1.0, 1.1, 0.0]
-            varied_blobs = datasets.make_blobs(n_samples=60, centers =6, cluster_std=cluster_std, random_state=3, center_box=(0, 10))
+            varied_blobs = datasets.make_blobs(n_samples=60, centers=6, cluster_std=cluster_std, random_state=3, center_box=(0, 10))
             input_data, y = varied_blobs
-
 
     try:
         if job == SUBPARSER_CLUS:
@@ -134,12 +137,14 @@ def start_job(args, job):
 
             if args.visualise:
                 post_proc.scatterplot_cluster(labels, args.destination, args.algorithm)
+                if args.preprocess:
+                    post_proc.embedding_plot(labels, input_data, args.destination, args.algorithm, args.preprocess)
                 # TODO: Open VMD and show cluster results here.
 
             # write results
             counts = post_proc.label_counts(labels, args.algorithm, args.destination)  # must be run first to create file
             if args.validate:
-                if len(counts)>1:
+                if len(counts) > 1:
                     post_proc.calculate_CVI(args.validate, input_data, labels, args.destination, args.algorithm)
                 else:
                     print("Error: CVIs can only be calculated when more than one cluster is produced.")
