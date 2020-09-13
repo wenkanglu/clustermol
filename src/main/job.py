@@ -136,8 +136,8 @@ def start_job(args, job):
                 post_proc.scatterplot_cluster(labels, args.destination, args.algorithm)
                 # TODO: Open VMD and show cluster results here.
 
-            #write results
-            counts = post_proc.label_counts(labels, args.algorithm, args.destination) # must be run first to create file
+            # write results
+            counts = post_proc.label_counts(labels, args.algorithm, args.destination)  # must be run first to create file
             if args.validate:
                 if len(counts)>1:
                     post_proc.calculate_CVI(args.validate, input_data, labels, args.destination, args.algorithm)
