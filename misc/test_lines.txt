@@ -4,3 +4,28 @@ python QT_original.py -traj MenW_6RU_0_to_10ns.pdb -cutoff 2.5 -minsize 1 -odir 
 QT_like.py -top MenY_0_to_1000ns_aligned.pdb -traj MenY_0_to_1000ns_aligned.pdb -cutoff 2.5 -o output/
 
 QT_like.py -top MenW_6RU_300_to_400ns.pdb -traj MenW_6RU_0_to_10ns.pdb -min 1 -cutoff 2.5 -o output/
+
+ noh and not resid 1 12 and name C1 C2 C3 C4 C5 O5 O2 O3 O4 and not name SOD
+
+
+	resid 8 7 and name C1 C2 C3 C4 C5 O2 O5
+
+	 name C1 C2 C3 C4 C5 O2 O3 O4 O5 and not name NH N CT C O SOD and not resid 1 12
+
+
+
+mol drawframes 0 0 {312 189 296 297 304 315 317 319 337}
+mol showrep 0 0 1
+mol showrep 0 1 0
+mol showrep 0 2 0
+mol showrep 0 3 0
+mol showrep 0 4 0
+mol showrep 0 5 0
+mol showrep 0 6 0
+
+--algorithm hierarchical --linkage ward --source MenW_0_to_1000ns_aligned(100skip).pdb --selectiontype != H and (((resname AGL or resname AGA) and not (name O2 or name O3 or name O4)) or (resname ASI and (name O4 or name C2 or name C3 or name C4 or name C5 or name O6))) and not resid 0 1 10 11 --destination testH --numberofclusters 401 --validateS DB CH --visualise false --saveclusters 10
+
+Draw cutoff line based on distance or clusters. 
+Error with linkage need to fix. 
+Linkage error when use distance. 
+QT should break before load inc cluster if name wrong 

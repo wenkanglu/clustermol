@@ -3,15 +3,47 @@ import numpy as np
 import mdtraj
 import scipy.cluster.hierarchy
 from scipy.spatial.distance import pdist, squareform
-from scipy.cluster.hierarchy import linkage, dendrogram, fcluster
+from scipy.cluster.hierarchy import linkage, dendrogram, fcluster, ClusterWarning
 import matplotlib.pyplot as plot
 from sklearn import cluster, datasets
 from itertools import cycle, islice
 from main.constants import DATA, DATA_DEST
 from processing import post_proc
+from warnings import simplefilter
+simplefilter("ignore", ClusterWarning) # Used to ignore warning for test cases
 
 directory = os.getcwd()
 clustering_type = ["single", "complete", "average", "ward"]
+
+def illustrateRMSD(rmsd_matrix, dest):
+    '''
+    DESCRIPTION
+    Creates an RMDS heatmap
+
+    Arguments:
+        rmsd_matrix (numpy.ndarray): rmsd matrix.
+        dest (str): destination to save rmsd matrix visualization.
+    '''
+    plot.figure()
+    plot.imshow(rmsd_matrix, cmap='viridis', interpolation='nearest')
+    plot.xlabel('Simulation frames')
+    plot.ylabel('Simulation frames')
+    plot.colorbar()
+    plot.savefig(directory+DATA + DATA_DEST + dest + "/RMSD-matrix.png", dpi=300)
+    # plot.show()
+    plot.close()
+
+def rmsd_stats(rmsd_matrix):
+        '''
+        DESCRIPTION
+        Print statistics from RMSD matrxi.
+
+        Arguments:
+            rmsd_matrix (numpy.ndarray): rmsd matrix.
+        '''
+        print(">>> Max pairwise rmsd: %f" % np.max(rmsd_matrix))
+        print(">>> Average pairwise rmsd: %f" % np.mean(rmsd_matrix))
+        print(">>> Median pairwise rmsd: %f" % np.median(rmsd_matrix))
 
 def produceClusters(linkage_matrix, args):
     '''
@@ -26,9 +58,9 @@ def produceClusters(linkage_matrix, args):
         clusters (numpy.ndarray): list of clusters produced.
     '''
     clusters = -1
-    if int(args.k_clusters) > 0:
+    if args.k_clusters:
         clusters = fcluster(linkage_matrix, int(args.k_clusters), criterion='maxclust')
-    elif float(args.ddistance) > 0:
+    elif args.ddistance:
         clusters = fcluster(linkage_matrix, float(args.ddistance), criterion='distance')
     else:
         print("Argument Error (Hierarchical) - Invalid Selection")
@@ -48,7 +80,7 @@ def produceClustersV(linkage_matrix, k):
     '''
     return fcluster(linkage_matrix, k, criterion='maxclust')
 
-def save_dendrogram(linkage_type, linkage_matrix, dest, flag_display):
+def save_dendrogram(linkage_type, linkage_matrix, dest):
     '''
     DESCRIPTION
     Popup and/or Dendrogram produced by hierarchical clustering.
@@ -70,14 +102,13 @@ def save_dendrogram(linkage_type, linkage_matrix, dest, flag_display):
     axes = plot.gca()
     ymin, ymax = axes.get_ylim()
     plot.axhline(y=ymax*2/3, c='k')
+    plot.xticks(fontsize=6)
     plot.xlabel('Frame Count')
     plot.ylabel('Distance')
     # plt.text(0.50, 0.02, "Text relative to the AXES centered at : (0.50, 0.02)", transform=plt.gca().transAxes, fontsize=14, ha='center', color='blue')
     plot.text(0.8, 0.8, 'Cut-off line [broken]', style='italic',ha='left',transform=plot.gca().transAxes,
         bbox={'facecolor': 'blue', 'alpha': 0.1, 'pad': 4})
     plot.savefig(directory + DATA + DATA_DEST + dest + "/dendrogram-clustering-%s.png" % linkage_type, dpi=300)
-    if flag_display:
-        plot.show()
     plot.close()
 
 def preprocessing_hierarchical(traj):
@@ -146,13 +177,26 @@ def runHierarchicalClustering(traj, args):
     if isinstance(traj, mdtraj.Trajectory):
         traj = clean_trajectory(traj)
         rmsd_matrix_temp = preprocessing_hierarchical(traj)
+        rmsd_stats(rmsd_matrix_temp)
         linkage_matrix = clustering(rmsd_matrix_temp, args.linkage)
         post_proc.cophenetic(linkage_matrix, rmsd_matrix_temp)
-        save_dendrogram(args.linkage, linkage_matrix, args.destination, args.visualise) # False not to show dendrogram
         clusters = produceClusters(linkage_matrix, args)
+
+        if (args.visualise):
+            save_dendrogram(args.linkage, linkage_matrix, args.destination) # False not to show dendrogram
+            illustrateRMSD(squareform(rmsd_matrix_temp, checks=False), args.destination)
     else:
-        print("ToDo test data")
         data = traj
+        pairwise_distance = pdist(data, metric="euclidean")
+        reduced_distances = squareform(pairwise_distance, checks=True)
+        rmsd_stats(reduced_distances)
+        linkage_matrix = clustering(reduced_distances, args.linkage)
+        post_proc.cophenetic(linkage_matrix, pairwise_distance)
+        clusters = produceClusters(linkage_matrix, args)
+        if(args.visualise):
+            # illustrateRMSD(reduced_distances, args.destination) # outputs rmsd matrix to destintion
+            post_proc.plotTestData(data,clusters, args.destination)
+            save_dendrogram(args.linkage, linkage_matrix, args.destination) # False not to show dendrogram
 
     return clusters
 
@@ -180,31 +224,31 @@ def validation():
     varied_distance = pdist(Xvaried_blobs, metric="euclidean")
     reduced_distances_v = squareform(varied_distance, checks=True)
 
-    linkage_matrix = cluserting(reduced_distances_b, "single")
+    linkage_matrix = clustering(reduced_distances_b, "single")
     clusters_b_single = produceClustersTest(linkage_matrix, 16)
-    linkage_matrix = cluserting(reduced_distances_b, "complete")
+    linkage_matrix = clustering(reduced_distances_b, "complete")
     clusters_b_complete = produceClustersTest(linkage_matrix, 16)
-    linkage_matrix = cluserting(reduced_distances_b, "average")
+    linkage_matrix = clustering(reduced_distances_b, "average")
     clusters_b_average = produceClustersTest(linkage_matrix, 16)
-    linkage_matrix = cluserting(reduced_distances_b, "ward")
+    linkage_matrix = clustering(reduced_distances_b, "ward")
     clusters_b_ward = produceClustersTest(linkage_matrix, 16)
 
-    linkage_matrix = cluserting(reduced_distances_s, "single")
+    linkage_matrix = clustering(reduced_distances_s, "single")
     clusters_s_single = produceClustersTest(linkage_matrix, 10)
-    linkage_matrix = cluserting(reduced_distances_s, "complete")
+    linkage_matrix = clustering(reduced_distances_s, "complete")
     clusters_s_complete = produceClustersTest(linkage_matrix, 10)
-    linkage_matrix = cluserting(reduced_distances_s, "average")
+    linkage_matrix = clustering(reduced_distances_s, "average")
     clusters_s_average = produceClustersTest(linkage_matrix, 10)
-    linkage_matrix = cluserting(reduced_distances_s, "ward")
+    linkage_matrix = clustering(reduced_distances_s, "ward")
     clusters_s_ward = produceClustersTest(linkage_matrix, 10)
 
-    linkage_matrix = cluserting(reduced_distances_v, "single")
+    linkage_matrix = clustering(reduced_distances_v, "single")
     clusters_v_single = produceClustersTest(linkage_matrix, 16)
-    linkage_matrix = cluserting(reduced_distances_v, "complete")
+    linkage_matrix = clustering(reduced_distances_v, "complete")
     clusters_v_complete = produceClustersTest(linkage_matrix, 16)
-    linkage_matrix = cluserting(reduced_distances_v, "average")
+    linkage_matrix = clustering(reduced_distances_v, "average")
     clusters_v_average = produceClustersTest(linkage_matrix, 16)
-    linkage_matrix = cluserting(reduced_distances_v, "ward")
+    linkage_matrix = clustering(reduced_distances_v, "ward")
     clusters_v_ward = produceClustersTest(linkage_matrix, 16)
 
     # lb_b1 = qt_vector(reduced_distances_b, 500, 0.6, 10).astype('int')

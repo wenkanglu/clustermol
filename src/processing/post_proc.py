@@ -5,6 +5,7 @@ from scipy.spatial.distance import pdist, squareform
 from scipy.cluster.hierarchy import cophenet
 from sklearn.metrics import silhouette_score, calinski_harabasz_score, davies_bouldin_score
 from mdtraj import Trajectory
+from itertools import cycle, islice
 
 from main.constants import SILHOUETTE, DAVIESBOULDIN, CALINSKIHARABASZ, DATA_DEST, DATA_SRC, DATA
 
@@ -54,6 +55,21 @@ def cophenetic(linkage_matrix, rmsd_matrix):
     reduced_distances = squareform(rmsd_matrix, checks=True)
     c, coph_dists = cophenet(linkage_matrix, pdist(reduced_distances))
     print(">>> Cophenetic Distance: %s" % c)
+
+def plotTestData(data, labels, dest):
+    colors = np.array(list(islice(cycle(['#377eb8', '#ff7f00', '#4daf4a',
+                                             '#f781bf', '#a65628', '#984ea3',
+                                             '#999999', '#e41a1c', '#dede00']),
+                                      int(max(labels) + 1))))
+    # add black color for outliers (if any)
+    colors = np.append(colors, ["#000000"])
+    plot.figure(figsize=(8, 6))
+    plot.title('Test data cluster scatterplot')
+    plot.xlabel('x coordinates')
+    plot.ylabel('y coordinates')
+    plot.scatter(data[:, 0], data[:, 1], c =labels, cmap =plot.cm.Set1)
+    plot.savefig(directory + DATA + DATA_DEST + dest + "/test-scatter.png", dpi=300)
+    plot.close()
 
 def save_largest_clusters(n, traj, labels, dest, type):
     c = label_counts(labels)

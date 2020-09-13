@@ -1,12 +1,13 @@
 import os
 import copy
+import numpy as np
 from traceback import print_exception
 
 import mdtraj
 from processing import post_proc
 
 from main.constants import SUBPARSER_CLUS, HIERARCHICAL, QT, QTVECTOR, IMWKMEANS, HDBSCAN, TSNE, UMAP, DATA_SRC, DATA_DEST, \
-    DATA, IRIS, BREASTCANCER, DIGITS, WINE, LINKAGE, K_CLUSTERS, DDISTANCE, QUALITYTHRESHOLD, MINSAMPLES, MINCLUSTERSIZE, \
+    DATA, IRIS, BREASTCANCER, DIGITS, WINE, TEST, NOISE, BLOBS, VBLOBS, LINKAGE, K_CLUSTERS, DDISTANCE, QUALITYTHRESHOLD, MINSAMPLES, MINCLUSTERSIZE, \
     N_NEIGHBOURS, N_COMPONENTS
 from main.constants import SUBPARSER_PREP
 from algorithms.hierarchical import hierarchical
@@ -18,6 +19,7 @@ from algorithms.tsne import tsne_script
 from algorithms.umap import umap_script
 
 from sklearn.datasets import load_iris, load_wine, load_digits, load_breast_cancer
+from sklearn import cluster, datasets, mixture
 
 directory = os.getcwd()
 
@@ -62,6 +64,17 @@ def start_job(args, job):
             input_data = load_digits().data
         elif args.test == WINE:
             input_data = load_wine().data
+        elif args.test == NOISE:
+            noise = np.random.rand(60, 3), None
+            input_data, y = noise
+        elif args.test == BLOBS:
+            blobs = datasets.make_blobs(n_samples=60, centers =6, random_state=3, cluster_std =0.2, center_box=(0, 10))
+            input_data, y = blobs
+        elif args.test == VBLOBS:
+            cluster_std = [5.0, 2.5, 0.5, 1.0, 1.1, 0.0]
+            varied_blobs = datasets.make_blobs(n_samples=60, centers =6, cluster_std=cluster_std, random_state=3, center_box=(0, 10))
+            input_data, y = varied_blobs
+
 
     try:
         if job == SUBPARSER_CLUS:

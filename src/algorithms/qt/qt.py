@@ -7,6 +7,7 @@ from scipy.spatial.distance import pdist, squareform
 from sklearn import cluster, datasets, mixture
 from itertools import cycle, islice
 from main.constants import DATA, DATA_DEST
+from processing import post_proc
 
 directory = os.getcwd() # could remove this and would need to remove all directory infile.
 
@@ -19,9 +20,6 @@ def illustrateRMSD(rmsd_matrix, dest):
         rmsd_matrix (numpy.ndarray): rmsd matrix.
         dest (str): destination to save rmsd matrix visualization.
     '''
-    print(">>> Max pairwise rmsd: %f" % np.max(rmsd_matrix))
-    print(">>> Average pairwise rmsd: %f" % np.mean(rmsd_matrix))
-    print(">>> Median pairwise rmsd: %f" % np.median(rmsd_matrix))
     plot.figure()
     plot.imshow(rmsd_matrix, cmap='viridis', interpolation='nearest')
     plot.xlabel('Simulation frames')
@@ -30,6 +28,18 @@ def illustrateRMSD(rmsd_matrix, dest):
     plot.savefig(directory+DATA + DATA_DEST + dest + "/RMSD-matrix.png", dpi=300)
     # plot.show()
     plot.close()
+
+def rmsd_stats(rmsd_matrix):
+        '''
+        DESCRIPTION
+        Print statistics from RMSD matrxi.
+
+        Arguments:
+            rmsd_matrix (numpy.ndarray): rmsd matrix.
+        '''
+        print(">>> Max pairwise rmsd: %f" % np.max(rmsd_matrix))
+        print(">>> Average pairwise rmsd: %f" % np.mean(rmsd_matrix))
+        print(">>> Median pairwise rmsd: %f" % np.median(rmsd_matrix))
 
 def rmsd_vs_frame(no_frames, rmsds, dest):
     '''
@@ -42,7 +52,7 @@ def rmsd_vs_frame(no_frames, rmsds, dest):
         dest (str): destination to save rmsd vs frame visualization.
     '''
     plot.figure()
-    plot.plot(np.arange(1,no_frames), rmsds[1:, ], 'r', label='all atoms')
+    plot.plot(np.arange(no_frames), rmsds, 'k', label='all atoms')
     plot.legend()
     plot.title('RMSDs over time agaist first frame')
     plot.xlabel('Simulation frames')
@@ -128,7 +138,6 @@ def qt_orginal(rmsd_matrix, no_frames, cutoff, minimum_membership):
     # Cluster lables for each frame. Initally set to -1 (not apart of a cluster).
     cluster_labels = np.ndarray(no_frames, dtype=np.int64)
     cluster_labels.fill(-1)
-
     cluster_index = 0 # Starting index for clusters.
     while True:
         # This while executes for every cluster in trajectory ---------------------
@@ -232,18 +241,29 @@ def cluster(traj, type, args):
     if isinstance(traj, mdtraj.Trajectory):
         traj = clean_trajectory(traj)
         rmsd_matrix_temp = preprocessing_qt(traj)  # Need to write general pre-process.
-        illustrateRMSD(rmsd_matrix_temp, args.destination) # outputs rmsd matrix to destintion
-        rmsd_vs_frame(traj.n_frames, getRMSDvsFirstFrame(traj), args.destination) # saves rmsd vs first frame.
+        rmsd_stats(rmsd_matrix_temp)
         if type == "qt_original":
             cluster_labels = qt_orginal(rmsd_matrix_temp, traj.n_frames, args.qualitythreshold, args.minclustersize)
         elif type == "qt_vector":
             cluster_labels = qt_vector(rmsd_matrix_temp, traj.n_frames, args.qualitythreshold, args.minclustersize)
         else:
-            print("Invalid Quailty Algorithm selection")
+            print("Error in Quailty Thershold Algorithm selection")
+        if(args.visualise):
+            illustrateRMSD(rmsd_matrix_temp, args.destination) # outputs rmsd matrix to destintion
+            rmsd_vs_frame(traj.n_frames, getRMSDvsFirstFrame(traj), args.destination) # saves rmsd vs first frame.
     else:
-        print("ToDo test data")
         data = traj
-        cluster_labels = [1,2,3]
+        pairwise_distance = pdist(data, metric="euclidean")
+        reduced_distances = squareform(pairwise_distance, checks=True)
+        rmsd_stats(reduced_distances)
+        if type == "qt_original":
+            cluster_labels = qt_orginal(reduced_distances, len(data), args.qualitythreshold, args.minclustersize)
+        elif type == "qt_vector":
+            cluster_labels = qt_vector(reduced_distances, len(data), args.qualitythreshold, args.minclustersize)
+        if(args.visualise):
+            # illustrateRMSD(reduced_distances, args.destination) # outputs rmsd matrix to destintion
+            post_proc.plotTestData(data,cluster_labels, args.destination)
+
     return cluster_labels
 
 # def runVMD_RMSD_QT(filename, type):
@@ -278,10 +298,7 @@ def validation():
     cluster_std = [5.0, 2.5, 0.5, 1.0, 1.1, 2.0, 1.0, 1.0, 2.5, 0.5, 0.5, 0.7, 1.2, 0.2, 1.0, 3.0]
     blobs = datasets.make_blobs(n_samples=n_samples, centers =centres, random_state=random_state, cluster_std =0.2, center_box=center_box)
     no_structure = np.random.rand(n_samples, random_state), None
-    varied_blobs = datasets.make_blobs(n_samples=n_samples,
-                             centers =centres,
-                             cluster_std=cluster_std,
-                             random_state=random_state, center_box=center_box)
+    varied_blobs = datasets.make_blobs(n_samples=n_samples, centers =centres, cluster_std=cluster_std, random_state=random_state, center_box=center_box)
     Xblobs,yblobs = blobs
     Xno_structure,yno_structure = no_structure
     Xvaried_blobs,yvaried_blobs = varied_blobs
