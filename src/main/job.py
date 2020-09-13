@@ -8,7 +8,7 @@ from processing import post_proc
 
 from main.constants import SUBPARSER_CLUS, HIERARCHICAL, QT, QTVECTOR, IMWKMEANS, HDBSCAN, TSNE, UMAP, DATA_SRC, DATA_DEST, \
     DATA, IRIS, BREASTCANCER, DIGITS, WINE, TEST, NOISE, BLOBS, VBLOBS, LINKAGE, K_CLUSTERS, DDISTANCE, QUALITYTHRESHOLD, MINSAMPLES, MINCLUSTERSIZE, \
-    N_NEIGHBOURS, N_COMPONENTS, CWD
+    N_NEIGHBOURS, N_COMPONENTS
 from main.constants import SUBPARSER_PREP
 from algorithms.hierarchical import hierarchical
 from algorithms.qt import qt
@@ -27,7 +27,7 @@ def start_job(args, job):
     if args.source:
         print("Loading trajectory from file...")
         try:
-            input_data = mdtraj.load(os.path.join(CWD + DATA, DATA_SRC, args.source))
+            input_data = mdtraj.load(os.path.join(DATA, DATA_SRC, args.source))
         except IOError:
             print(args.source + " could not be found.")
         print("Trajectory load complete:")
@@ -80,8 +80,8 @@ def start_job(args, job):
             else:
                 args.visualise = False
 
-            if not os.path.isdir(os.path.join(CWD + DATA, DATA_DEST, args.destination)):
-                os.mkdir(os.path.join(CWD + DATA, DATA_DEST, args.destination))
+            if not os.path.isdir(os.path.join(DATA, DATA_DEST, args.destination)):
+                os.mkdir(os.path.join(DATA, DATA_DEST, args.destination))
 
             if args.preprocess:
                 if args.preprocess == TSNE:

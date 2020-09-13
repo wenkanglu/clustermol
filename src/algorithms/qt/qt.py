@@ -6,7 +6,7 @@ import matplotlib.pyplot as plot
 from scipy.spatial.distance import pdist, squareform
 from sklearn import cluster, datasets, mixture
 from itertools import cycle, islice
-from main.constants import DATA, DATA_DEST, CWD
+from main.constants import DATA, DATA_DEST
 from processing import post_proc
 from copy import deepcopy
 
@@ -25,7 +25,7 @@ def illustrateRMSD(rmsd_matrix, dest):
     plot.xlabel('Simulation frames')
     plot.ylabel('Simulation frames')
     plot.colorbar()
-    plot.savefig(CWD+DATA + DATA_DEST + dest + "/RMSD-matrix.png", dpi=300)
+    plot.savefig(DATA + DATA_DEST + dest + "/RMSD-matrix.png", dpi=300)
     # plot.show()
     plot.close()
 
@@ -57,7 +57,7 @@ def rmsd_vs_frame(no_frames, rmsds, dest):
     plot.title('RMSDs over time agaist first frame')
     plot.xlabel('Simulation frames')
     plot.ylabel('RMSD')
-    plot.savefig(CWD + DATA + DATA_DEST + dest + "/rmsd-vs-frame.png", dpi=300)
+    plot.savefig(DATA + DATA_DEST + dest + "/rmsd-vs-frame.png", dpi=300)
     # plot.show()
     plot.close()
 
@@ -291,6 +291,7 @@ def cluster(traj, type, args):
 #         pass
 
 def validation():
+    # Old not used anymore.
     algoithm_type = ["qt", "qtvector"]
     data_set_size = 3
     n_samples = 500    # Sample szie of 10 000.

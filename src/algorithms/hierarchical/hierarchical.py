@@ -7,7 +7,7 @@ from scipy.cluster.hierarchy import linkage, dendrogram, fcluster, ClusterWarnin
 import matplotlib.pyplot as plot
 from sklearn import cluster, datasets
 from itertools import cycle, islice
-from main.constants import DATA, DATA_DEST, CWD
+from main.constants import DATA, DATA_DEST
 from processing import post_proc
 from warnings import simplefilter
 simplefilter("ignore", ClusterWarning) # Used to ignore warning for test cases
@@ -28,7 +28,7 @@ def illustrateRMSD(rmsd_matrix, dest):
     plot.xlabel('Simulation frames')
     plot.ylabel('Simulation frames')
     plot.colorbar()
-    plot.savefig(CWD+DATA + DATA_DEST + dest + "/RMSD-matrix.png", dpi=300)
+    plot.savefig(DATA + DATA_DEST + dest + "/RMSD-matrix.png", dpi=300)
     # plot.show()
     plot.close()
 
@@ -107,7 +107,7 @@ def save_dendrogram(linkage_type, linkage_matrix, dest):
     # plt.text(0.50, 0.02, "Text relative to the AXES centered at : (0.50, 0.02)", transform=plt.gca().transAxes, fontsize=14, ha='center', color='blue')
     plot.text(0.8, 0.8, 'Cut-off line [broken]', style='italic',ha='left',transform=plot.gca().transAxes,
         bbox={'facecolor': 'blue', 'alpha': 0.1, 'pad': 4})
-    plot.savefig(CWD + DATA + DATA_DEST + dest + "/dendrogram-clustering-%s.png" % linkage_type, dpi=300)
+    plot.savefig(DATA + DATA_DEST + dest + "/dendrogram-clustering-%s.png" % linkage_type, dpi=300)
     plot.close()
 
 def preprocessing_hierarchical(traj):
@@ -200,6 +200,7 @@ def runHierarchicalClustering(traj, args):
     return clusters
 
 def validation():
+    # Old not used anymore.
     data_set_size = 3
     n_samples = 500    # Sample szie of 10 000.
     random_state = 3

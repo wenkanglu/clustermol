@@ -8,10 +8,10 @@ from main.constants import SUBPARSER_CONF, SUBPARSER_CLUS, SUBPARSER_PREP, UMAP,
     MINCLUSTERSIZE, MINSAMPLES, CONFIGURATION, AVERAGE, COMPLETE, SINGLE, WARD, SILHOUETTE, DAVIESBOULDIN, \
     CALINSKIHARABASZ, QT, QTVECTOR, \
     QUALITYTHRESHOLD, K_CLUSTERS, DDISTANCE, CONFIGS, DATA, N_COMPONENTS, N_NEIGHBOURS, PREPROCESS, \
-    IRIS, DIGITS, WINE, BREASTCANCER, TEST, NOISE, BLOBS, VBLOBS, CWD
+    IRIS, DIGITS, WINE, BREASTCANCER, TEST, NOISE, BLOBS, VBLOBS
 
 from main.job import start_job
-print(CWD)
+print(DATA)
 
 algorithm_list = [HDBSCAN, HIERARCHICAL, IMWKMEANS, QT, QTVECTOR]
 hierarchical_list = [AVERAGE, COMPLETE, SINGLE, WARD]
@@ -173,11 +173,11 @@ def parse():
 
 
 def handle_configuration(args):
-    if os.path.isfile(CWD + DATA + CONFIGS + args.configuration):
-        parse_configuration(args, CWD + DATA + CONFIGS + args.configuration)
-    elif os.path.isdir(os.path.abspath(CWD + DATA + CONFIGS + args.configuration)):
-        for filename in os.listdir(CWD + DATA + CONFIGS + args.configuration):
-            parse_configuration(args, os.path.join(CWD + DATA + CONFIGS + args.configuration, filename))
+    if os.path.isfile(DATA + CONFIGS + args.configuration):
+        parse_configuration(args, DATA + CONFIGS + args.configuration)
+    elif os.path.isdir(os.path.abspath(DATA + CONFIGS + args.configuration)):
+        for filename in os.listdir(DATA + CONFIGS + args.configuration):
+            parse_configuration(args, os.path.join(DATA + CONFIGS + args.configuration, filename))
     else:
         print("Error - Cannot find config file.")
 
