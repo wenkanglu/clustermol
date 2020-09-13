@@ -8,6 +8,7 @@ from sklearn import cluster, datasets, mixture
 from itertools import cycle, islice
 from main.constants import DATA, DATA_DEST, CWD
 from processing import post_proc
+from copy import deepcopy
 
 
 def illustrateRMSD(rmsd_matrix, dest):
@@ -20,7 +21,7 @@ def illustrateRMSD(rmsd_matrix, dest):
         dest (str): destination to save rmsd matrix visualization.
     '''
     plot.figure()
-    plot.imshow(rmsd_matrix, cmap='viridis', interpolation='nearest')
+    plot.imshow(rmsd_matrix, cmap='viridis', interpolation='nearest', origin='lower')
     plot.xlabel('Simulation frames')
     plot.ylabel('Simulation frames')
     plot.colorbar()
@@ -239,30 +240,32 @@ def cluster(traj, type, args):
     '''
     if isinstance(traj, mdtraj.Trajectory):
         traj = clean_trajectory(traj)
-        rmsd_matrix_temp = preprocessing_qt(traj)  # Need to write general pre-process.
-        rmsd_stats(rmsd_matrix_temp)
+        rmsd_matrix = preprocessing_qt(traj)  # Need to write general pre-process.
+        vis = deepcopy(rmsd_matrix)
+        rmsd_stats(rmsd_matrix)
         if type == "qt_original":
-            cluster_labels = qt_orginal(rmsd_matrix_temp, traj.n_frames, args.qualitythreshold, args.minclustersize)
+            cluster_labels = qt_orginal(rmsd_matrix, traj.n_frames, args.qualitythreshold, args.minclustersize)
         elif type == "qt_vector":
-            cluster_labels = qt_vector(rmsd_matrix_temp, traj.n_frames, args.qualitythreshold, args.minclustersize)
+            cluster_labels = qt_vector(rmsd_matrix, traj.n_frames, args.qualitythreshold, args.minclustersize)
         else:
             print("Error in Quailty Thershold Algorithm selection")
+
         if(args.visualise):
-            illustrateRMSD(rmsd_matrix_temp, args.destination) # outputs rmsd matrix to destintion
+            illustrateRMSD(vis, args.destination) # outputs rmsd matrix to destintion
             rmsd_vs_frame(traj.n_frames, getRMSDvsFirstFrame(traj), args.destination) # saves rmsd vs first frame.
     else:
         data = traj
         pairwise_distance = pdist(data, metric="euclidean")
         reduced_distances = squareform(pairwise_distance, checks=True)
+        vis = deepcopy(reduced_distances)
         rmsd_stats(reduced_distances)
         if type == "qt_original":
             cluster_labels = qt_orginal(reduced_distances, len(data), args.qualitythreshold, args.minclustersize)
         elif type == "qt_vector":
             cluster_labels = qt_vector(reduced_distances, len(data), args.qualitythreshold, args.minclustersize)
         if(args.visualise):
-            # illustrateRMSD(reduced_distances, args.destination) # outputs rmsd matrix to destintion
+            illustrateRMSD(vis, args.destination) # outputs rmsd matrix to destintion
             post_proc.plotTestData(data,cluster_labels, args.destination)
-
     return cluster_labels
 
 # def runVMD_RMSD_QT(filename, type):

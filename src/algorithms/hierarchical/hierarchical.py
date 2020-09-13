@@ -7,7 +7,7 @@ from scipy.cluster.hierarchy import linkage, dendrogram, fcluster, ClusterWarnin
 import matplotlib.pyplot as plot
 from sklearn import cluster, datasets
 from itertools import cycle, islice
-from main.constants import DATA, DATA_DEST
+from main.constants import DATA, DATA_DEST, CWD
 from processing import post_proc
 from warnings import simplefilter
 simplefilter("ignore", ClusterWarning) # Used to ignore warning for test cases
@@ -24,7 +24,7 @@ def illustrateRMSD(rmsd_matrix, dest):
         dest (str): destination to save rmsd matrix visualization.
     '''
     plot.figure()
-    plot.imshow(rmsd_matrix, cmap='viridis', interpolation='nearest')
+    plot.imshow(rmsd_matrix, cmap='viridis', interpolation='nearest', origin='lower')
     plot.xlabel('Simulation frames')
     plot.ylabel('Simulation frames')
     plot.colorbar()
