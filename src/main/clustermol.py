@@ -198,15 +198,27 @@ def parse_configuration(args, filename):
                         # general required arguments
                         args_copy = copy.copy(args)
                         current = ALGORITHM
-                        args_copy.algorithm = config[section][ALGORITHM]  # sets algorithm from config file
+                        if config.has_option(section, ALGORITHM):
+                            args_copy.algorithm = config[section][ALGORITHM]  # sets algorithm from config file
+                            if args_copy.algorithm not in algorithm_list:
+                                raise Exception(
+                                    args_copy.algorithm + " is not a valid option. Choose from:\n".join(algorithm_list)
+                                )
+                        else:
+                            raise KeyError
+                        current = SOURCE + "/" + TEST
                         if config.has_option(section, SOURCE):
                             args_copy.source = config[section][SOURCE]
                             args_copy.test = None
                         elif config.has_option(section, TEST):
                             args_copy.test = config[section][TEST]
+                            if args_copy.test not in test_data_list:
+                                raise Exception(
+                                    args_copy.test + " is not a valid option. Choose from:\n".join(test_data_list)
+                                )
                             args_copy.source = None
                         else:
-                            KeyError
+                            raise KeyError
                         current = DESTINATION
                         args_copy.destination = config[section][DESTINATION]
 
@@ -217,6 +229,11 @@ def parse_configuration(args, filename):
                         # trajectory preprocessing
                         if config.has_option(section, VALIDATE):
                             args_copy.validate = config[section][VALIDATE].split()
+                            for cvi in args_copy.validate:
+                                if cvi not in validity_indices:
+                                    raise Exception(
+                                        cvi + " is not a valid option. Choose from:\n".join(validity_indices)
+                                    )
                         else:
                             args_copy.validate = None
                         if config.has_option(section, DOWNSAMPLE):
@@ -224,7 +241,7 @@ def parse_configuration(args, filename):
                         else:
                             args_copy.downsample = None
                         if config.has_option(section, FRAMESELECT):
-                            fs  = config[section][FRAMESELECT].split()
+                            fs = config[section][FRAMESELECT].split()
                             for i in range(len(fs)):
                                 fs[i] = int(fs[i])
                             args_copy.frameselect = fs
@@ -241,17 +258,26 @@ def parse_configuration(args, filename):
                         # cluster preprocessing
                         if config.has_option(section, PREPROCESS):
                             args_copy.preprocess = config[section][PREPROCESS]
-                            if config[section][PREPROCESS] == UMAP or config[section][PREPROCESS] == TSNE:
+                            if args_copy.preprocess == UMAP or args_copy.preprocess == TSNE:
                                 current = N_COMPONENTS
                                 args_copy.ncomponents = int(config[section][N_COMPONENTS])
                                 current = N_NEIGHBOURS
                                 args_copy.nneighbours = int(config[section][N_NEIGHBOURS])
+                            else:
+                                raise Exception(
+                                    args_copy.preprocess + " is not a valid option. Choose from:\n".join(preprocess_list)
+                                )
                         else:
                             args_copy.preprocess = None
                         # hierarchical
                         if args_copy.algorithm == HIERARCHICAL:
                             current = LINKAGE
                             args_copy.linkage = config[section][LINKAGE]
+                            if args_copy.linkage not in hierarchical_list:
+                                raise Exception(
+                                    args_copy.linkage + " is not a valid option. Choose from:\n".join(hierarchical_list)
+                                )
+                            current = K_CLUSTERS + "/" + DDISTANCE
                             if config.has_option(section, K_CLUSTERS):
                                 args_copy.k_clusters = config[section][K_CLUSTERS]
                                 args_copy.ddistance = None
@@ -272,7 +298,6 @@ def parse_configuration(args, filename):
                             args_copy.qualitythreshold = float(config[section][QUALITYTHRESHOLD])
                             current = MINCLUSTERSIZE
                             args_copy.minclustersize = int(config[section][MINCLUSTERSIZE])
-
                         start_job(args_copy, SUBPARSER_CLUS)
                     # if section is for preprocessing job
                     elif section[0] == "p":
@@ -286,7 +311,7 @@ def parse_configuration(args, filename):
                         else:
                             args_copy.downsample = None
                         if config.has_option(section, FRAMESELECT):
-                            fs  = config[section][FRAMESELECT].split()
+                            fs = config[section][FRAMESELECT].split()
                             for i in range(len(fs)):
                                 fs[i] = int(fs[i])
                             args_copy.frameselect = fs
