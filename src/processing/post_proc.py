@@ -147,7 +147,7 @@ def scatterplot_cluster(labels, dest, type):
     plot.title("Scatterplot of clusters vs frame - %s" % type)
     # os.chdir(os.path.join(os.path.dirname(__file__), '..')+ "/data/data_dest/")
     # print(os.getcwd())
-    print(DATA + DATA_DEST + dest + "/scatterplot-%s.png" % type)
+    # print(DATA + DATA_DEST + dest + "/scatterplot-%s.png" % type)
     plot.savefig(DATA + DATA_DEST + dest + "/scatterplot-%s.png" % type, dpi=300)
     plot.show()
     plot.close()

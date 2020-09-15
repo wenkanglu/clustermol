@@ -1,13 +1,14 @@
 import os
 import numpy as np
 import mdtraj
+import unittest
 import scipy.cluster.hierarchy
 from scipy.spatial.distance import pdist, squareform
 from scipy.cluster.hierarchy import linkage, dendrogram, fcluster, ClusterWarning
 import matplotlib.pyplot as plot
 from sklearn import cluster, datasets
 from itertools import cycle, islice
-from main.constants import DATA, DATA_DEST
+from main.constants import DATA, DATA_DEST, ANGSTROM
 from processing import post_proc
 from warnings import simplefilter
 simplefilter("ignore", ClusterWarning) # Used to ignore warning for test cases
@@ -24,7 +25,8 @@ def illustrateRMSD(rmsd_matrix, dest):
         dest (str): destination to save rmsd matrix visualization.
     '''
     plot.figure()
-    plot.imshow(rmsd_matrix, cmap='viridis', interpolation='nearest', origin='lower')
+    plot.title('Pairwise Distance Matrix')
+    plot.imshow(rmsd_matrix, cmap='Greys', interpolation='nearest', origin='lower')
     plot.xlabel('Simulation frames')
     plot.ylabel('Simulation frames')
     plot.colorbar()
@@ -40,9 +42,10 @@ def rmsd_stats(rmsd_matrix):
         Arguments:
             rmsd_matrix (numpy.ndarray): rmsd matrix.
         '''
-        print(">>> Max pairwise rmsd: %f" % np.max(rmsd_matrix))
-        print(">>> Average pairwise rmsd: %f" % np.mean(rmsd_matrix))
-        print(">>> Median pairwise rmsd: %f" % np.median(rmsd_matrix))
+        print(">>> Max pairwise rmsd (%s): %f" % (ANGSTROM , np.max(rmsd_matrix)))
+        print(">>> Average pairwise rmsd (%s): %f" % (ANGSTROM , np.mean(rmsd_matrix)))
+        print(">>> Median pairwise rmsd (%s): %f" % (ANGSTROM , np.median(rmsd_matrix)))
+        return np.max(rmsd_matrix), np.mean(rmsd_matrix), np.median(rmsd_matrix)
 
 def produceClusters(linkage_matrix, args):
     '''
@@ -57,13 +60,18 @@ def produceClusters(linkage_matrix, args):
         clusters (numpy.ndarray): list of clusters produced.
     '''
     clusters = -1
-    if args.k_clusters:
-        clusters = fcluster(linkage_matrix, int(args.k_clusters), criterion='maxclust')
-    elif args.ddistance:
-        clusters = fcluster(linkage_matrix, float(args.ddistance), criterion='distance')
-    else:
-        print("Argument Error (Hierarchical) - Invalid Selection")
-    return clusters
+    try:
+        if args.k_clusters:
+            clusters = fcluster(linkage_matrix, int(args.k_clusters), criterion='maxclust')
+        elif args.ddistance:
+            clusters = fcluster(linkage_matrix, float(args.ddistance), criterion='distance')
+        else:
+            print("Argument Error (Hierarchical) - Invalid Selection")
+        return clusters
+    except ValueError:
+        print("Error with in producing hierarchical clusters please check arguemnts")
+        sys.exit(1)
+
 
 def produceClustersV(linkage_matrix, k):
     '''
@@ -100,12 +108,12 @@ def save_dendrogram(linkage_type, linkage_matrix, dest):
     )
     axes = plot.gca()
     ymin, ymax = axes.get_ylim()
-    plot.axhline(y=ymax*2/3, c='k')
+    plot.axhline(y=ymax*2/3, c='k') # Adjust Cut-off line here
     plot.xticks(fontsize=6)
     plot.xlabel('Frame Count')
     plot.ylabel('Distance')
     # plt.text(0.50, 0.02, "Text relative to the AXES centered at : (0.50, 0.02)", transform=plt.gca().transAxes, fontsize=14, ha='center', color='blue')
-    plot.text(0.8, 0.8, 'Cut-off line [broken]', style='italic',ha='left',transform=plot.gca().transAxes,
+    plot.text(0.8, 0.8, 'Cut-off line [Adjust in Code]', style='italic',ha='left',transform=plot.gca().transAxes,
         bbox={'facecolor': 'blue', 'alpha': 0.1, 'pad': 4})
     plot.savefig(DATA + DATA_DEST + dest + "/dendrogram-clustering-%s.png" % linkage_type, dpi=300)
     plot.close()
@@ -114,7 +122,7 @@ def preprocessing_hierarchical(traj):
     '''
     DESCRIPTION
     Preprocessing required for Hierarchical clustering. Calculates RMDS Matrix and
-    converts it to squareform.
+    converts it to squareform. Use ANGSTROMs to keep consistant.
 
     Arguments:
         traj (mdtraj.Trajectory): trajectory object from MDTraj libary.
@@ -123,7 +131,7 @@ def preprocessing_hierarchical(traj):
     '''
     rmsd_matrix = np.ndarray((traj.n_frames, traj.n_frames), dtype=np.float64)
     for i in range(traj.n_frames):
-        rmsd_ = mdtraj.rmsd(traj, traj, i, parallel=True)
+        rmsd_ = mdtraj.rmsd(traj, traj, i, parallel=True)*10 # x10 for ANGSTROMs
         rmsd_matrix[i] = rmsd_
     print('>>> RMSD matrix complete')
     # assert np.all(rmsd_matrix - rmsd_matrix.T < 1e-6) # Need to figure out what this is for.
@@ -157,6 +165,8 @@ def clustering(rmsd_matrix, linkage_type):
         linkage_matrix (numpy.ndarray): cluster linkage matrix.
     '''
     print(">>> Performing %s based Hierarchical clustering " % linkage_type)
+    assert(linkage_type in clustering_type)
+    simplefilter("ignore", ClusterWarning)
     linkage_matrix = scipy.cluster.hierarchy.linkage(rmsd_matrix, method=linkage_type)
     print(">>> Hierarchical clustering (%s) complete " %linkage_type)
     return linkage_matrix
@@ -199,8 +209,59 @@ def runHierarchicalClustering(traj, args):
 
     return clusters
 
+class QTTest(unittest.TestCase):
+    # Test RMSD Stats produce epxcted output.
+    def testRmsdTest(self):
+        testMatrix = np.empty(10)
+        testMatrix.fill(1)
+        self.assertEqual(rmsd_stats(testMatrix), (1,1,1))
+    # Test our implemnataion of preprocessing for rmsd vs random online dataset/traj.
+    def testRmsdTraj(self):
+        traj = mdtraj.load('test_data/ala2.h5')
+        distances = np.empty((traj.n_frames, traj.n_frames), dtype=np.float64)
+        for i in range(traj.n_frames):
+            d_ = mdtraj.rmsd(traj, traj, i, parallel=True)*10  # x10 for ANGSTROMs
+            distances[i] = d_
+        # self.assertAlmostEqual(preprocessing_qt(traj), distances, places=7)
+        np.testing.assert_almost_equal(preprocessing_hierarchical(traj), squareform(distances, checks=False), decimal=5)
+
+    # Testing clustering produces results
+    # Tests both clustering and produce clusters.
+    # Minus one is for indexing, clusters produce from zero while index from blobs is -1
+    # Ward Method
+    def testClustHW(self):
+        blobs = datasets.make_blobs(n_samples=100, centers=5, random_state=3, cluster_std =0.2, center_box=(0, 10))
+        input_data, y = blobs
+        rmsd_matrix = squareform(pdist(input_data, metric="euclidean"), checks=True)
+        kclust= 5
+        self.assertCountEqual(produceClustersV(clustering(rmsd_matrix, "ward"), 5)-1,y)
+    # Single Method
+    def testClustHS(self):
+        blobs = datasets.make_blobs(n_samples=100, centers=5, random_state=3, cluster_std =0.2, center_box=(0, 10))
+        input_data, y = blobs
+        rmsd_matrix = squareform(pdist(input_data, metric="euclidean"), checks=True)
+        kclust= 5
+        self.assertCountEqual(produceClustersV(clustering(rmsd_matrix, "single"), 5)-1,y)
+    # Complete Method
+    def testClustHC(self):
+        blobs = datasets.make_blobs(n_samples=100, centers=5, random_state=3, cluster_std =0.2, center_box=(0, 10))
+        input_data, y = blobs
+        rmsd_matrix = squareform(pdist(input_data, metric="euclidean"), checks=True)
+        kclust= 5
+        self.assertCountEqual(produceClustersV(clustering(rmsd_matrix, "complete"), 5)-1,y)
+        # Average Method
+    def testClustHA(self):
+        blobs = datasets.make_blobs(n_samples=100, centers=5, random_state=3, cluster_std =0.2, center_box=(0, 10))
+        input_data, y = blobs
+        rmsd_matrix = squareform(pdist(input_data, metric="euclidean"), checks=True)
+        kclust= 5
+        self.assertCountEqual(produceClustersV(clustering(rmsd_matrix, "average"), 5)-1,y)
+
+
+
 def validation():
     # Old not used anymore.
+    # Validation methods can be run with clustermol.
     data_set_size = 3
     n_samples = 500    # Sample szie of 10 000.
     random_state = 3
@@ -301,4 +362,5 @@ def validation():
     # lb = qt_vector(reduced_distances, 150, 1.3, 20)
 
 if __name__ == "__main__":
-    validation()
+    # unittest.main()
+    print("run clustermol -h for information how to use this framework.")

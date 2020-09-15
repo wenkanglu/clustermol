@@ -66,14 +66,14 @@ def start_job(args, job):
         elif args.test == WINE:
             input_data = load_wine().data
         elif args.test == NOISE:
-            noise = np.random.rand(60, 3), None
+            noise = np.random.rand(100, 3), None
             input_data, y = noise
         elif args.test == BLOBS:
-            blobs = datasets.make_blobs(n_samples=60, centers=6, random_state=3, cluster_std =0.2, center_box=(0, 10))
+            blobs = datasets.make_blobs(n_samples=100, centers=5, random_state=3, cluster_std =0.2, center_box=(0, 10))
             input_data, y = blobs
         elif args.test == VBLOBS:
-            cluster_std = [5.0, 2.5, 0.5, 1.0, 1.1, 0.0]
-            varied_blobs = datasets.make_blobs(n_samples=60, centers=6, cluster_std=cluster_std, random_state=3, center_box=(0, 10))
+            cluster_std = [1.5, 0.5, 0.9, 0.3, 0.8]	
+            varied_blobs = datasets.make_blobs(n_samples=100, centers=5, cluster_std=cluster_std, random_state=3, center_box=(0, 10))
             input_data, y = varied_blobs
 
     try:

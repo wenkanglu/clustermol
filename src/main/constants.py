@@ -54,3 +54,5 @@ NOISE = "noise"
 BLOBS = "blobs"
 VBLOBS = "vblobs"
 TEST = "--test"
+
+ANGSTROM= "Å"
