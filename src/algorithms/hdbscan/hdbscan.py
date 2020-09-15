@@ -1,12 +1,5 @@
-import matplotlib.pyplot as plt
-import os
 import hdbscan
 from mdtraj import Trajectory
-
-
-plt.style.use('bmh')
-
-directory = os.getcwd()
 
 
 def cluster(input, args):

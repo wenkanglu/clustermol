@@ -1,12 +1,9 @@
 import numpy as np
 from algorithms.imwkmeans import clustering
-from processing import post_proc
 import sklearn.cluster
 from sklearn.metrics import silhouette_score
 import copy
 from mdtraj import Trajectory
-
-from main.constants import DATA, DATA_DEST
 
 def cluster(input, args):
     original_data = None
@@ -15,7 +12,6 @@ def cluster(input, args):
         temp = input.xyz
         original_data = temp.reshape((input.xyz.shape[0], input.xyz.shape[1]*3))
         original_data = original_data.astype('float64')
-        temp, input = [], []
 
     else:
         original_data = input
@@ -78,9 +74,5 @@ def cluster(input, args):
     kmeans_clusterer = sklearn.cluster.KMeans(n_clusters=optimal_k, n_init=100)
     kmeans_clusters = kmeans_clusterer.fit(data)
     labels = kmeans_clusters.labels_
-
-    post_proc.label_counts(labels, args.destination)
-    if args.validate:
-        post_proc.calculate_CVI(args.validate, data, labels, args.destination) #call on original data or rescaled? TODO
 
     return labels
