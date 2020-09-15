@@ -1,17 +1,15 @@
 import os
 import copy
 import numpy as np
-from traceback import print_exception
 
 import mdtraj
-from mdtraj import Trajectory
 from processing import post_proc
 
 from main.constants import SUBPARSER_CLUS, HIERARCHICAL, QT, QTVECTOR, IMWKMEANS, HDBSCAN, TSNE, UMAP, DATA_SRC, \
     DATA_DEST, \
-    DATA, IRIS, BREASTCANCER, DIGITS, WINE, TEST, NOISE, BLOBS, VBLOBS, LINKAGE, K_CLUSTERS, DDISTANCE, \
+    DATA, IRIS, BREASTCANCER, DIGITS, WINE, NOISE, BLOBS, VBLOBS, LINKAGE, K_CLUSTERS, DDISTANCE, \
     QUALITYTHRESHOLD, MINSAMPLES, MINCLUSTERSIZE, \
-    N_NEIGHBOURS, N_COMPONENTS, CONFIGS
+    N_NEIGHBOURS, N_COMPONENTS
 from main.constants import SUBPARSER_PREP
 from algorithms.hierarchical import hierarchical
 from algorithms.qt import qt
@@ -54,7 +52,7 @@ def start_job(args, job):
                 print("Trajectory atom selection operation complete:")
                 print(input_data)
             except:
-                print("Selection statement could not be parsed. Please check if it correct.")
+                print("Selection statement could not be parsed. Please check if it is correct.")
 
     elif args.test:
         if args.test == IRIS:

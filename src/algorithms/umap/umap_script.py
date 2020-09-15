@@ -1,12 +1,10 @@
 import time
 
 import numpy as np
-import matplotlib.pyplot as plt
 from mdtraj import Trajectory
 import seaborn as sns
 
 import umap
-from sklearn.metrics import silhouette_score, calinski_harabasz_score, davies_bouldin_score
 
 
 def umap_main(input_data, args):
@@ -27,9 +25,5 @@ def umap_main(input_data, args):
 
     umap_time = time.time()
     print("--- %s seconds to perform UMAP---" % (umap_time - start_time))
-
-    if args.visualise:
-        plt.scatter(embedding[:, 0], embedding[:, 1], s=2)
-        plt.show()
 
     return embedding
