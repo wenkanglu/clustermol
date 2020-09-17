@@ -132,7 +132,7 @@ def start_job(args, job):
                     raise Exception(MINSAMPLES + " is required for " + HDBSCAN)
                 labels = hdbscan.cluster(input_data, args)
 
-            post_proc.saveClusters(labels, args.destination, args.algorithm) # save cluster text file
+            post_proc.saveClusters(labels, args.destination, args.algorithm)  # save cluster text file
 
             if args.saveclusters:
                 post_proc.save_largest_clusters(
@@ -146,7 +146,8 @@ def start_job(args, job):
                 )
 
             # write results
-            counts = post_proc.label_counts(labels, args.algorithm, args.destination)  # must be run first to create file
+            # must be run first to create file
+            counts = post_proc.label_counts(labels, args.selection, args.algorithm, args.destination)
             if args.validate:
                 if len(counts) > 1:
                     post_proc.calculate_CVI(args.validate, input_data, labels, args.destination, args.algorithm)

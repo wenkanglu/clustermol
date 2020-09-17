@@ -9,12 +9,14 @@ from itertools import cycle, islice
 from main.constants import SILHOUETTE, DAVIESBOULDIN, CALINSKIHARABASZ, DATA_DEST, DATA_SRC, DATA
 
 
-def label_counts(labels, type=None, dest=None):
+def label_counts(labels, selection=None, type=None, dest=None):
     unique, counts = np.unique(labels, return_counts=True)
     d = dict(zip(unique, counts))
     if dest and type:
-        with open (DATA + DATA_DEST + dest + "/results-%s.txt" %type, 'w') as f:
+        with open(DATA + DATA_DEST + dest + "/results-%s.txt" % type, 'w') as f:
             f.write("total frames: {0}\n".format(len(labels)))
+            if selection:
+                f.write("selection statement used: %s\n" % selection)
             f.write("cluster label: frame count\n")
             for k in d.keys():
                 f.write("{0}: {1}\n".format(k, d[k]))
