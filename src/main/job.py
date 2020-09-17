@@ -67,11 +67,15 @@ def start_job(args, job):
             noise = np.random.rand(100, 3), None
             input_data, y = noise
         elif args.test == BLOBS:
-            blobs = datasets.make_blobs(n_samples=100, centers=5, random_state=3, cluster_std =0.2, center_box=(0, 10))
+            blobs = datasets.make_blobs(
+                n_samples=100, centers=5, random_state=3, cluster_std =0.2, center_box=(0, 10)
+            )
             input_data, y = blobs
         elif args.test == VBLOBS:
             cluster_std = [1.5, 0.5, 0.9, 0.3, 0.8]	
-            varied_blobs = datasets.make_blobs(n_samples=100, centers=5, cluster_std=cluster_std, random_state=3, center_box=(0, 10))
+            varied_blobs = datasets.make_blobs(
+                n_samples=100, centers=5, cluster_std=cluster_std, random_state=3, center_box=(0, 10)
+            )
             input_data, y = varied_blobs
 
     try:
@@ -131,13 +135,15 @@ def start_job(args, job):
             post_proc.saveClusters(labels, args.destination, args.algorithm) # save cluster text file
 
             if args.saveclusters:
-                post_proc.save_largest_clusters(int(args.saveclusters), traj_unselected, labels, args.destination, args.algorithm)
+                post_proc.save_largest_clusters(
+                    int(args.saveclusters), traj_unselected, labels, args.destination, args.algorithm
+                )
 
-            if args.visualise:
-                post_proc.scatterplot_cluster(labels, args.destination, args.algorithm)
-                if args.preprocess:
-                    post_proc.embedding_plot(labels, input_data, args.destination, args.algorithm, args.preprocess)
-                # TODO: Open VMD and show cluster results here.
+            post_proc.scatterplot_cluster(labels, args.destination, args.algorithm, args.visualise)
+            if args.preprocess:
+                post_proc.embedding_plot(
+                    labels, input_data, args.destination, args.algorithm, args.preprocess, args.visualise
+                )
 
             # write results
             counts = post_proc.label_counts(labels, args.algorithm, args.destination)  # must be run first to create file

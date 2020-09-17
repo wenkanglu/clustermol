@@ -128,7 +128,7 @@ def saveClusters(labels, dest, type):
     np.savetxt(DATA + DATA_DEST + dest + "/clusters-%s.txt" %type, labels, fmt='%i')
 
 
-def scatterplot_cluster(labels, dest, type):
+def scatterplot_cluster(labels, dest, type, visualise):
     '''
     DESCRIPTION
     Produce cluster scatter plot of frames
@@ -146,11 +146,11 @@ def scatterplot_cluster(labels, dest, type):
     plot.locator_params(axis="both", integer=True, tight=True)
     plot.title("Scatterplot of clusters vs frame - %s" % type)
     plot.savefig(DATA + DATA_DEST + dest +  "/scatterplot-%s.png" % type, dpi=300)
-    plot.show()
-    plot.close()
+    if visualise:
+        plot.show()
 
 
-def embedding_plot(cluster_labels, data, dest, type, preprocess):
+def embedding_plot(cluster_labels, data, dest, type, preprocess, visualise):
     fig, ax = plot.subplots()
     clustered = (cluster_labels >= 0)
     embedding = ax.scatter(data[clustered, 0],
@@ -163,4 +163,5 @@ def embedding_plot(cluster_labels, data, dest, type, preprocess):
     ax.add_artist(legend)
     plot.title('Plot of %s embedding - %s' % (preprocess, type))
     plot.savefig('%s%s%s/%s-embedding-%s.png' % (DATA, DATA_DEST, dest, preprocess, type), bbox_inches='tight')
-    plot.show()
+    if visualise:
+        plot.show()
