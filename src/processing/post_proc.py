@@ -11,7 +11,7 @@ from main.constants import SILHOUETTE, DAVIESBOULDIN, CALINSKIHARABASZ, DATA_DES
     BREASTCANCER, DIGITS, BLOBS, VBLOBS, NOISE
 
 
-def label_counts(labels, test, selection=None, type=None, dest=None):
+def label_counts(labels, test=None, selection=None, type=None, dest=None):
     actual_labels = None
     artificial = [BLOBS, VBLOBS, NOISE]
     if test == IRIS:
@@ -22,7 +22,6 @@ def label_counts(labels, test, selection=None, type=None, dest=None):
         actual_labels = load_digits().target
     elif test == BREASTCANCER:
         actual_labels = load_breast_cancer().target
-    print(actual_labels)
 
     unique, counts = np.unique(labels, return_counts=True)
     d = dict(zip(unique, counts))
