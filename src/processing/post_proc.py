@@ -144,7 +144,7 @@ def saveClusters(labels, dest, type):
     np.savetxt(DATA + DATA_DEST + dest + "/clusters-%s.txt" %type, labels, fmt='%i')
 
 
-def scatterplot_cluster(labels, dest, type, visualise):
+def scatterplot_cluster(labels, dest, type, preprocess, test, visualise):
     '''
     DESCRIPTION
     Produce cluster scatter plot of frames
@@ -160,15 +160,24 @@ def scatterplot_cluster(labels, dest, type, visualise):
     plot.xlabel("Frame Number")
     plot.ylabel("Cluster Index")
     plot.locator_params(axis="both", integer=True, tight=True)
-    plot.title("Scatterplot of clusters vs frame - %s" % type)
-    plot.savefig(DATA + DATA_DEST + dest +  "/scatterplot-%s.png" % type, dpi=300)
+    if preprocess:
+        if test:
+            plot.title("%s - Scatterplot of clusters vs frame - %s - %s" % (test, preprocess, type))
+        else:
+            plot.title("Scatterplot of clusters vs frame - %s - %s" % (preprocess, type))
+    else:
+        if test:
+            plot.title("%s - Scatterplot of clusters vs frame - %s" % (test, type))
+        else:
+            plot.title("Scatterplot of clusters vs frame - %s" % type)
+    plot.savefig(DATA + DATA_DEST + dest + "/scatterplot-%s.png" % type, dpi=300)
     if visualise:
         plot.show()
 
 
-def embedding_plot(cluster_labels, data, dest, type, preprocess, visualise):
+def embedding_plot(cluster_labels, data, dest, type, preprocess, test, visualise):
     fig, ax = plot.subplots()
-    clustered = (cluster_labels >= 0)
+    clustered = (cluster_labels >= -1)
     embedding = ax.scatter(data[clustered, 0],
                            data[clustered, 1],
                            c=cluster_labels[clustered],
@@ -177,7 +186,10 @@ def embedding_plot(cluster_labels, data, dest, type, preprocess, visualise):
                            )
     legend = ax.legend(*embedding.legend_elements(), title='Clusters', bbox_to_anchor=(1.2, 1.2))
     ax.add_artist(legend)
-    plot.title('Plot of %s embedding - %s' % (preprocess, type))
+    if test:
+        plot.title('%s - %s clustering of %s embedding' % (test, type, preprocess))
+    else:
+        plot.title('%s clustering of %s embedding' % (type, preprocess))
     plot.savefig('%s%s%s/%s-embedding-%s.png' % (DATA, DATA_DEST, dest, preprocess, type), bbox_inches='tight')
     if visualise:
         plot.show()
