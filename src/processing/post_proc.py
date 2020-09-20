@@ -8,11 +8,12 @@ from mdtraj import Trajectory
 from itertools import cycle, islice
 
 from main.constants import SILHOUETTE, DAVIESBOULDIN, CALINSKIHARABASZ, DATA_DEST, DATA_SRC, DATA, IRIS, WINE, \
-    BREASTCANCER, DIGITS
+    BREASTCANCER, DIGITS, BLOBS, VBLOBS, NOISE
 
 
 def label_counts(labels, test, selection=None, type=None, dest=None):
     actual_labels = None
+    artificial = [BLOBS, VBLOBS, NOISE]
     if test == IRIS:
         actual_labels = load_iris().target
     elif test == WINE:
@@ -21,6 +22,7 @@ def label_counts(labels, test, selection=None, type=None, dest=None):
         actual_labels = load_digits().target
     elif test == BREASTCANCER:
         actual_labels = load_breast_cancer().target
+    print(actual_labels)
 
     unique, counts = np.unique(labels, return_counts=True)
     d = dict(zip(unique, counts))
@@ -32,7 +34,7 @@ def label_counts(labels, test, selection=None, type=None, dest=None):
             f.write("cluster label: frame count\n")
             for k in d.keys():
                 f.write("{0}: {1}\n".format(k, d[k]))
-            if test:
+            if test is not None and test not in artificial:
                 f.write("Accuracy score: %s\n" % str(accuracy_score(labels, actual_labels)))
     return d
 
