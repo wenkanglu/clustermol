@@ -2,14 +2,26 @@ import numpy as np
 import matplotlib.pyplot as plot
 from scipy.spatial.distance import pdist, squareform
 from scipy.cluster.hierarchy import cophenet
-from sklearn.metrics import silhouette_score, calinski_harabasz_score, davies_bouldin_score
+from sklearn.metrics import silhouette_score, calinski_harabasz_score, davies_bouldin_score, accuracy_score
+from sklearn.datasets import load_iris, load_wine, load_breast_cancer, load_digits
 from mdtraj import Trajectory
 from itertools import cycle, islice
 
-from main.constants import SILHOUETTE, DAVIESBOULDIN, CALINSKIHARABASZ, DATA_DEST, DATA_SRC, DATA
+from main.constants import SILHOUETTE, DAVIESBOULDIN, CALINSKIHARABASZ, DATA_DEST, DATA_SRC, DATA, IRIS, WINE, \
+    BREASTCANCER, DIGITS
 
 
-def label_counts(labels, selection=None, type=None, dest=None):
+def label_counts(labels, test, selection=None, type=None, dest=None):
+    actual_labels = None
+    if test == IRIS:
+        actual_labels = load_iris().target
+    elif test == WINE:
+        actual_labels = load_wine().target
+    elif test == DIGITS:
+        actual_labels = load_digits().target
+    elif test == BREASTCANCER:
+        actual_labels = load_breast_cancer().target
+
     unique, counts = np.unique(labels, return_counts=True)
     d = dict(zip(unique, counts))
     if dest and type:
@@ -20,6 +32,8 @@ def label_counts(labels, selection=None, type=None, dest=None):
             f.write("cluster label: frame count\n")
             for k in d.keys():
                 f.write("{0}: {1}\n".format(k, d[k]))
+            if test:
+                f.write("Accuracy score: %s\n" % str(accuracy_score(labels, actual_labels)))
     return d
 
 

@@ -149,7 +149,7 @@ def start_job(args, job):
 
             # write results
             # must be run first to create file
-            counts = post_proc.label_counts(labels, args.selection, args.algorithm, args.destination)
+            counts = post_proc.label_counts(labels, args.test, args.selection, args.algorithm, args.destination)
             if args.validate:
                 if len(counts) > 1:
                     post_proc.calculate_CVI(args.validate, input_data, labels, args.destination, args.algorithm)
