@@ -139,10 +139,12 @@ def start_job(args, job):
                     int(args.saveclusters), traj_unselected, labels, args.destination, args.algorithm
                 )
 
-            post_proc.scatterplot_cluster(labels, args.destination, args.algorithm, args.visualise)
+            post_proc.scatterplot_cluster(
+                labels, args.destination, args.algorithm, args.preprocess, args.test, args.visualise
+            )
             if args.preprocess:
                 post_proc.embedding_plot(
-                    labels, input_data, args.destination, args.algorithm, args.preprocess, args.visualise
+                    labels, input_data, args.destination, args.algorithm, args.preprocess, args.test, args.visualise
                 )
 
             # write results

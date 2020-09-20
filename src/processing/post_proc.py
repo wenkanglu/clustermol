@@ -23,10 +23,10 @@ def label_counts(labels, selection=None, type=None, dest=None):
     return d
 
 
-def calculate_CVI(indices, input_data, labels, dest, type, ignore_noise = False):
+def calculate_CVI(indices, input_data, labels, dest, type, ignore_noise=False):
     data = None
     if isinstance(input_data, Trajectory):
-        #Reshape the data
+        # Reshape the data
         temp = input_data.xyz
         data = temp.reshape((input_data.xyz.shape[0], input_data.xyz.shape[1]*3))
         data = data.astype('float64')
@@ -43,10 +43,10 @@ def calculate_CVI(indices, input_data, labels, dest, type, ignore_noise = False)
         labels = np.delete(labels, to_rem)
         data = np.delete(data, to_rem, 0)
 
-    with open (DATA + DATA_DEST + dest + "/results-%s.txt" %type, 'a') as f:
+    with open(DATA + DATA_DEST + dest + "/results-%s.txt" % type, 'a') as f:
         if ignore_noise:
             f.write("--CVI results with noise ignored--\n")
-        else":
+        else:
             f.write("--CVI results--\n")
         if SILHOUETTE in indices:
             sample_size = 10000 if data.shape[0] > 10000 else None
