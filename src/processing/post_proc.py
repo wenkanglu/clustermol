@@ -23,7 +23,7 @@ def label_counts(labels, selection=None, type=None, dest=None):
     return d
 
 
-def calculate_CVI(indices, input_data, labels, dest, type):
+def calculate_CVI(indices, input_data, labels, dest, type, ignore_noise = False):
     data = None
     if isinstance(input_data, Trajectory):
         #Reshape the data
@@ -35,7 +35,19 @@ def calculate_CVI(indices, input_data, labels, dest, type):
     else:
         data = input_data
 
+    if ignore_noise and -1 in labels:
+        to_rem = []
+        for l in range(len(labels)):
+            if labels[l] == -1:
+                to_rem.append(l)
+        labels = np.delete(labels, to_rem)
+        data = np.delete(data, to_rem, 0)
+
     with open (DATA + DATA_DEST + dest + "/results-%s.txt" %type, 'a') as f:
+        if ignore_noise:
+            f.write("--CVI results with noise ignored--\n")
+        else":
+            f.write("--CVI results--\n")
         if SILHOUETTE in indices:
             sample_size = 10000 if data.shape[0] > 10000 else None
             f.write("Silhouette score is {0}\n".format(silhouette_score(data, labels, sample_size=sample_size)))
@@ -98,7 +110,7 @@ def save_largest_clusters(n, traj, labels, dest, type):
         trajectories[ik].save_pdb(DATA + DATA_DEST + dest + "/%s-cluster%d" %(type, k) + ".pdb")
 
 
-def save_without_noise(traj, labels, dest):
+def save_without_noise(traj, labels, save = False):
     noiseless = None
     start = 0
     il = 0
@@ -114,7 +126,9 @@ def save_without_noise(traj, labels, dest):
         noiseless = noiseless.join(traj[start:il])
     else:
         noiseless = traj[start:il]
-    noiseless.save_pdb(DATA + DATA_SRC + "nonoise.pdb")
+    if save:
+        noiseless.save_pdb(DATA + DATA_SRC + "nonoise.pdb")
+    return noiseless
 
 
 def saveClusters(labels, dest, type):

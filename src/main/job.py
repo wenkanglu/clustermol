@@ -72,7 +72,7 @@ def start_job(args, job):
             )
             input_data, y = blobs
         elif args.test == VBLOBS:
-            cluster_std = [1.5, 0.5, 0.9, 0.3, 0.8]	
+            cluster_std = [1.5, 0.5, 0.9, 0.3, 0.8]
             varied_blobs = datasets.make_blobs(
                 n_samples=100, centers=5, cluster_std=cluster_std, random_state=3, center_box=(0, 10)
             )
@@ -151,6 +151,8 @@ def start_job(args, job):
             if args.validate:
                 if len(counts) > 1:
                     post_proc.calculate_CVI(args.validate, input_data, labels, args.destination, args.algorithm)
+                    if args.algorithm == HDBSCAN:
+                        post_proc.calculate_CVI(args.validate, input_data, labels, args.destination, args.algorithm, ignore_noise = True)
                 else:
                     print("Error: CVIs can only be calculated when more than one cluster is produced.")
 
