@@ -42,7 +42,7 @@ def start_job(args, job):
             print("Trajectory frame selection and/or downsample complete:")
             print(input_data)
 
-        if args.saveclusters:
+        if job == SUBPARSER_CLUS and args.saveclusters:
             traj_unselected = copy.copy(input_data)
 
         if args.selection:

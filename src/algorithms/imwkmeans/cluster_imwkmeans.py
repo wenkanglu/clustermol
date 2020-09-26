@@ -21,9 +21,10 @@ def cluster(input, args):
     cl = clustering.Clustering()
     sample_size = 10000 if original_data.shape[0] > 10000 else None
 
-    original_data = cl.my_math.standardize(original_data)  # Not clear if I should do this
+    if not any(original_data.max(axis=0) - original_data.min(axis=0) == 0):
+        original_data = cl.my_math.standardize(original_data)
 
-    optimal_p = 2  # From Amorim's experiments
+    optimal_p = 2
 
     # Ready to do iMWK-means with explicit rescaling
     # Set an upper bound on k

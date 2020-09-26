@@ -188,6 +188,7 @@ def scatterplot_cluster(labels, dest, type, preprocess, test, visualise):
     plot.savefig(DATA + DATA_DEST + dest + "/scatterplot-%s.png" % type, dpi=300)
     if visualise:
         plot.show()
+    plot.close()
 
 
 def embedding_plot(cluster_labels, data, dest, type, preprocess, test, visualise):
