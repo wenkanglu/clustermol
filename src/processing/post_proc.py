@@ -38,7 +38,7 @@ def label_counts(labels, test=None, selection=None, type=None, dest=None):
     return d
 
 
-def calculate_CVI(indices, input_data, labels, dest, type, ignore_noise=False):
+def calculate_CVI(indices, input_data, labels, dest, type, ignore_noise=True):
     data = None
     if isinstance(input_data, Trajectory):
         # Reshape the data

@@ -104,17 +104,19 @@ def save_dendrogram(linkage_type, linkage_matrix, dest):
     truncate_mode='lastp',  # show only the last p merged clusters
     p=20,  # show only the last p merged clusters
     show_contracted=True,
+    color_threshold=0,
+    above_threshold_color='k',
     show_leaf_counts=True # to get a distribution impression in truncated branches
     )
     axes = plot.gca()
     ymin, ymax = axes.get_ylim()
-    plot.axhline(y=ymax*2/3, c='k') # Adjust Cut-off line here
+    # plot.axhline(y=ymax*2/3, c='k') # Adjust Cut-off line here
     plot.xticks(fontsize=6)
     plot.xlabel('Frame Count')
     plot.ylabel('Distance')
     # plt.text(0.50, 0.02, "Text relative to the AXES centered at : (0.50, 0.02)", transform=plt.gca().transAxes, fontsize=14, ha='center', color='blue')
-    plot.text(0.8, 0.8, 'Cut-off line [Adjust in Code]', style='italic',ha='left',transform=plot.gca().transAxes,
-        bbox={'facecolor': 'blue', 'alpha': 0.1, 'pad': 4})
+    # plot.text(0.8, 0.8, 'Cut-off line [Adjust in Code]', style='italic',ha='left',transform=plot.gca().transAxes,
+    #     bbox={'facecolor': 'blue', 'alpha': 0.1, 'pad': 4})
     plot.savefig(DATA + DATA_DEST + dest + "/dendrogram-clustering-%s.png" % linkage_type, dpi=300)
     plot.close()
 
