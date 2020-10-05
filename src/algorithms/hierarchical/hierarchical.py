@@ -72,11 +72,10 @@ def produceClusters(linkage_matrix, args):
         print("Error with in producing hierarchical clusters please check arguemnts")
         sys.exit(1)
 
-
 def produceClustersV(linkage_matrix, k):
     '''
     DESCRIPTION
-    Produces clusters provided linkage matrix and either number of clusters
+    Produces clusters provided linkage matrix and number of clusters
     for test case.
 
     Arguments:
@@ -96,7 +95,6 @@ def save_dendrogram(linkage_type, linkage_matrix, dest):
         linkage_type (str): string for hierarchical type.
         linkage_matrix (numpy.ndarray): linkage matrix from clustering.
         dest (str): destination to save dendrogram visualization.
-        flag_display (bool): flat to display dendrogram as popup.
     '''
     plot.title('Dendrogram for %s linkage hierarchical clustering' %linkage_type)
     _ = scipy.cluster.hierarchy.dendrogram(
@@ -136,7 +134,7 @@ def preprocessing_hierarchical(traj):
         rmsd_ = mdtraj.rmsd(traj, traj, i, parallel=True)*10 # x10 for ANGSTROMs
         rmsd_matrix[i] = rmsd_
     print('>>> RMSD matrix complete')
-    # assert np.all(rmsd_matrix - rmsd_matrix.T < 1e-6) # Need to figure out what this is for.
+    # assert np.all(rmsd_matrix - rmsd_matrix.T < 1e-6) # not needed.
     reduced_distances = squareform(rmsd_matrix, checks=False)
     return reduced_distances
 
@@ -259,110 +257,108 @@ class QTTest(unittest.TestCase):
         kclust= 5
         self.assertCountEqual(produceClustersV(clustering(rmsd_matrix, "average"), 5)-1,y)
 
-
-
-def validation():
-    # Old not used anymore.
-    # Validation methods can be run with clustermol.
-    data_set_size = 3
-    n_samples = 500    # Sample szie of 10 000.
-    random_state = 3
-    centres = 16
-    center_box = (0, 10)
-    cluster_std = [5.0, 2.5, 0.5, 1.0, 1.1, 2.0, 1.0, 1.0, 2.5, 0.5, 0.5, 0.7, 1.2, 0.2, 1.0, 3.0]
-    blobs = datasets.make_blobs(n_samples=n_samples, centers =centres, random_state=random_state, cluster_std =0.2, center_box=center_box)
-    no_structure = np.random.rand(n_samples, random_state), None
-    varied_blobs = datasets.make_blobs(n_samples=n_samples,
-                             centers =centres,
-                             cluster_std=cluster_std,
-                             random_state=random_state, center_box=center_box)
-    Xblobs,yblobs = blobs
-    Xno_structure,yno_structure = no_structure
-    Xvaried_blobs,yvaried_blobs = varied_blobs
-
-    blobs_distance = pdist(Xblobs, metric="euclidean")
-    reduced_distances_b = squareform(blobs_distance, checks=True)
-    struct_distance = pdist(Xno_structure, metric="euclidean")
-    reduced_distances_s = squareform(struct_distance, checks=True)
-    varied_distance = pdist(Xvaried_blobs, metric="euclidean")
-    reduced_distances_v = squareform(varied_distance, checks=True)
-
-    linkage_matrix = clustering(reduced_distances_b, "single")
-    clusters_b_single = produceClustersTest(linkage_matrix, 16)
-    linkage_matrix = clustering(reduced_distances_b, "complete")
-    clusters_b_complete = produceClustersTest(linkage_matrix, 16)
-    linkage_matrix = clustering(reduced_distances_b, "average")
-    clusters_b_average = produceClustersTest(linkage_matrix, 16)
-    linkage_matrix = clustering(reduced_distances_b, "ward")
-    clusters_b_ward = produceClustersTest(linkage_matrix, 16)
-
-    linkage_matrix = clustering(reduced_distances_s, "single")
-    clusters_s_single = produceClustersTest(linkage_matrix, 10)
-    linkage_matrix = clustering(reduced_distances_s, "complete")
-    clusters_s_complete = produceClustersTest(linkage_matrix, 10)
-    linkage_matrix = clustering(reduced_distances_s, "average")
-    clusters_s_average = produceClustersTest(linkage_matrix, 10)
-    linkage_matrix = clustering(reduced_distances_s, "ward")
-    clusters_s_ward = produceClustersTest(linkage_matrix, 10)
-
-    linkage_matrix = clustering(reduced_distances_v, "single")
-    clusters_v_single = produceClustersTest(linkage_matrix, 16)
-    linkage_matrix = clustering(reduced_distances_v, "complete")
-    clusters_v_complete = produceClustersTest(linkage_matrix, 16)
-    linkage_matrix = clustering(reduced_distances_v, "average")
-    clusters_v_average = produceClustersTest(linkage_matrix, 16)
-    linkage_matrix = clustering(reduced_distances_v, "ward")
-    clusters_v_ward = produceClustersTest(linkage_matrix, 16)
-
-    # lb_b1 = qt_vector(reduced_distances_b, 500, 0.6, 10).astype('int')
-    # lb_s1 = qt_vector(reduced_distances_s, 500, 1.3, 20)
-    # lb_v1 = qt_vector(reduced_distances_v, 500, 2.2, 20)
-    #
-    # lb_b2 = qt_orginal(reduced_distances_b, 500, 0.6, 10).astype('int')
-    # lb_s2 = qt_orginal(reduced_distances_s, 500, 1.3, 20)
-    # lb_v2 = qt_orginal(reduced_distances_v, 500, 2.2, 20)
-    # colors = numpy.array(list(islice(cycle(['#377eb8', '#ff7f00', '#4daf4a',
-    #                                          '#f781bf', '#a65628', '#984ea3',
-    #                                          '#999999', '#e41a1c', '#dede00']),
-    #                                   int(max(lb_b2) + 1))))
-    # # add black color for outliers (if any)
-    # colors = numpy.append(colors, ["#000000"])
-    plot.figure(figsize=(8, 6))
-    plot.subplots_adjust(left=.1, right=.98, bottom=.05, top=.96, wspace=.2,
-                    hspace=.2)
-    plot.subplot(data_set_size, len(clustering_type), 1)
-    plot.scatter(Xblobs[:, 0], Xblobs[:, 1], c =clusters_b_single, cmap =plot.cm.tab20 )
-    plot.subplot(data_set_size, len(clustering_type), 2)
-    plot.scatter(Xblobs[:, 0], Xblobs[:, 1], c =clusters_b_complete, cmap =plot.cm.tab20)
-    plot.subplot(data_set_size, len(clustering_type), 3)
-    plot.scatter(Xblobs[:, 0], Xblobs[:, 1], c =clusters_b_average, cmap =plot.cm.tab20)
-    plot.subplot(data_set_size, len(clustering_type), 4)
-    plot.scatter(Xblobs[:, 0], Xblobs[:, 1], c =clusters_b_ward, cmap =plot.cm.tab20)
-
-    plot.subplot(data_set_size, len(clustering_type), 5)
-    plot.scatter(Xno_structure[:, 0], Xno_structure[:, 1], c =clusters_s_single, cmap =plot.cm.tab20)
-    plot.subplot(data_set_size, len(clustering_type), 6)
-    plot.scatter(Xno_structure[:, 0], Xno_structure[:, 1], c =clusters_s_complete, cmap =plot.cm.tab20)
-    plot.subplot(data_set_size, len(clustering_type), 7)
-    plot.scatter(Xno_structure[:, 0], Xno_structure[:, 1], c =clusters_s_average, cmap =plot.cm.tab20)
-    plot.subplot(data_set_size, len(clustering_type), 8)
-    plot.scatter(Xno_structure[:, 0], Xno_structure[:, 1], c =clusters_s_ward, cmap =plot.cm.tab20)
-
-    plot.subplot(data_set_size, len(clustering_type), 9)
-    plot.scatter(Xvaried_blobs[:, 0], Xvaried_blobs[:, 1], c =clusters_v_single, cmap =plot.cm.tab20)
-    plot.subplot(data_set_size, len(clustering_type), 10)
-    plot.scatter(Xvaried_blobs[:, 0], Xvaried_blobs[:, 1], c =clusters_v_complete, cmap =plot.cm.tab20)
-    plot.subplot(data_set_size, len(clustering_type), 11)
-    plot.scatter(Xvaried_blobs[:, 0], Xvaried_blobs[:, 1], c =clusters_v_average, cmap =plot.cm.tab20)
-    plot.subplot(data_set_size, len(clustering_type), 12)
-    plot.scatter(Xvaried_blobs[:, 0], Xvaried_blobs[:, 1], c =clusters_v_ward, cmap =plot.cm.tab20)
-
-
-    plot.show()
-    # print(numpy.ndim(reduced_distances))
-    # illustrateRMSD(reduced_distances_b, "test_validation")
-    # lb = qt_vector(reduced_distances, 150, 1.3, 20)
+# def validation():
+#     # Old not used anymore.
+#     # Validation methods can be run with clustermol.
+#     data_set_size = 3
+#     n_samples = 500    # Sample szie of 10 000.
+#     random_state = 3
+#     centres = 16
+#     center_box = (0, 10)
+#     cluster_std = [5.0, 2.5, 0.5, 1.0, 1.1, 2.0, 1.0, 1.0, 2.5, 0.5, 0.5, 0.7, 1.2, 0.2, 1.0, 3.0]
+#     blobs = datasets.make_blobs(n_samples=n_samples, centers =centres, random_state=random_state, cluster_std =0.2, center_box=center_box)
+#     no_structure = np.random.rand(n_samples, random_state), None
+#     varied_blobs = datasets.make_blobs(n_samples=n_samples,
+#                              centers =centres,
+#                              cluster_std=cluster_std,
+#                              random_state=random_state, center_box=center_box)
+#     Xblobs,yblobs = blobs
+#     Xno_structure,yno_structure = no_structure
+#     Xvaried_blobs,yvaried_blobs = varied_blobs
+#
+#     blobs_distance = pdist(Xblobs, metric="euclidean")
+#     reduced_distances_b = squareform(blobs_distance, checks=True)
+#     struct_distance = pdist(Xno_structure, metric="euclidean")
+#     reduced_distances_s = squareform(struct_distance, checks=True)
+#     varied_distance = pdist(Xvaried_blobs, metric="euclidean")
+#     reduced_distances_v = squareform(varied_distance, checks=True)
+#
+#     linkage_matrix = clustering(reduced_distances_b, "single")
+#     clusters_b_single = produceClustersTest(linkage_matrix, 16)
+#     linkage_matrix = clustering(reduced_distances_b, "complete")
+#     clusters_b_complete = produceClustersTest(linkage_matrix, 16)
+#     linkage_matrix = clustering(reduced_distances_b, "average")
+#     clusters_b_average = produceClustersTest(linkage_matrix, 16)
+#     linkage_matrix = clustering(reduced_distances_b, "ward")
+#     clusters_b_ward = produceClustersTest(linkage_matrix, 16)
+#
+#     linkage_matrix = clustering(reduced_distances_s, "single")
+#     clusters_s_single = produceClustersTest(linkage_matrix, 10)
+#     linkage_matrix = clustering(reduced_distances_s, "complete")
+#     clusters_s_complete = produceClustersTest(linkage_matrix, 10)
+#     linkage_matrix = clustering(reduced_distances_s, "average")
+#     clusters_s_average = produceClustersTest(linkage_matrix, 10)
+#     linkage_matrix = clustering(reduced_distances_s, "ward")
+#     clusters_s_ward = produceClustersTest(linkage_matrix, 10)
+#
+#     linkage_matrix = clustering(reduced_distances_v, "single")
+#     clusters_v_single = produceClustersTest(linkage_matrix, 16)
+#     linkage_matrix = clustering(reduced_distances_v, "complete")
+#     clusters_v_complete = produceClustersTest(linkage_matrix, 16)
+#     linkage_matrix = clustering(reduced_distances_v, "average")
+#     clusters_v_average = produceClustersTest(linkage_matrix, 16)
+#     linkage_matrix = clustering(reduced_distances_v, "ward")
+#     clusters_v_ward = produceClustersTest(linkage_matrix, 16)
+#
+#     # lb_b1 = qt_vector(reduced_distances_b, 500, 0.6, 10).astype('int')
+#     # lb_s1 = qt_vector(reduced_distances_s, 500, 1.3, 20)
+#     # lb_v1 = qt_vector(reduced_distances_v, 500, 2.2, 20)
+#     #
+#     # lb_b2 = qt_orginal(reduced_distances_b, 500, 0.6, 10).astype('int')
+#     # lb_s2 = qt_orginal(reduced_distances_s, 500, 1.3, 20)
+#     # lb_v2 = qt_orginal(reduced_distances_v, 500, 2.2, 20)
+#     # colors = numpy.array(list(islice(cycle(['#377eb8', '#ff7f00', '#4daf4a',
+#     #                                          '#f781bf', '#a65628', '#984ea3',
+#     #                                          '#999999', '#e41a1c', '#dede00']),
+#     #                                   int(max(lb_b2) + 1))))
+#     # # add black color for outliers (if any)
+#     # colors = numpy.append(colors, ["#000000"])
+#     plot.figure(figsize=(8, 6))
+#     plot.subplots_adjust(left=.1, right=.98, bottom=.05, top=.96, wspace=.2,
+#                     hspace=.2)
+#     plot.subplot(data_set_size, len(clustering_type), 1)
+#     plot.scatter(Xblobs[:, 0], Xblobs[:, 1], c =clusters_b_single, cmap =plot.cm.tab20 )
+#     plot.subplot(data_set_size, len(clustering_type), 2)
+#     plot.scatter(Xblobs[:, 0], Xblobs[:, 1], c =clusters_b_complete, cmap =plot.cm.tab20)
+#     plot.subplot(data_set_size, len(clustering_type), 3)
+#     plot.scatter(Xblobs[:, 0], Xblobs[:, 1], c =clusters_b_average, cmap =plot.cm.tab20)
+#     plot.subplot(data_set_size, len(clustering_type), 4)
+#     plot.scatter(Xblobs[:, 0], Xblobs[:, 1], c =clusters_b_ward, cmap =plot.cm.tab20)
+#
+#     plot.subplot(data_set_size, len(clustering_type), 5)
+#     plot.scatter(Xno_structure[:, 0], Xno_structure[:, 1], c =clusters_s_single, cmap =plot.cm.tab20)
+#     plot.subplot(data_set_size, len(clustering_type), 6)
+#     plot.scatter(Xno_structure[:, 0], Xno_structure[:, 1], c =clusters_s_complete, cmap =plot.cm.tab20)
+#     plot.subplot(data_set_size, len(clustering_type), 7)
+#     plot.scatter(Xno_structure[:, 0], Xno_structure[:, 1], c =clusters_s_average, cmap =plot.cm.tab20)
+#     plot.subplot(data_set_size, len(clustering_type), 8)
+#     plot.scatter(Xno_structure[:, 0], Xno_structure[:, 1], c =clusters_s_ward, cmap =plot.cm.tab20)
+#
+#     plot.subplot(data_set_size, len(clustering_type), 9)
+#     plot.scatter(Xvaried_blobs[:, 0], Xvaried_blobs[:, 1], c =clusters_v_single, cmap =plot.cm.tab20)
+#     plot.subplot(data_set_size, len(clustering_type), 10)
+#     plot.scatter(Xvaried_blobs[:, 0], Xvaried_blobs[:, 1], c =clusters_v_complete, cmap =plot.cm.tab20)
+#     plot.subplot(data_set_size, len(clustering_type), 11)
+#     plot.scatter(Xvaried_blobs[:, 0], Xvaried_blobs[:, 1], c =clusters_v_average, cmap =plot.cm.tab20)
+#     plot.subplot(data_set_size, len(clustering_type), 12)
+#     plot.scatter(Xvaried_blobs[:, 0], Xvaried_blobs[:, 1], c =clusters_v_ward, cmap =plot.cm.tab20)
+#
+#
+#     plot.show()
+#     # print(numpy.ndim(reduced_distances))
+#     # illustrateRMSD(reduced_distances_b, "test_validation")
+#     # lb = qt_vector(reduced_distances, 150, 1.3, 20)
 
 if __name__ == "__main__":
-    # unittest.main()
+    # unittest.main() # Uncomment to run unit tests. 
     print("run clustermol -h for information how to use this framework.")

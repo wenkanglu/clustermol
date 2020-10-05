@@ -149,10 +149,10 @@ def save_without_noise(traj, labels, save = False):
 def saveClusters(labels, dest, type):
     '''
     DESCRIPTION
-    Save cluster indexes to text file
+    Save cluster indexes to text file.
 
     Arguments:
-        clusters_arr (numpy.ndarray): Cluster indexes per frame.
+        labels (numpy.ndarray): Cluster indexes per frame.
         dest (str): destination to save cluster labels.
         type (str): type of algorithm implementation.
     '''
@@ -162,13 +162,15 @@ def saveClusters(labels, dest, type):
 def scatterplot_cluster(labels, dest, type, preprocess, test, visualise):
     '''
     DESCRIPTION
-    Produce cluster scatter plot of frames
+    Produce cluster scatter plot of frames.
 
     Arguments:
         labels (numpy.ndarray): cluster indexes per frame.
-        no_frames (int): number of frames
         dest (str): destination to save scatterplot of clusters.
         type (str): type of qt implementation.
+        preprocess (bool): boolean if preprocess occured.
+        test (bool): boolean if test validation.
+        visualise (bool): boolean if visualisation required.
     '''
     plot.figure()
     plot.scatter(np.arange(len(labels)), labels, marker = '.',cmap='prism')

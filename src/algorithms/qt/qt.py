@@ -248,6 +248,7 @@ def cluster(traj, type, args):
     Arguments:
         traj (mdtraj.traj): trajectory object.
         type (string): type of Quaility Threshold algotithm to implemnt.
+        args (args): arguments by parser for additional functionality.
     '''
     cluster_labels = -1
     if isinstance(traj, mdtraj.Trajectory):
@@ -281,28 +282,6 @@ def cluster(traj, type, args):
             illustrateRMSD(vis, args.destination) # outputs rmsd matrix to destintion
             post_proc.plotTestData(data,cluster_labels, args.destination)
     return cluster_labels
-
-# def runVMD_RMSD_QT(filename, type):
-#     '''
-#     DESCRIPTION
-#     Overall implementation of two diffrent implementations of the Quaility
-#     Threshold algotithim using pre-processed rmsd matrix from VMD.
-#
-#     Arguments:
-#         filename (string): filename of .dat VMD matrix file.
-#         type (string): type of Quaility Threshold algotithm to implemnt.
-#     '''
-#     no_frames = int(input(">>> Please enter the number of frames for the RMSD Matrix .dat file\n"))
-#     rmsd_matrix_temp = preprocessing.VMD_RMSD_matrix(filename, no_frames)
-#     postprocessing.illustrateRMSD(rmsd_matrix_temp)
-#     postprocessing.rmsd_vs_frame(no_frames, rmsd_matrix_temp[0])
-#     cutoff, min = getArguments()
-#     if type == "qt_original":
-#         qt_orginal(rmsd_matrix_temp, no_frames, cutoff, min)
-#     elif type == "qt_vector":
-#         qt_vector(rmsd_matrix_temp, no_frames, cutoff, min)
-#     else:
-#         pass
 
 class QTTest(unittest.TestCase):
     # Test RMSD Stats produce epxcted output.
@@ -347,64 +326,64 @@ class QTTest(unittest.TestCase):
 
         np.testing.assert_almost_equal(qt_vector(rmsd_matrix, no_frames, cutoff, minimum_membership),labels)
 
-def validation():
-    # Old not used anymore.
-    algoithm_type = ["qt", "qtvector"]
-    data_set_size = 3
-    n_samples = 500    # Sample szie of 10 000.
-    random_state = 3
-    centres = 16
-    center_box = (0, 10)
-    cluster_std = [5.0, 2.5, 0.5, 1.0, 1.1, 2.0, 1.0, 1.0, 2.5, 0.5, 0.5, 0.7, 1.2, 0.2, 1.0, 3.0]
-    blobs = datasets.make_blobs(n_samples=n_samples, centers =centres, random_state=random_state, cluster_std =0.2, center_box=center_box)
-    no_structure = np.random.rand(n_samples, random_state), None
-    varied_blobs = datasets.make_blobs(n_samples=n_samples, centers =centres, cluster_std=cluster_std, random_state=random_state, center_box=center_box)
-    Xblobs,yblobs = blobs
-    Xno_structure,yno_structure = no_structure
-    Xvaried_blobs,yvaried_blobs = varied_blobs
-
-    blobs_distance = pdist(Xblobs, metric="euclidean")
-    reduced_distances_b = squareform(blobs_distance, checks=True)
-    struct_distance = pdist(Xno_structure, metric="euclidean")
-    reduced_distances_s = squareform(struct_distance, checks=True)
-    varied_distance = pdist(Xvaried_blobs, metric="euclidean")
-    reduced_distances_v = squareform(varied_distance, checks=True)
-
-    lb_b1 = qt_vector(reduced_distances_b, 500, 0.6, 10).astype('int')
-    lb_s1 = qt_vector(reduced_distances_s, 500, 1.3, 20)
-    lb_v1 = qt_vector(reduced_distances_v, 500, 2.2, 20)
-
-    lb_b2 = qt_orginal(reduced_distances_b, 500, 0.6, 10).astype('int')
-    lb_s2 = qt_orginal(reduced_distances_s, 500, 1.3, 20)
-    lb_v2 = qt_orginal(reduced_distances_v, 500, 2.2, 20)
-    colors = np.array(list(islice(cycle(['#377eb8', '#ff7f00', '#4daf4a',
-                                             '#f781bf', '#a65628', '#984ea3',
-                                             '#999999', '#e41a1c', '#dede00']),
-                                      int(max(lb_b2) + 1))))
-    # add black color for outliers (if any)
-    colors = np.append(colors, ["#000000"])
-    plot.figure(figsize=(8, 6))
-    plot.subplots_adjust(left=.1, right=.98, bottom=.05, top=.96, wspace=.2,
-                    hspace=.2)
-    plot.subplot(data_set_size, len(algoithm_type), 1)
-    plot.scatter(Xblobs[:, 0], Xblobs[:, 1], c =lb_b1, cmap =plot.cm.Set1)
-    plot.subplot(data_set_size, len(algoithm_type), 3)
-    plot.scatter(Xno_structure[:, 0], Xno_structure[:, 1], c =lb_s1)
-    plot.subplot(data_set_size, len(algoithm_type), 5)
-    plot.scatter(Xvaried_blobs[:, 0], Xvaried_blobs[:, 1], c =lb_v1)
-
-    plot.subplot(data_set_size, len(algoithm_type), 2)
-    plot.scatter(Xblobs[:, 0], Xblobs[:, 1], color =colors[lb_b2])
-    plot.subplot(data_set_size, len(algoithm_type), 4)
-    plot.scatter(Xno_structure[:, 0], Xno_structure[:, 1], c=lb_s2)
-    plot.subplot(data_set_size, len(algoithm_type), 6)
-    plot.scatter(Xvaried_blobs[:, 0], Xvaried_blobs[:, 1], c =lb_v2)
-
-    plot.show()
-    # print(np.ndim(reduced_distances))
-    # illustrateRMSD(reduced_distances_b, "test_validation")
-    # lb = qt_vector(reduced_distances, 150, 1.3, 20)
+# def validation():
+#     # Old not used anymore.
+#     algoithm_type = ["qt", "qtvector"]
+#     data_set_size = 3
+#     n_samples = 500    # Sample szie of 10 000.
+#     random_state = 3
+#     centres = 16
+#     center_box = (0, 10)
+#     cluster_std = [5.0, 2.5, 0.5, 1.0, 1.1, 2.0, 1.0, 1.0, 2.5, 0.5, 0.5, 0.7, 1.2, 0.2, 1.0, 3.0]
+#     blobs = datasets.make_blobs(n_samples=n_samples, centers =centres, random_state=random_state, cluster_std =0.2, center_box=center_box)
+#     no_structure = np.random.rand(n_samples, random_state), None
+#     varied_blobs = datasets.make_blobs(n_samples=n_samples, centers =centres, cluster_std=cluster_std, random_state=random_state, center_box=center_box)
+#     Xblobs,yblobs = blobs
+#     Xno_structure,yno_structure = no_structure
+#     Xvaried_blobs,yvaried_blobs = varied_blobs
+#
+#     blobs_distance = pdist(Xblobs, metric="euclidean")
+#     reduced_distances_b = squareform(blobs_distance, checks=True)
+#     struct_distance = pdist(Xno_structure, metric="euclidean")
+#     reduced_distances_s = squareform(struct_distance, checks=True)
+#     varied_distance = pdist(Xvaried_blobs, metric="euclidean")
+#     reduced_distances_v = squareform(varied_distance, checks=True)
+#
+#     lb_b1 = qt_vector(reduced_distances_b, 500, 0.6, 10).astype('int')
+#     lb_s1 = qt_vector(reduced_distances_s, 500, 1.3, 20)
+#     lb_v1 = qt_vector(reduced_distances_v, 500, 2.2, 20)
+#
+#     lb_b2 = qt_orginal(reduced_distances_b, 500, 0.6, 10).astype('int')
+#     lb_s2 = qt_orginal(reduced_distances_s, 500, 1.3, 20)
+#     lb_v2 = qt_orginal(reduced_distances_v, 500, 2.2, 20)
+#     colors = np.array(list(islice(cycle(['#377eb8', '#ff7f00', '#4daf4a',
+#                                              '#f781bf', '#a65628', '#984ea3',
+#                                              '#999999', '#e41a1c', '#dede00']),
+#                                       int(max(lb_b2) + 1))))
+#     # add black color for outliers (if any)
+#     colors = np.append(colors, ["#000000"])
+#     plot.figure(figsize=(8, 6))
+#     plot.subplots_adjust(left=.1, right=.98, bottom=.05, top=.96, wspace=.2,
+#                     hspace=.2)
+#     plot.subplot(data_set_size, len(algoithm_type), 1)
+#     plot.scatter(Xblobs[:, 0], Xblobs[:, 1], c =lb_b1, cmap =plot.cm.Set1)
+#     plot.subplot(data_set_size, len(algoithm_type), 3)
+#     plot.scatter(Xno_structure[:, 0], Xno_structure[:, 1], c =lb_s1)
+#     plot.subplot(data_set_size, len(algoithm_type), 5)
+#     plot.scatter(Xvaried_blobs[:, 0], Xvaried_blobs[:, 1], c =lb_v1)
+#
+#     plot.subplot(data_set_size, len(algoithm_type), 2)
+#     plot.scatter(Xblobs[:, 0], Xblobs[:, 1], color =colors[lb_b2])
+#     plot.subplot(data_set_size, len(algoithm_type), 4)
+#     plot.scatter(Xno_structure[:, 0], Xno_structure[:, 1], c=lb_s2)
+#     plot.subplot(data_set_size, len(algoithm_type), 6)
+#     plot.scatter(Xvaried_blobs[:, 0], Xvaried_blobs[:, 1], c =lb_v2)
+#
+#     plot.show()
+#     # print(np.ndim(reduced_distances))
+#     # illustrateRMSD(reduced_distances_b, "test_validation")
+#     # lb = qt_vector(reduced_distances, 150, 1.3, 20)
 
 if __name__ == "__main__":
-    # unittest.main()
+    # unittest.main() # uncomment to run unit tests. 
     print("run clustermol -h for information how to use this framework.")
