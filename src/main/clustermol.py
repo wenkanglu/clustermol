@@ -175,6 +175,13 @@ def parse():
 
 
 def handle_configuration(args):
+    """
+    Obtain configuration file(s) for parse_configuration
+
+    Args:
+        args (Namespace): User arguments from argparser.
+    """
+
     print(DATA + CONFIGS + args.configuration)
     if os.path.isfile(DATA + CONFIGS + args.configuration):
         parse_configuration(args, DATA + CONFIGS + args.configuration)
@@ -186,6 +193,14 @@ def handle_configuration(args):
 
 
 def parse_configuration(args, filename):
+    """
+    Reads through config file, assigns appropriate arguments, runs start_job.
+
+    Args:
+        args (Namespace): User arguments from config file or argparser.
+        filename (str): Path to config file.
+    """
+
     current = None
     if filename.endswith(".ini"):
         try:
@@ -339,17 +354,32 @@ def parse_configuration(args, filename):
 
 
 def create_dirs():
+    """
+    Create data directories if not present in current working directory.
+
+    Args:
+        input_data (Trajectory/array): Data to be preprocessed by UMAP.
+        args (Namespace): User arguments from config file or argparser.
+
+    Returns:
+        embedding: UMAP-preprocessed data with reduced dimensions.
+    """
+
     if not os.path.isdir(DATA):
+        print("Data directories not present. Creating directories...")
         os.mkdir(DATA)
         os.mkdir(os.path.join(DATA, DATA_DEST))
         os.mkdir(os.path.join(DATA, DATA_SRC))
         os.mkdir(os.path.join(DATA, CONFIGS))
     else:
         if not os.path.isdir(os.path.join(DATA, DATA_SRC)):
+            print(DATA_SRC + "directory not present. Creating directory...")
             os.mkdir(os.path.join(DATA, DATA_SRC))
         if not os.path.isdir((os.path.join(DATA, DATA_DEST))):
+            print(DATA_DEST + "directory not present. Creating directory...")
             os.mkdir(os.path.join(DATA, DATA_DEST))
         if not os.path.isdir((os.path.join(DATA, CONFIGS))):
+            print(CONFIGS + "directory not present. Creating directory...")
             os.mkdir(os.path.join(DATA, CONFIGS))
 
 
