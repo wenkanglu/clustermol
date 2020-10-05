@@ -12,6 +12,19 @@ from main.constants import SILHOUETTE, DAVIESBOULDIN, CALINSKIHARABASZ, DATA_DES
 
 
 def label_counts(labels, test=None, selection=None, type=None, dest=None):
+    '''
+    DESCRIPTION
+    Calculate label counts per cluster label. If type and dest are present,
+    save to file. If selection present, write selection to file. If test present,
+    try to save accuracy score to file.
+
+    Arguments:
+        labels (numpy.ndarray): cluster index per frame
+        test (str): folder to save to, default None
+        selection (str): selection statement used, default None
+        type (str): type of algorithm used, default None
+        dest (str): folder to save to, default None
+    '''
     actual_labels = None
     artificial = [BLOBS, VBLOBS, NOISE]
     if test == IRIS:
@@ -38,7 +51,19 @@ def label_counts(labels, test=None, selection=None, type=None, dest=None):
     return d
 
 
-def calculate_CVI(indices, input_data, labels, dest, type, ignore_noise=True):
+def calculate_CVI(indices, input_data, labels, dest, type, ignore_noise=False):
+    '''
+    DESCRIPTION
+    Calculate requested CVIs and save to file. File must already exist.
+
+    Arguments:
+        indices (list): list of CVIs to calculate
+        input_data (numpy.ndarray): data to calculate CVIs from
+        labels (numpy.ndarray): cluster index per frame
+        dest (str): folder to save to
+        type (str): type of algorithm used
+        ignore_noise (bool): if True, also give CVI results with noise ignored
+    '''
     data = None
     if isinstance(input_data, Trajectory):
         # Reshape the data
@@ -103,6 +128,17 @@ def plotTestData(data, labels, dest):
 
 
 def save_largest_clusters(n, traj, labels, dest, type):
+    '''
+    DESCRIPTION
+    Save the n largest clusters as pdb files.
+
+    Arguments:
+        n (int): number of clusters to save
+        traj (mdtraj.Trajectory): trajectory object
+        labels (numpy.ndarray): cluster index per frame
+        dest (str): folder to save pdb files to
+        type (str): type of algorithm used
+    '''
     c = label_counts(labels)
     n_labels = []
     c.pop(-1, None) #ignore "noise" cluster
@@ -126,6 +162,15 @@ def save_largest_clusters(n, traj, labels, dest, type):
 
 
 def save_without_noise(traj, labels, save = False):
+    '''
+    DESCRIPTION
+    Removes frames labelled as noise (-1) from the trajectory.
+
+    Arguments:
+        traj (mdtraj.Trajectory): trajectory to be edited
+        labels (numpy.ndarray): cluster index per frame
+        save (bool): if True, save the edited traj, if False, save nothing
+    '''
     noiseless = None
     start = 0
     il = 0
