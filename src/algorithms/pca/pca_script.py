@@ -7,6 +7,17 @@ from sklearn.decomposition import PCA
 
 
 def pca_main(input_data, args):
+    """
+    Preliminary function to perform PCA preprocessing on some data for t-SNE.
+
+    Args:
+        input_data (Trajectory/array): Data to be preprocessed by UMAP.
+        args (Namespace): User arguments from config file or argparser.
+
+    Returns:
+        pca_output: PCA-preprocessed data with reduced dimensions.
+    """
+
     start_time = time.time()
 
     if isinstance(input_data, Trajectory):

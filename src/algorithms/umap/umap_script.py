@@ -2,16 +2,26 @@ import time
 
 import numpy as np
 from mdtraj import Trajectory
-import seaborn as sns
 
 import umap
 
 
 def umap_main(input_data, args):
-    # sns.set(style='white', rc={'figure.figsize': (10, 8)})
+    """
+    Function to perform UMAP preprocessing on some data.
+
+    Args:
+        input_data (Trajectory/array): Data to be preprocessed by UMAP.
+        args (Namespace): User arguments from config file or argparser.
+
+    Returns:
+        embedding: UMAP-preprocessed data with reduced dimensions.
+    """
+
     umap_cluster = umap.UMAP(n_components=int(args.ncomponents),
                              n_neighbors=int(args.nneighbours),
                              min_dist=0.0,
+                             # seed to get same embedding for same configuration on same data
                              random_state=42,)
     start_time = time.time()
     if isinstance(input_data, Trajectory):
