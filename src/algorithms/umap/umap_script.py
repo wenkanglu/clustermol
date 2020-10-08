@@ -26,14 +26,13 @@ def umap_main(input_data, args):
     start_time = time.time()
     if isinstance(input_data, Trajectory):
         coords = np.reshape(input_data.xyz, (input_data.n_frames, 3 * input_data.n_atoms))
-        print("trajectory loaded")
         embedding = umap_cluster.fit_transform(coords)
 
     else:
-        print("data loaded")
         embedding = umap_cluster.fit_transform(input_data)
 
+    print("Performing UMAP preprocessing")
     umap_time = time.time()
-    print("--- %s seconds to perform UMAP---" % (umap_time - start_time))
+    print("--- %s seconds to perform UMAP preprocessing---" % (umap_time - start_time))
 
     return embedding

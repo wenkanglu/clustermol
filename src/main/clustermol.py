@@ -167,6 +167,9 @@ def parse():
                              help="Input a selection operation to be performed", )
 
     args = parser.parse_args()
+    if not hasattr(args, "function"):
+        print("Please try --help for correct usage")
+        sys.exit(0)
     # print(args)  # keep for debugging args
     if args.subparser_used == SUBPARSER_CONF:
         args.function(args)
@@ -356,14 +359,9 @@ def parse_configuration(args, filename):
 def create_dirs():
     """
     Create data directories if not present in current working directory.
-
-    Args:
-        input_data (Trajectory/array): Data to be preprocessed by UMAP.
-        args (Namespace): User arguments from config file or argparser.
-
-    Returns:
-        embedding: UMAP-preprocessed data with reduced dimensions.
     """
+
+    created = False
 
     if not os.path.isdir(DATA):
         print("Data directories not present. Creating directories...")
@@ -371,16 +369,24 @@ def create_dirs():
         os.mkdir(os.path.join(DATA, DATA_DEST))
         os.mkdir(os.path.join(DATA, DATA_SRC))
         os.mkdir(os.path.join(DATA, CONFIGS))
+        created = True
     else:
         if not os.path.isdir(os.path.join(DATA, DATA_SRC)):
             print(DATA_SRC + "directory not present. Creating directory...")
             os.mkdir(os.path.join(DATA, DATA_SRC))
+            created = True
         if not os.path.isdir((os.path.join(DATA, DATA_DEST))):
             print(DATA_DEST + "directory not present. Creating directory...")
             os.mkdir(os.path.join(DATA, DATA_DEST))
+            created = True
         if not os.path.isdir((os.path.join(DATA, CONFIGS))):
             print(CONFIGS + "directory not present. Creating directory...")
             os.mkdir(os.path.join(DATA, CONFIGS))
+            created = True
+
+    if created:
+        print("Directory/directories created.")
+        sys.exit(0)
 
 
 def main():
